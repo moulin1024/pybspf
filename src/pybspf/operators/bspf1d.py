@@ -20,10 +20,9 @@ from ..grid import Grid1D
 from ..kkt import KKTLUCache
 from ..knots import _Knot
 from ..ops.differentiation import (
+    derivatives,
+    derivatives_batched,
     differentiate,
-    differentiate_1_2,
-    differentiate_1_2_3,
-    differentiate_1_2_batched,
 )
 from ..ops.integration import antiderivative, definite_integral
 from ..ops.interpolation import enforced_zero_flux, fit_spline, interpolate, interpolate_split_mesh
@@ -94,12 +93,14 @@ class BSPF1D:
             self._B1T_f = self.basis.BkT(1)
             self._B2T_f = self.basis.BkT(2)
             self._B3T_f = self.basis.BkT(3)
+            self._B4T_f = self.basis.BkT(4)
             n_b = self.basis.B0.shape[0]
             self._rhs_buf = cp.empty(n_b + 2 * self.order, dtype=cp.float64)
             omega = self.grid.omega
             self._iomega = 1j * omega
             self._iomega2 = self._iomega**2
             self._iomega3 = self._iomega**3
+            self._iomega4 = self._iomega**4
             self._residual_buf = cp.empty(self.grid.n, dtype=cp.float64)
         else:
         # Preserve the CPU layout and preallocation strategy used by the
@@ -110,12 +111,14 @@ class BSPF1D:
             self._B1T_f = np.asfortranarray(self.basis.BkT(1))
             self._B2T_f = np.asfortranarray(self.basis.BkT(2))
             self._B3T_f = np.asfortranarray(self.basis.BkT(3))
+            self._B4T_f = np.asfortranarray(self.basis.BkT(4))
             n_b = self.basis.B0.shape[0]
             self._rhs_buf = np.empty(n_b + 2 * self.order, dtype=np.float64)
             omega = self.grid.omega
             self._iomega = 1j * omega
             self._iomega2 = self._iomega**2
             self._iomega3 = self._iomega**3
+            self._iomega4 = self._iomega**4
             self._residual_buf = np.empty(self.grid.n, dtype=np.float64)
 
         self.correction = correction
@@ -219,9 +222,8 @@ class BSPF1D:
 
 # Bind the package-owned operation-family functions onto the operator class.
 BSPF1D.differentiate = differentiate
-BSPF1D.differentiate_1_2 = differentiate_1_2
-BSPF1D.differentiate_1_2_3 = differentiate_1_2_3
-BSPF1D.differentiate_1_2_batched = differentiate_1_2_batched
+BSPF1D.derivatives = derivatives
+BSPF1D.derivatives_batched = derivatives_batched
 BSPF1D.definite_integral = definite_integral
 BSPF1D.antiderivative = antiderivative
 BSPF1D.enforced_zero_flux = enforced_zero_flux

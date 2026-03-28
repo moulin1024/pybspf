@@ -139,6 +139,11 @@ class BSplineBasis1D:
         """
         if k == 0:
             return self._BT0
+        if k > self.degree:
+            n_basis = len(self._splines)
+            if self.use_gpu and _HAS_CUPY:
+                return cp.zeros((self.grid.n, n_basis), dtype=cp.float64)
+            return np.zeros((self.grid.n, n_basis), dtype=np.float64)
         if k not in self._BkT:
             Bk = self._evaluate_splines_vectorized(self.grid.x, deriv_order=k)
             self._BkT[k] = Bk.T.copy()

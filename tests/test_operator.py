@@ -41,17 +41,75 @@ def test_fit_and_differentiate_match_legacy():
     np.testing.assert_allclose(new_df, old_df)
     np.testing.assert_allclose(new_fs, old_fs)
 
-    new_d1, new_d2, new_fs2 = new_op.differentiate_1_2(f, lam=0.01)
     old_d1, old_d2, old_fs2 = old_op.differentiate_1_2(f, lam=0.01)
-    np.testing.assert_allclose(new_d1, old_d1)
-    np.testing.assert_allclose(new_d2, old_d2)
-    np.testing.assert_allclose(new_fs2, old_fs2)
+
+    multi = new_op.derivatives(f, orders=(1, 2), lam=0.01)
+    np.testing.assert_allclose(multi[1], old_d1)
+    np.testing.assert_allclose(multi[2], old_d2)
+    np.testing.assert_allclose(multi.spline, old_fs2)
 
     new_P, new_fit, new_residual = new_op.fit_spline(f, lam=0.01)
     old_P, old_fit, old_residual = old_op.fit_spline(f, lam=0.01)
     np.testing.assert_allclose(new_P, old_P)
     np.testing.assert_allclose(new_fit, old_fit)
     np.testing.assert_allclose(new_residual, old_residual)
+
+
+def test_multi_order_derivatives_reuse_shared_path_for_nonconsecutive_orders():
+    """! @brief The generalized API should support arbitrary supported order sets."""
+    x, op, _ = _make_operator_pair()
+    f = np.sin(x) + 0.15 * np.cos(2.0 * x) - 0.1 * np.sin(5.0 * x)
+
+    d1, fs1 = op.differentiate(f, k=1, lam=0.01)
+    d2, fs2 = op.differentiate(f, k=2, lam=0.01)
+    d3, fs3 = op.differentiate(f, k=3, lam=0.01)
+
+    result_13 = op.derivatives(f, orders=(1, 3), lam=0.01)
+    np.testing.assert_allclose(result_13[1], d1)
+    np.testing.assert_allclose(result_13[3], d3)
+    np.testing.assert_allclose(result_13.spline, fs1)
+
+    result_23 = op.derivatives(f, orders=(2, 3), lam=0.01)
+    np.testing.assert_allclose(result_23[2], d2)
+    np.testing.assert_allclose(result_23[3], d3)
+    np.testing.assert_allclose(result_23.spline, fs2)
+    np.testing.assert_allclose(fs1, fs2)
+    np.testing.assert_allclose(fs2, fs3)
+
+
+def test_fourth_order_derivative_matches_polynomial_shape():
+    """! @brief Fourth-order differentiation should be available through the shared API."""
+    x = np.linspace(0.0, 2.0 * np.pi, 257)
+    op = BSPF1D.from_grid(degree=6, x=x, use_clustering=True, clustering_factor=2.0)
+    f = np.sin(2.0 * x) + 0.25 * np.cos(3.0 * x)
+    expected_d4 = 16.0 * np.sin(2.0 * x) + 20.25 * np.cos(3.0 * x)
+
+    d4, fs = op.differentiate(f, k=4, lam=1.0e-6)
+    result = op.derivatives(f, orders=(2, 4), lam=1.0e-6)
+
+    np.testing.assert_allclose(result[4], d4)
+    np.testing.assert_allclose(result.spline, fs)
+    np.testing.assert_allclose(d4[8:-8], expected_d4[8:-8], atol=1.5e-1, rtol=1.0e-2)
+
+
+def test_batched_multi_order_derivatives_match_columnwise_calls():
+    """! @brief Batched generalized differentiation should match per-column evaluation."""
+    x, op, _ = _make_operator_pair()
+    batch = np.stack(
+        [
+            np.sin(x),
+            np.cos(2.0 * x) + 0.1 * x,
+            np.sin(3.0 * x) - 0.2 * np.cos(x),
+        ],
+        axis=1,
+    )
+
+    batched = op.derivatives_batched(batch, orders=(1, 4), lam=0.01)
+    for idx in range(batch.shape[1]):
+        single = op.derivatives(batch[:, idx], orders=(1, 4), lam=0.01)
+        np.testing.assert_allclose(batched[1][:, idx], single[1])
+        np.testing.assert_allclose(batched[4][:, idx], single[4])
+        np.testing.assert_allclose(batched.spline[:, idx], single.spline)
 
 
 def test_integral_and_antiderivative_match_legacy():
@@ -77,12 +135,25 @@ def test_piecewise_wrapper_matches_legacy():
     new_pw = PiecewiseBSPF1D(degree=5, x=x, breakpoints=[0.45], min_points_per_seg=20)
     old_pw = LegacyPiecewiseBSPF1D(degree=5, x=x, breakpoints=[0.45], min_points_per_seg=20)
 
-    new_d1, new_d2, new_fs = new_pw.differentiate_1_2(f, lam=0.01)
     old_d1, old_d2, old_fs = old_pw.differentiate_1_2(f, lam=0.01)
+    new_result = new_pw.derivatives(f, orders=(1, 2), lam=0.01)
 
-    np.testing.assert_allclose(new_d1, old_d1)
-    np.testing.assert_allclose(new_d2, old_d2)
-    np.testing.assert_allclose(new_fs, old_fs)
+    np.testing.assert_allclose(new_result[1], old_d1)
+    np.testing.assert_allclose(new_result[2], old_d2)
+    np.testing.assert_allclose(new_result.spline, old_fs)
+
+
+def test_piecewise_generalized_derivatives_match_wrapper_for_shared_orders():
+    """! @brief Piecewise generalized derivatives should return the expected shapes."""
+    x = np.linspace(0.0, 1.0, 96)
+    f = np.where(x < 0.45, np.sin(6.0 * x), np.sin(6.0 * x) + 1.5)
+    pw = PiecewiseBSPF1D(degree=5, x=x, breakpoints=[0.45], min_points_per_seg=20)
+
+    generalized = pw.derivatives(f, orders=(1, 2), lam=0.01)
+
+    assert generalized[1].shape == f.shape
+    assert generalized[2].shape == f.shape
+    assert generalized.spline.shape == f.shape
 
 
 def test_piecewise_segments_use_package_operator_and_expected_ranges():

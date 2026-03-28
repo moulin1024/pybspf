@@ -8,6 +8,7 @@ from typing import List, Optional, Tuple
 
 import numpy as np
 
+from ..ops.differentiation import DerivativeResult
 from ..types import Array
 from .bspf1d import BSPF1D
 
@@ -62,25 +63,27 @@ class PiecewiseBSPF1D:
             op = BSPF1D.from_grid(degree=self.degree, x=x_seg, **bspf_kwargs)
             self.segments.append(dict(i0=i_start, i1=N - 1, op=op))
 
-    def differentiate_1_2(
+    def derivatives(
         self,
         f: Array,
+        orders,
         lam: float = 0.0,
         neumann_bc_global: Optional[Tuple[Optional[float], Optional[float]]] = None,
-    ) -> Tuple[Array, Array, Array]:
-        """! @brief Differentiate each segment independently and stitch results.
-
-        @param f Function values on the full grid.
-        @param lam Tikhonov regularization parameter.
-        @param neumann_bc_global Optional Neumann data for the two global ends.
-        @return Tuple ``(df1, df2, f_spline)`` on the full grid.
-        """
+    ):
+        """Compute requested derivative orders on each segment and stitch them."""
         f = np.asarray(f, dtype=np.float64)
         if f.shape[0] != self.x.size:
             raise ValueError(f"f length {f.shape[0]} must match x length {self.x.size}")
 
-        df1_full = np.zeros_like(f, dtype=np.float64)
-        df2_full = np.zeros_like(f, dtype=np.float64)
+        if isinstance(orders, int):
+            normalized_orders = (int(orders),)
+        else:
+            normalized_orders = tuple(sorted({int(order) for order in orders}))
+
+        derivative_full = {
+            order: np.zeros_like(f, dtype=np.float64)
+            for order in normalized_orders
+        }
         fs_full = np.zeros_like(f, dtype=np.float64)
 
         if neumann_bc_global is not None:
@@ -98,17 +101,17 @@ class PiecewiseBSPF1D:
             bc_right = right_flux_global if k == n_seg - 1 else None
             neumann_bc_seg = (bc_left, bc_right)
 
-            d1_seg, d2_seg, fs_seg = op.differentiate_1_2(
+            seg_result = op.derivatives(
                 f_seg,
+                orders=normalized_orders,
                 lam=lam,
                 neumann_bc=neumann_bc_seg,
             )
+            for order in normalized_orders:
+                derivative_full[order][i0 : i1 + 1] = seg_result[order]
+            fs_full[i0 : i1 + 1] = seg_result.spline
 
-            df1_full[i0 : i1 + 1] = d1_seg
-            df2_full[i0 : i1 + 1] = d2_seg
-            fs_full[i0 : i1 + 1] = fs_seg
-
-        return df1_full, df2_full, fs_full
+        return DerivativeResult(values=derivative_full, spline=fs_full)
 
 
 __all__ = ["PiecewiseBSPF1D"]

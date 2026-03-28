@@ -8,7 +8,8 @@ being migrated away from the legacy monolithic implementation.
 # Re-export the canonical grid type and the current operator wrappers so users
 # can import from ``pybspf`` directly instead of depending on file layout.
 from .grid import Grid1D
+from .ops.differentiation import DerivativeResult
 from .operators import BSPF1D, PiecewiseBSPF1D, bspf1d
 from .time_integration import integrate_rk4
 
-__all__ = ["BSPF1D", "Grid1D", "PiecewiseBSPF1D", "bspf1d", "integrate_rk4"]
+__all__ = ["BSPF1D", "DerivativeResult", "Grid1D", "PiecewiseBSPF1D", "bspf1d", "integrate_rk4"]

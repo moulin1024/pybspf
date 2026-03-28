@@ -5,13 +5,111 @@
 from __future__ import annotations
 
 import time
-from typing import Optional, Tuple
+from dataclasses import dataclass
+from typing import Dict, Iterable, Optional, Tuple
 
 import numpy as np
 from scipy import linalg as sla
 
 from ..backend import _HAS_CUPY, cp, cpla
 from ..types import Array
+
+
+@dataclass(frozen=True)
+class DerivativeResult:
+    """Collection of derivative arrays computed from a shared solve/FFT path."""
+
+    values: Dict[int, Array]
+    spline: Array
+
+    def __getitem__(self, order: int) -> Array:
+        return self.values[order]
+
+
+def _normalize_orders(orders: int | Iterable[int]) -> Tuple[int, ...]:
+    """Return a validated, deduplicated derivative-order tuple."""
+    if isinstance(orders, int):
+        normalized = (int(orders),)
+    else:
+        normalized = tuple(sorted({int(order) for order in orders}))
+
+    if not normalized:
+        raise ValueError("At least one derivative order must be requested.")
+    for order in normalized:
+        if order not in (1, 2, 3, 4):
+            raise ValueError("Only 1st/2nd/3rd/4th derivatives are supported.")
+    return normalized
+
+
+def _basis_derivative_matrix(self, order: int):
+    """Return a cached basis derivative matrix when available."""
+    attr_name = f"_B{order}T_f"
+    return getattr(self, attr_name, self.basis.BkT(order))
+
+
+def _spectral_multiplier(self, order: int):
+    """Return the cached spectral multiplier for the requested order."""
+    attr_name = f"_iomega{'' if order == 1 else order}"
+    return getattr(self, attr_name)
+
+
+def _compute_derivative_values(
+    self,
+    P: Array,
+    residual: Array,
+    orders: Tuple[int, ...],
+    *,
+    input_was_numpy: bool,
+):
+    """Compute multiple derivative orders from one spline fit and one transform."""
+    is_complex = bool(np.iscomplexobj(residual))
+
+    if self.use_gpu and _HAS_CUPY:
+        fft = cp.fft
+        if cp.iscomplexobj(residual):
+            R = fft.fft(residual)
+            omega = cp.asarray(self.grid.omega)
+            corrections = {
+                order: fft.ifft(R * (1j * omega) ** order)
+                for order in orders
+            }
+        else:
+            R = fft.rfft(residual)
+            corrections = {
+                order: fft.irfft(R * _spectral_multiplier(self, order), n=self.grid.n)
+                for order in orders
+            }
+
+        values = {
+            order: self._bk.ensure_like_input(
+                _basis_derivative_matrix(self, order) @ P + corrections[order],
+                input_was_numpy,
+            )
+            for order in orders
+        }
+        return values
+
+    if is_complex:
+        R = np.fft.fft(residual)
+        omega = 2.0 * np.pi * np.fft.fftfreq(self.grid.n, d=self.grid.dx)
+        corrections = {
+            order: np.fft.ifft(R * (1j * omega) ** order)
+            for order in orders
+        }
+        return {
+            order: (_basis_derivative_matrix(self, order) @ P + corrections[order]).astype(np.complex128)
+            for order in orders
+        }
+
+    R = np.fft.rfft(residual)
+    corrections = {
+        order: np.fft.irfft(R * _spectral_multiplier(self, order), n=self.grid.n)
+        for order in orders
+    }
+    return {
+        order: (_basis_derivative_matrix(self, order) @ P + corrections[order]).astype(np.float64)
+        for order in orders
+    }
 
 
 def _solve_spline_system(
@@ -93,207 +191,87 @@ def differentiate(
     neumann_bc: Optional[Tuple[Optional[float], Optional[float]]] = None,
 ):
     """Differentiate a sampled signal."""
-    if k not in (1, 2, 3):
-        raise ValueError("Only 1st/2nd/3rd derivatives are supported.")
+    result = derivatives(self, f, orders=(k,), lam=lam, neumann_bc=neumann_bc)
+    return result[k], result.spline
+
+
+def derivatives(
+    self,
+    f: Array,
+    orders: int | Iterable[int],
+    lam: float = 0.0,
+    *,
+    neumann_bc: Optional[Tuple[Optional[float], Optional[float]]] = None,
+) -> DerivativeResult:
+    """Compute any supported derivative-order combination through one shared path."""
+    normalized_orders = _normalize_orders(orders)
 
     timings: dict = {}
     t_total_start = time.perf_counter()
     P, f_spline, residual, input_was_numpy = _solve_spline_system(self, f, lam, neumann_bc)
+    values = _compute_derivative_values(
+        self,
+        P,
+        residual,
+        normalized_orders,
+        input_was_numpy=input_was_numpy,
+    )
+
+    timings["total"] = time.perf_counter() - t_total_start
+    self.last_timing_derivatives = timings
+    if len(normalized_orders) == 1:
+        self.last_timing_diff = timings
+    elif normalized_orders == (1, 2):
+        self.last_timing_d12 = timings
+    elif normalized_orders == (1, 2, 3):
+        self.last_timing_d123 = timings
 
     if self.use_gpu and _HAS_CUPY:
-        fft = cp.fft
-        df_spline = self.basis.BkT(k) @ P
-        R = fft.rfft(residual)
-        if k == 1:
-            corr = fft.irfft(R * self._iomega, n=self.grid.n)
-        elif k == 2:
-            corr = fft.irfft(R * self._iomega2, n=self.grid.n)
-        else:
-            corr = fft.irfft(R * self._iomega3, n=self.grid.n)
-        out = df_spline + corr
-        timings["total"] = time.perf_counter() - t_total_start
-        self.last_timing_diff = timings
-        return self._bk.ensure_like_input(out, input_was_numpy), self._bk.ensure_like_input(
-            f_spline, input_was_numpy
-        )
-
-    if np.iscomplexobj(f):
-        df_spline = self.basis.BkT(k) @ P
-        R = np.fft.fft(residual)
-        omega = 2.0 * np.pi * np.fft.fftfreq(self.grid.n, d=self.grid.dx)
-        corr = np.fft.ifft(R * (1j * omega) ** k)
-        out = (df_spline + corr).astype(np.complex128)
-        timings["total"] = time.perf_counter() - t_total_start
-        self.last_timing_diff = timings
-        return out, f_spline.astype(np.complex128)
-
-    df_spline = self.basis.BkT(k) @ P
-    R = np.fft.rfft(residual)
-    if k == 1:
-        corr = np.fft.irfft(R * self._iomega, n=self.grid.n)
-    elif k == 2:
-        corr = np.fft.irfft(R * self._iomega2, n=self.grid.n)
+        spline = self._bk.ensure_like_input(f_spline, input_was_numpy)
+    elif np.iscomplexobj(f):
+        spline = f_spline.astype(np.complex128)
     else:
-        corr = np.fft.irfft(R * self._iomega3, n=self.grid.n)
-    out = (df_spline + corr).astype(np.float64)
-    timings["total"] = time.perf_counter() - t_total_start
-    self.last_timing_diff = timings
-    return out, f_spline.astype(np.float64)
+        spline = f_spline.astype(np.float64)
+    return DerivativeResult(values=values, spline=spline)
 
-
-def differentiate_1_2(
+def derivatives_batched(
     self,
     f: Array,
+    orders: int | Iterable[int],
     lam: float = 0.0,
     *,
     neumann_bc: Optional[Tuple[Optional[float], Optional[float]]] = None,
-):
-    """Compute the first and second derivatives together."""
-    timings: dict = {}
-    t_total_start = time.perf_counter()
-    P, f_spline, residual, input_was_numpy = _solve_spline_system(self, f, lam, neumann_bc)
-
-    if self.use_gpu and _HAS_CUPY:
-        fft = cp.fft
-        df1_spline = self.basis.BkT(1) @ P
-        df2_spline = self.basis.BkT(2) @ P
-        R = fft.rfft(residual)
-        corr1 = fft.irfft(R * self._iomega, n=self.grid.n)
-        corr2 = fft.irfft(R * self._iomega2, n=self.grid.n)
-        df1 = df1_spline + corr1
-        df2 = df2_spline + corr2
-        timings["total"] = time.perf_counter() - t_total_start
-        self.last_timing_d12 = timings
-        return (
-            self._bk.ensure_like_input(df1, input_was_numpy),
-            self._bk.ensure_like_input(df2, input_was_numpy),
-            self._bk.ensure_like_input(f_spline, input_was_numpy),
-        )
-
-    if np.iscomplexobj(f):
-        df1_spline = self.basis.BkT(1) @ P
-        df2_spline = self.basis.BkT(2) @ P
-        R = np.fft.fft(residual)
-        omega = 2.0 * np.pi * np.fft.fftfreq(self.grid.n, d=self.grid.dx)
-        corr1 = np.fft.ifft(R * (1j * omega))
-        corr2 = np.fft.ifft(R * (1j * omega) ** 2)
-        timings["total"] = time.perf_counter() - t_total_start
-        self.last_timing_d12 = timings
-        return (
-            (df1_spline + corr1).astype(np.complex128),
-            (df2_spline + corr2).astype(np.complex128),
-            f_spline.astype(np.complex128),
-        )
-
-    df1_spline = self._B1T_f @ P
-    df2_spline = self._B2T_f @ P
-    R = np.fft.rfft(residual)
-    corr1 = np.fft.irfft(R * self._iomega, n=self.grid.n)
-    corr2 = np.fft.irfft(R * self._iomega2, n=self.grid.n)
-    timings["total"] = time.perf_counter() - t_total_start
-    self.last_timing_d12 = timings
-    return (
-        (df1_spline + corr1).astype(np.float64),
-        (df2_spline + corr2).astype(np.float64),
-        f_spline.astype(np.float64),
-    )
-
-
-def differentiate_1_2_3(
-    self,
-    f: Array,
-    lam: float = 0.0,
-    *,
-    neumann_bc: Optional[Tuple[Optional[float], Optional[float]]] = None,
-):
-    """Compute the first, second, and third derivatives together."""
-    timings: dict = {}
-    t_total_start = time.perf_counter()
-    P, f_spline, residual, input_was_numpy = _solve_spline_system(self, f, lam, neumann_bc)
-
-    if self.use_gpu and _HAS_CUPY:
-        fft = cp.fft
-        df1_spline = self.basis.BkT(1) @ P
-        df2_spline = self.basis.BkT(2) @ P
-        df3_spline = self.basis.BkT(3) @ P
-        R = fft.rfft(residual)
-        corr1 = fft.irfft(R * self._iomega, n=self.grid.n)
-        corr2 = fft.irfft(R * self._iomega2, n=self.grid.n)
-        corr3 = fft.irfft(R * self._iomega3, n=self.grid.n)
-        timings["total"] = time.perf_counter() - t_total_start
-        self.last_timing_d123 = timings
-        return (
-            self._bk.ensure_like_input(df1_spline + corr1, input_was_numpy),
-            self._bk.ensure_like_input(df2_spline + corr2, input_was_numpy),
-            self._bk.ensure_like_input(df3_spline + corr3, input_was_numpy),
-            self._bk.ensure_like_input(f_spline, input_was_numpy),
-        )
-
-    if np.iscomplexobj(f):
-        df1_spline = self.basis.BkT(1) @ P
-        df2_spline = self.basis.BkT(2) @ P
-        df3_spline = self.basis.BkT(3) @ P
-        R = np.fft.fft(residual)
-        omega = 2.0 * np.pi * np.fft.fftfreq(self.grid.n, d=self.grid.dx)
-        corr1 = np.fft.ifft(R * (1j * omega))
-        corr2 = np.fft.ifft(R * (1j * omega) ** 2)
-        corr3 = np.fft.ifft(R * (1j * omega) ** 3)
-        timings["total"] = time.perf_counter() - t_total_start
-        self.last_timing_d123 = timings
-        return (
-            (df1_spline + corr1).astype(np.complex128),
-            (df2_spline + corr2).astype(np.complex128),
-            (df3_spline + corr3).astype(np.complex128),
-            f_spline.astype(np.complex128),
-        )
-
-    df1_spline = self._B1T_f @ P
-    df2_spline = self._B2T_f @ P
-    df3_spline = self._B3T_f @ P
-    R = np.fft.rfft(residual)
-    corr1 = np.fft.irfft(R * self._iomega, n=self.grid.n)
-    corr2 = np.fft.irfft(R * self._iomega2, n=self.grid.n)
-    corr3 = np.fft.irfft(R * self._iomega3, n=self.grid.n)
-    timings["total"] = time.perf_counter() - t_total_start
-    self.last_timing_d123 = timings
-    return (
-        (df1_spline + corr1).astype(np.float64),
-        (df2_spline + corr2).astype(np.float64),
-        (df3_spline + corr3).astype(np.float64),
-        f_spline.astype(np.float64),
-    )
-
-
-def differentiate_1_2_batched(
-    self,
-    f: Array,
-    lam: float = 0.0,
-    *,
-    neumann_bc: Optional[Tuple[Optional[float], Optional[float]]] = None,
-):
-    """Batched first and second derivatives for multiple signals."""
+) -> DerivativeResult:
+    """Batched multi-order derivatives for arrays with shape ``(n, batch)``."""
     if f.ndim != 2:
         raise ValueError("Expected f with shape (n, batch).")
 
-    df1 = []
-    df2 = []
-    f_spline = []
+    normalized_orders = _normalize_orders(orders)
+    batched_values = {order: [] for order in normalized_orders}
+    splines = []
     for i in range(f.shape[1]):
-        d1_i, d2_i, s_i = differentiate_1_2(self, f[:, i], lam=lam, neumann_bc=neumann_bc)
-        df1.append(d1_i)
-        df2.append(d2_i)
-        f_spline.append(s_i)
+        result_i = derivatives(self, f[:, i], orders=normalized_orders, lam=lam, neumann_bc=neumann_bc)
+        for order in normalized_orders:
+            batched_values[order].append(result_i[order])
+        splines.append(result_i.spline)
 
-    if self.use_gpu and _HAS_CUPY and isinstance(df1[0], cp.ndarray):
+    first_order = normalized_orders[0]
+    if self.use_gpu and _HAS_CUPY and isinstance(batched_values[first_order][0], cp.ndarray):
         xp = cp
     else:
         xp = np
-    return xp.stack(df1, axis=1), xp.stack(df2, axis=1), xp.stack(f_spline, axis=1)
+    return DerivativeResult(
+        values={
+            order: xp.stack(batched_values[order], axis=1)
+            for order in normalized_orders
+        },
+        spline=xp.stack(splines, axis=1),
+    )
 
 
 __all__ = [
+    "DerivativeResult",
     "differentiate",
-    "differentiate_1_2",
-    "differentiate_1_2_3",
-    "differentiate_1_2_batched",
+    "derivatives",
+    "derivatives_batched",
 ]

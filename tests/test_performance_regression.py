@@ -44,15 +44,21 @@ def _measure_apply_time(
     repeats: int = 7,
     inner: int = 10,
 ) -> tuple[float, list[float]]:
-    """Measure median steady-state apply time for ``differentiate_1_2``."""
+    """Measure median steady-state apply time for shared first/second derivatives."""
     for _ in range(warmup):
-        op.differentiate_1_2(f, lam=1.0e-8)
+        if hasattr(op, "derivatives"):
+            op.derivatives(f, orders=(1, 2), lam=1.0e-8)
+        else:
+            op.differentiate_1_2(f, lam=1.0e-8)
 
     samples = []
     for _ in range(repeats):
         start = time.perf_counter()
         for _ in range(inner):
-            op.differentiate_1_2(f, lam=1.0e-8)
+            if hasattr(op, "derivatives"):
+                op.derivatives(f, orders=(1, 2), lam=1.0e-8)
+            else:
+                op.differentiate_1_2(f, lam=1.0e-8)
         samples.append((time.perf_counter() - start) / inner)
     return median(samples), samples
 
@@ -99,12 +105,12 @@ def test_package_time_complexity_tracks_legacy():
     )
 
     assert package_exponent <= legacy_exponent + 0.75, (
-        "Package differentiate_1_2 scales materially worse than legacy. "
+        "Package shared first/second-derivative path scales materially worse than legacy. "
         f"package_times={package_times}, legacy_times={legacy_times}, "
         f"package_exponent={package_exponent:.3f}, legacy_exponent={legacy_exponent:.3f}"
     )
 
     assert package_times[1] <= 3.0 * legacy_times[1], (
-        "Package differentiate_1_2 is too slow at the larger regression size. "
+        "Package shared first/second-derivative path is too slow at the larger regression size. "
         f"package_times={package_times}, legacy_times={legacy_times}"
     )
