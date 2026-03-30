@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from pybspf import BSPF1D, PiecewiseBSPF1D
+from pybspf import BSPF1D, BSPF2D, PiecewiseBSPF1D
 from bspf1d import PiecewiseBSPF1D as LegacyPiecewiseBSPF1D
 from bspf1d import bspf1d as LegacyBSPF1D
 
@@ -175,3 +175,37 @@ def test_piecewise_skips_segments_shorter_than_threshold():
     assert len(pw.segments) == 2
     assert [seg["i0"] for seg in pw.segments] == [1, 10]
     assert [seg["i1"] for seg in pw.segments] == [9, 20]
+
+
+def test_bspf2d_axis_derivatives_match_separable_analytical_field():
+    """! @brief The 2D facade should reproduce separable derivatives along each axis."""
+    x = np.linspace(0.0, 2.0 * np.pi, 65)
+    y = np.linspace(0.0, 1.0, 49)
+    xx, yy = np.meshgrid(x, y)
+    field = np.sin(xx) + yy**3
+
+    op = BSPF2D.from_grids(
+        degree_x=5,
+        degree_y=5,
+        x=x,
+        y=y,
+        use_clustering_x=True,
+        use_clustering_y=True,
+        clustering_factor_x=2.0,
+        clustering_factor_y=2.0,
+    )
+
+    dx_res = op.derivatives_axis(field, axis=1, orders=(1, 2), lam=1.0e-6)
+    dy_res = op.derivatives_axis(field, axis=0, orders=(1, 2), lam=1.0e-6)
+    lap = op.laplacian(field, lam_x=1.0e-6, lam_y=1.0e-6)
+
+    expected_dx = np.cos(xx)
+    expected_dxx = -np.sin(xx)
+    expected_dy = 3.0 * yy**2
+    expected_dyy = 6.0 * yy
+
+    np.testing.assert_allclose(dx_res[1][6:-6, 6:-6], expected_dx[6:-6, 6:-6], atol=8.0e-2, rtol=1.0e-2)
+    np.testing.assert_allclose(dx_res[2][6:-6, 6:-6], expected_dxx[6:-6, 6:-6], atol=1.2e-1, rtol=1.0e-2)
+    np.testing.assert_allclose(dy_res[1][6:-6, 6:-6], expected_dy[6:-6, 6:-6], atol=1.2e-1, rtol=2.0e-2)
+    np.testing.assert_allclose(dy_res[2][6:-6, 6:-6], expected_dyy[6:-6, 6:-6], atol=2.0e-1, rtol=2.0e-2)
+    np.testing.assert_allclose(lap[6:-6, 6:-6], (expected_dxx + expected_dyy)[6:-6, 6:-6], atol=2.5e-1, rtol=2.0e-2)

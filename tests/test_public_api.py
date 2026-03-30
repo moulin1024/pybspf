@@ -6,12 +6,13 @@ from __future__ import annotations
 
 import numpy as np
 
-from pybspf import BSPF1D, DerivativeResult, Grid1D, PiecewiseBSPF1D, bspf1d, integrate_rk4
+from pybspf import BSPF1D, BSPF2D, DerivativeResult, Grid1D, PiecewiseBSPF1D, bspf1d, bspf2d, integrate_rk4
 
 
 def test_public_api_exports():
     """! @brief Verify the top-level package exports the expected symbols."""
     assert BSPF1D is bspf1d
+    assert BSPF2D is bspf2d
     assert DerivativeResult.__name__ == "DerivativeResult"
     assert Grid1D.__name__ == "Grid1D"
     assert PiecewiseBSPF1D.__name__ == "PiecewiseBSPF1D"
@@ -27,6 +28,16 @@ def test_bspf1d_from_grid_smoke():
     assert not hasattr(op, "differentiate_1_2")
     assert not hasattr(op, "differentiate_1_2_3")
     assert not hasattr(op, "differentiate_1_2_batched")
+
+
+def test_bspf2d_from_grids_smoke():
+    """! @brief Ensure the 2D wrapper can be constructed from orthogonal grids."""
+    x = np.linspace(0.0, 1.0, 16)
+    y = np.linspace(-1.0, 1.0, 12)
+    op = BSPF2D.from_grids(degree_x=3, degree_y=3, x=x, y=y)
+    assert isinstance(op, BSPF2D)
+    assert op.x.shape == x.shape
+    assert op.y.shape == y.shape
 
 
 def test_piecewise_constructor_smoke():

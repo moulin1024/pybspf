@@ -9,7 +9,16 @@ being migrated away from the legacy monolithic implementation.
 # can import from ``pybspf`` directly instead of depending on file layout.
 from .grid import Grid1D
 from .ops.differentiation import DerivativeResult
-from .operators import BSPF1D, PiecewiseBSPF1D, bspf1d
+from .operators import BSPF1D, BSPF2D, PiecewiseBSPF1D, bspf1d, bspf2d
 from .time_integration import integrate_rk4
 
-__all__ = ["BSPF1D", "DerivativeResult", "Grid1D", "PiecewiseBSPF1D", "bspf1d", "integrate_rk4"]
+__all__ = [
+    "BSPF1D",
+    "BSPF2D",
+    "DerivativeResult",
+    "Grid1D",
+    "PiecewiseBSPF1D",
+    "bspf1d",
+    "bspf2d",
+    "integrate_rk4",
+]
