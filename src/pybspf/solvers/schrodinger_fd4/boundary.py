@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 import numpy as np
 from scipy.interpolate import make_interp_spline
+from scipy.optimize import brentq
 from scipy.spatial import cKDTree
 
 from .common import circular_theta
@@ -91,6 +92,7 @@ def build_boundary_models_from_samples(
         spline_y = make_interp_spline(t, y, k=BOUNDARY_SPLINE_DEGREE, bc_type="periodic")
         dense_t = np.linspace(0.0, 2.0 * math.pi, n_dense + 1, dtype=np.float64)
         models[side] = {
+            "sample_t": t,
             "spline_x": spline_x,
             "spline_y": spline_y,
             "dense_t": dense_t,
@@ -104,6 +106,74 @@ def build_boundary_models_from_samples(
             "seg_y2": spline_y(dense_t[1:]),
         }
     return models
+
+
+def _deduplicate_parametric_roots(
+    params: np.ndarray,
+    coords: np.ndarray,
+    *,
+    period: float = 2.0 * math.pi,
+    tol: float = 1.0e-10,
+) -> tuple[np.ndarray, np.ndarray]:
+    if params.size == 0:
+        return params, coords
+    wrapped = np.mod(params, period)
+    order = np.argsort(wrapped)
+    wrapped = wrapped[order]
+    coords = coords[order]
+
+    keep_params = [float(wrapped[0])]
+    keep_coords = [float(coords[0])]
+    for param, coord in zip(wrapped[1:], coords[1:]):
+        if abs(float(param) - keep_params[-1]) > tol:
+            keep_params.append(float(param))
+            keep_coords.append(float(coord))
+    if len(keep_params) > 1 and abs(keep_params[-1] - keep_params[0]) < tol:
+        keep_params.pop()
+        keep_coords.pop()
+    return np.asarray(keep_params, dtype=np.float64), np.asarray(keep_coords, dtype=np.float64)
+
+
+def _spline_axis_roots(
+    *,
+    model: dict[str, np.ndarray | object],
+    axis: str,
+    value: float,
+    root_tol: float = 1.0e-12,
+) -> tuple[np.ndarray, np.ndarray]:
+    spline = model["spline_y"] if axis == "x" else model["spline_x"]
+    other_spline = model["spline_x"] if axis == "x" else model["spline_y"]
+    dense_t = np.asarray(model["dense_t"], dtype=np.float64)
+    dense_vals = np.asarray(spline(dense_t), dtype=np.float64) - value
+
+    roots: list[float] = []
+
+    exact = np.nonzero(np.abs(dense_vals) <= root_tol)[0]
+    for idx in exact.tolist():
+        roots.append(float(dense_t[idx]))
+
+    left = dense_vals[:-1]
+    right = dense_vals[1:]
+    brackets = np.nonzero(left * right < 0.0)[0]
+    for idx in brackets.tolist():
+        a = float(dense_t[idx])
+        b = float(dense_t[idx + 1])
+
+        def residual(t: float) -> float:
+            return float(spline(np.asarray([t], dtype=np.float64))[0] - value)
+
+        try:
+            root = brentq(residual, a, b, xtol=1.0e-14, rtol=1.0e-14, maxiter=100)
+        except ValueError:
+            continue
+        roots.append(float(root))
+
+    if not roots:
+        return np.empty(0, dtype=np.float64), np.empty(0, dtype=np.float64)
+
+    root_params = np.asarray(roots, dtype=np.float64)
+    other_coords = np.asarray(other_spline(root_params), dtype=np.float64)
+    return _deduplicate_parametric_roots(root_params, other_coords)
 
 
 def build_boundary_distance_query(
@@ -174,24 +244,12 @@ def build_axis_intersection_tables(
         params: list[np.ndarray] = []
         names: list[np.ndarray] = []
         for side_name, model in boundary_models.items():
-            x1 = np.asarray(model["seg_x1"], dtype=np.float64)
-            x2 = np.asarray(model["seg_x2"], dtype=np.float64)
-            y1 = np.asarray(model["seg_y1"], dtype=np.float64)
-            y2 = np.asarray(model["seg_y2"], dtype=np.float64)
-            t1 = np.asarray(model["seg_t1"], dtype=np.float64)
-            t2 = np.asarray(model["seg_t2"], dtype=np.float64)
-            dy = y2 - y1
-            mask = ((y1 - y) * (y2 - y) <= 0.0) & (np.abs(dy) >= tol)
-            if not np.any(mask):
+            root_params, x_coords = _spline_axis_roots(model=model, axis="x", value=y, root_tol=tol)
+            if root_params.size == 0:
                 continue
-            alpha = (y - y1[mask]) / dy[mask]
-            valid = (alpha >= -1.0e-12) & (alpha <= 1.0 + 1.0e-12)
-            if not np.any(valid):
-                continue
-            alpha = alpha[valid]
-            xs.append(x1[mask][valid] + alpha * (x2[mask][valid] - x1[mask][valid]))
-            params.append(t1[mask][valid] + alpha * (t2[mask][valid] - t1[mask][valid]))
-            names.append(np.full(alpha.size, side_name, dtype=object))
+            xs.append(x_coords)
+            params.append(root_params)
+            names.append(np.full(root_params.size, side_name, dtype=object))
         if xs:
             x_all = np.concatenate(xs)
             p_all = np.concatenate(params)
@@ -205,24 +263,12 @@ def build_axis_intersection_tables(
         params: list[np.ndarray] = []
         names: list[np.ndarray] = []
         for side_name, model in boundary_models.items():
-            x1 = np.asarray(model["seg_x1"], dtype=np.float64)
-            x2 = np.asarray(model["seg_x2"], dtype=np.float64)
-            y1 = np.asarray(model["seg_y1"], dtype=np.float64)
-            y2 = np.asarray(model["seg_y2"], dtype=np.float64)
-            t1 = np.asarray(model["seg_t1"], dtype=np.float64)
-            t2 = np.asarray(model["seg_t2"], dtype=np.float64)
-            dx = x2 - x1
-            mask = ((x1 - x) * (x2 - x) <= 0.0) & (np.abs(dx) >= tol)
-            if not np.any(mask):
+            root_params, y_coords = _spline_axis_roots(model=model, axis="y", value=x, root_tol=tol)
+            if root_params.size == 0:
                 continue
-            alpha = (x - x1[mask]) / dx[mask]
-            valid = (alpha >= -1.0e-12) & (alpha <= 1.0 + 1.0e-12)
-            if not np.any(valid):
-                continue
-            alpha = alpha[valid]
-            ys.append(y1[mask][valid] + alpha * (y2[mask][valid] - y1[mask][valid]))
-            params.append(t1[mask][valid] + alpha * (t2[mask][valid] - t1[mask][valid]))
-            names.append(np.full(alpha.size, side_name, dtype=object))
+            ys.append(y_coords)
+            params.append(root_params)
+            names.append(np.full(root_params.size, side_name, dtype=object))
         if ys:
             y_all = np.concatenate(ys)
             p_all = np.concatenate(params)
@@ -280,27 +326,12 @@ def spline_axis_boundary_intersection(
 ) -> tuple[float, float, float, str, float]:
     di, dj = direction
     candidates: list[tuple[float, float, float, str, float]] = []
-    tol = 1.0e-14
 
     for name, model in boundary_models.items():
-        x1 = np.asarray(model["seg_x1"], dtype=np.float64)
-        x2 = np.asarray(model["seg_x2"], dtype=np.float64)
-        y1 = np.asarray(model["seg_y1"], dtype=np.float64)
-        y2 = np.asarray(model["seg_y2"], dtype=np.float64)
-        t1 = np.asarray(model["seg_t1"], dtype=np.float64)
-        t2 = np.asarray(model["seg_t2"], dtype=np.float64)
-
         if di != 0:
-            dy = y2 - y1
-            mask = ((y1 - y_i) * (y2 - y_i) <= 0.0) & (np.abs(dy) >= tol)
-            if not np.any(mask):
+            root_params, xb = _spline_axis_roots(model=model, axis="x", value=y_i)
+            if root_params.size == 0:
                 continue
-            alpha = (y_i - y1[mask]) / dy[mask]
-            valid = (alpha >= -1.0e-12) & (alpha <= 1.0 + 1.0e-12)
-            if not np.any(valid):
-                continue
-            alpha = alpha[valid]
-            xb = x1[mask][valid] + alpha * (x2[mask][valid] - x1[mask][valid])
             delta = di * (xb - x_i)
             pos = delta > 1.0e-12
             if not np.any(pos):
@@ -308,27 +339,17 @@ def spline_axis_boundary_intersection(
             idx = int(np.argmin(delta[pos]))
             delta_pos = delta[pos]
             xb_pos = xb[pos]
-            alpha_pos = alpha[pos]
-            t1_pos = t1[mask][valid][pos]
-            t2_pos = t2[mask][valid][pos]
             candidates.append((
                 float(delta_pos[idx]),
                 float(xb_pos[idx]),
                 y_i,
                 name,
-                float(t1_pos[idx] + alpha_pos[idx] * (t2_pos[idx] - t1_pos[idx])),
+                float(root_params[pos][idx]),
             ))
         else:
-            dx = x2 - x1
-            mask = ((x1 - x_i) * (x2 - x_i) <= 0.0) & (np.abs(dx) >= tol)
-            if not np.any(mask):
+            root_params, yb = _spline_axis_roots(model=model, axis="y", value=x_i)
+            if root_params.size == 0:
                 continue
-            alpha = (x_i - x1[mask]) / dx[mask]
-            valid = (alpha >= -1.0e-12) & (alpha <= 1.0 + 1.0e-12)
-            if not np.any(valid):
-                continue
-            alpha = alpha[valid]
-            yb = y1[mask][valid] + alpha * (y2[mask][valid] - y1[mask][valid])
             delta = dj * (yb - y_i)
             pos = delta > 1.0e-12
             if not np.any(pos):
@@ -336,15 +357,12 @@ def spline_axis_boundary_intersection(
             idx = int(np.argmin(delta[pos]))
             delta_pos = delta[pos]
             yb_pos = yb[pos]
-            alpha_pos = alpha[pos]
-            t1_pos = t1[mask][valid][pos]
-            t2_pos = t2[mask][valid][pos]
             candidates.append((
                 float(delta_pos[idx]),
                 x_i,
                 float(yb_pos[idx]),
                 name,
-                float(t1_pos[idx] + alpha_pos[idx] * (t2_pos[idx] - t1_pos[idx])),
+                float(root_params[pos][idx]),
             ))
 
     if not candidates:
