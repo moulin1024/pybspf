@@ -1088,10 +1088,7 @@ def assemble_fd4_system_shortley_weller_hybrid(
     lambda_inner = np.asarray(fields["lambda_inner"], dtype=np.float64)
     spacing = float(mesh["spacing"])
 
-    rows: list[int] = []
-    cols: list[int] = []
-    vals: list[float] = []
-    b = np.empty(inner_indices.size, dtype=np.float64)
+    n_rows = inner_indices.size
     n_irregular_x = 0
     n_irregular_y = 0
     perf: dict[str, float | int] = {
@@ -1104,6 +1101,8 @@ def assemble_fd4_system_shortley_weller_hybrid(
 
     lut_pad = np.pad(cart_lookup, ((2, 2), (2, 2)), mode="constant")
     inner_gidx0 = inner_indices - 1
+    b = rhs_all[inner_gidx0].astype(np.float64).copy()
+    diag = lambda_inner.astype(np.float64).copy()
     ii0 = cart_i_all[inner_gidx0] - cart_i_min + 2
     jj0 = cart_j_all[inner_gidx0] - cart_j_min + 2
 
@@ -1127,25 +1126,28 @@ def assemble_fd4_system_shortley_weller_hybrid(
     x_cols_regular = global_to_inner[x_gids]
     y_cols_regular = global_to_inner[y_gids]
 
+    regular_weights = np.asarray([std_far, std_near, std_near, std_far], dtype=np.float64)
+    x_reg_rows = np.nonzero(x_regular)[0].astype(np.int32)
+    y_reg_rows = np.nonzero(y_regular)[0].astype(np.int32)
+    diag[x_reg_rows] -= std_center
+    diag[y_reg_rows] -= std_center
+
+    x_reg_triplet_rows = np.repeat(x_reg_rows, 4)
+    x_reg_triplet_cols = x_cols_regular[x_reg_rows].reshape(-1).astype(np.int32, copy=False)
+    x_reg_triplet_vals = -np.tile(regular_weights, x_reg_rows.size)
+    y_reg_triplet_rows = np.repeat(y_reg_rows, 4)
+    y_reg_triplet_cols = y_cols_regular[y_reg_rows].reshape(-1).astype(np.int32, copy=False)
+    y_reg_triplet_vals = -np.tile(regular_weights, y_reg_rows.size)
+
+    irr_rows: list[int] = []
+    irr_cols: list[int] = []
+    irr_vals: list[float] = []
+
     for row, gidx1 in enumerate(inner_indices.tolist()):
         gidx0 = gidx1 - 1
-        reaction = float(lambda_inner[row])
-        rhs_row = float(rhs_all[gidx0])
-
         x_i = float(x_all[gidx0])
         y_i = float(y_all[gidx0])
-        i0 = int(cart_i_all[gidx0])
-        j0 = int(cart_j_all[gidx0])
-        diag = reaction
-
         if bool(x_regular[row]):
-            x_entries = [
-                (row, std_center),
-                (int(x_cols_regular[row, 0]), std_far),
-                (int(x_cols_regular[row, 1]), std_near),
-                (int(x_cols_regular[row, 2]), std_near),
-                (int(x_cols_regular[row, 3]), std_far),
-            ]
             x_rhs_shift = 0.0
             x_irregular = False
         else:
@@ -1170,15 +1172,15 @@ def assemble_fd4_system_shortley_weller_hybrid(
                 axis_tables=axis_tables,
                 perf=perf,
             )
+            for col, weight in x_entries:
+                if col == row:
+                    diag[row] -= weight
+                else:
+                    irr_rows.append(row)
+                    irr_cols.append(col)
+                    irr_vals.append(-weight)
 
         if bool(y_regular[row]):
-            y_entries = [
-                (row, std_center),
-                (int(y_cols_regular[row, 0]), std_far),
-                (int(y_cols_regular[row, 1]), std_near),
-                (int(y_cols_regular[row, 2]), std_near),
-                (int(y_cols_regular[row, 3]), std_far),
-            ]
             y_rhs_shift = 0.0
             y_irregular = False
         else:
@@ -1203,32 +1205,36 @@ def assemble_fd4_system_shortley_weller_hybrid(
                 axis_tables=axis_tables,
                 perf=perf,
             )
+            for col, weight in y_entries:
+                if col == row:
+                    diag[row] -= weight
+                else:
+                    irr_rows.append(row)
+                    irr_cols.append(col)
+                    irr_vals.append(-weight)
 
-        for col, weight in x_entries:
-            if col == row:
-                diag -= weight
-            else:
-                rows.append(row)
-                cols.append(col)
-                vals.append(-weight)
-        for col, weight in y_entries:
-            if col == row:
-                diag -= weight
-            else:
-                rows.append(row)
-                cols.append(col)
-                vals.append(-weight)
-
-        rhs_row += x_rhs_shift + y_rhs_shift
-        rows.append(row)
-        cols.append(row)
-        vals.append(diag)
-        b[row] = rhs_row
+        b[row] += x_rhs_shift + y_rhs_shift
         n_irregular_x += int(x_irregular)
         n_irregular_y += int(y_irregular)
 
     t_loop = time.perf_counter()
-    A = sparse.csr_matrix((vals, (rows, cols)), shape=(inner_indices.size, inner_indices.size))
+    diag_rows = np.arange(n_rows, dtype=np.int32)
+    diag_cols = diag_rows
+    diag_vals = diag
+
+    if irr_rows:
+        irr_rows_arr = np.asarray(irr_rows, dtype=np.int32)
+        irr_cols_arr = np.asarray(irr_cols, dtype=np.int32)
+        irr_vals_arr = np.asarray(irr_vals, dtype=np.float64)
+        all_rows = np.concatenate((x_reg_triplet_rows, y_reg_triplet_rows, irr_rows_arr, diag_rows))
+        all_cols = np.concatenate((x_reg_triplet_cols, y_reg_triplet_cols, irr_cols_arr, diag_cols))
+        all_vals = np.concatenate((x_reg_triplet_vals, y_reg_triplet_vals, irr_vals_arr, diag_vals))
+    else:
+        all_rows = np.concatenate((x_reg_triplet_rows, y_reg_triplet_rows, diag_rows))
+        all_cols = np.concatenate((x_reg_triplet_cols, y_reg_triplet_cols, diag_cols))
+        all_vals = np.concatenate((x_reg_triplet_vals, y_reg_triplet_vals, diag_vals))
+
+    A = sparse.coo_array((all_vals, (all_rows, all_cols)), shape=(n_rows, n_rows)).tocsr()
     t_csr = time.perf_counter()
     meta = {
         "n_inner": int(np.count_nonzero(pinfo == PINFO_INNER)),
