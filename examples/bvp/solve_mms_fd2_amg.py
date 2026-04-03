@@ -49,6 +49,12 @@ def parse_args() -> argparse.Namespace:
         help="Relative tolerance for BiCGSTAB.",
     )
     parser.add_argument("--maxiter", type=int, default=1000, help="Maximum BiCGSTAB iterations.")
+    parser.add_argument(
+        "--benchmark-rhs",
+        type=int,
+        default=1,
+        help="Number of in-memory RHS solves to benchmark with the same preprocessed operator.",
+    )
     return parser.parse_args()
 
 
@@ -1042,10 +1048,10 @@ def build_axis_fd4_stencil(
     matrix_entries.append((row, center_weight))
     return matrix_entries, rhs_shift, center_weight, True
 
-def assemble_fd4_system_shortley_weller_hybrid(
+def preprocess_fd4_system(
     mesh: dict[str, np.ndarray | float | int],
     fields: dict[str, np.ndarray],
-) -> tuple[sparse.csr_matrix, np.ndarray, np.ndarray, np.ndarray, dict[str, int]]:
+) -> dict[str, object]:
     t0 = time.perf_counter()
     if not np.allclose(fields["co"], 1.0) or not np.allclose(fields["xi_inner"], 1.0):
         raise SystemExit("shortley-weller-4th currently requires the transformed Schrodinger-form data with co=1 and xi=1.")
@@ -1226,35 +1232,84 @@ def assemble_fd4_system_shortley_weller_hybrid(
         irr_rows_arr = np.asarray(irr_rows, dtype=np.int32)
         irr_cols_arr = np.asarray(irr_cols, dtype=np.int32)
         irr_vals_arr = np.asarray(irr_vals, dtype=np.float64)
-        all_rows = np.concatenate((x_reg_triplet_rows, y_reg_triplet_rows, irr_rows_arr, diag_rows))
-        all_cols = np.concatenate((x_reg_triplet_cols, y_reg_triplet_cols, irr_cols_arr, diag_cols))
-        all_vals = np.concatenate((x_reg_triplet_vals, y_reg_triplet_vals, irr_vals_arr, diag_vals))
     else:
-        all_rows = np.concatenate((x_reg_triplet_rows, y_reg_triplet_rows, diag_rows))
-        all_cols = np.concatenate((x_reg_triplet_cols, y_reg_triplet_cols, diag_cols))
-        all_vals = np.concatenate((x_reg_triplet_vals, y_reg_triplet_vals, diag_vals))
+        irr_rows_arr = np.empty(0, dtype=np.int32)
+        irr_cols_arr = np.empty(0, dtype=np.int32)
+        irr_vals_arr = np.empty(0, dtype=np.float64)
 
-    A = sparse.coo_array((all_vals, (all_rows, all_cols)), shape=(n_rows, n_rows)).tocsr()
-    t_csr = time.perf_counter()
+    t_pre = time.perf_counter()
     meta = {
         "n_inner": int(np.count_nonzero(pinfo == PINFO_INNER)),
         "n_boundary": int(np.count_nonzero(pinfo == PINFO_BOUNDARY)),
         "n_ghost": int(np.count_nonzero(pinfo == PINFO_GHOST)),
         "n_unknowns": int(inner_indices.size),
-        "nnz": int(A.nnz),
         "nx_f": int(mesh["nx_f"]),
         "ny_f": int(mesh["ny_f"]),
         "n_irregular_x_rows": n_irregular_x,
         "n_irregular_y_rows": n_irregular_y,
         "boundary_setup_time_s": t_boundary_setup - t0,
         "lookup_setup_time_s": t_lookup - t_boundary_setup,
-        "assembly_loop_time_s": t_loop - t_lookup,
-        "csr_build_time_s": t_csr - t_loop,
-        "assembly_total_time_s": t_csr - t0,
+        "template_build_time_s": t_loop - t_lookup,
+        "preprocess_total_time_s": t_pre - t0,
         "boundary_trace_calls": int(perf["boundary_trace_calls"]),
         "boundary_trace_time_s": float(perf["boundary_trace_time_s"]),
     }
-    return A, b, inner_indices, u_exact, meta
+    return {
+        "n_rows": n_rows,
+        "inner_indices": inner_indices,
+        "u_exact": u_exact,
+        "b_base": b,
+        "diag_rows": diag_rows,
+        "diag_cols": diag_cols,
+        "diag_vals": diag_vals,
+        "x_reg_rows": x_reg_triplet_rows,
+        "x_reg_cols": x_reg_triplet_cols,
+        "x_reg_vals": x_reg_triplet_vals,
+        "y_reg_rows": y_reg_triplet_rows,
+        "y_reg_cols": y_reg_triplet_cols,
+        "y_reg_vals": y_reg_triplet_vals,
+        "irr_rows": irr_rows_arr,
+        "irr_cols": irr_cols_arr,
+        "irr_vals": irr_vals_arr,
+        "meta": meta,
+    }
+
+
+def assemble_fd4_system_from_preprocessed(
+    pre: dict[str, object],
+) -> tuple[sparse.csr_matrix, np.ndarray, np.ndarray, np.ndarray, dict[str, int | float]]:
+    t0 = time.perf_counter()
+    n_rows = int(pre["n_rows"])
+    b = np.asarray(pre["b_base"], dtype=np.float64).copy()
+
+    all_rows = np.concatenate((
+        np.asarray(pre["x_reg_rows"], dtype=np.int32),
+        np.asarray(pre["y_reg_rows"], dtype=np.int32),
+        np.asarray(pre["irr_rows"], dtype=np.int32),
+        np.asarray(pre["diag_rows"], dtype=np.int32),
+    ))
+    all_cols = np.concatenate((
+        np.asarray(pre["x_reg_cols"], dtype=np.int32),
+        np.asarray(pre["y_reg_cols"], dtype=np.int32),
+        np.asarray(pre["irr_cols"], dtype=np.int32),
+        np.asarray(pre["diag_cols"], dtype=np.int32),
+    ))
+    all_vals = np.concatenate((
+        np.asarray(pre["x_reg_vals"], dtype=np.float64),
+        np.asarray(pre["y_reg_vals"], dtype=np.float64),
+        np.asarray(pre["irr_vals"], dtype=np.float64),
+        np.asarray(pre["diag_vals"], dtype=np.float64),
+    ))
+    t_triplet = time.perf_counter()
+    A = sparse.coo_array((all_vals, (all_rows, all_cols)), shape=(n_rows, n_rows)).tocsr()
+    t_csr = time.perf_counter()
+
+    meta = dict(pre["meta"])
+    meta["triplet_concat_time_s"] = t_triplet - t0
+    meta["csr_build_time_s"] = t_csr - t_triplet
+    meta["online_assembly_time_s"] = t_csr - t0
+    meta["nnz"] = int(A.nnz)
+    return A, b, np.asarray(pre["inner_indices"], dtype=np.int32), np.asarray(pre["u_exact"], dtype=np.float64), meta
 
 
 def scatter_field(mesh: dict[str, np.ndarray | float | int], values: np.ndarray) -> np.ndarray:
@@ -1295,6 +1350,47 @@ def solve_with_amg_bicgstab(A: sparse.csr_matrix, b: np.ndarray, *, tol: float, 
     return x, history, stats
 
 
+def build_amg_hierarchy(A: sparse.csr_matrix) -> tuple[object, dict[str, float | int]]:
+    start = time.perf_counter()
+    ml = pyamg.ruge_stuben_solver(A)
+    setup_time = time.perf_counter() - start
+    stats = {
+        "setup_time_s": setup_time,
+        "levels": len(ml.levels),
+        "operator_complexity": float(ml.operator_complexity()),
+        "grid_complexity": float(ml.grid_complexity()),
+    }
+    return ml, stats
+
+
+def solve_with_existing_amg(
+    A: sparse.csr_matrix,
+    b: np.ndarray,
+    ml: object,
+    *,
+    tol: float,
+    maxiter: int,
+) -> tuple[np.ndarray, list[float], dict[str, float | int]]:
+    history: list[float] = []
+    start = time.perf_counter()
+    x, info = spla.bicgstab(
+        A,
+        b,
+        M=ml.aspreconditioner(),
+        rtol=tol,
+        atol=0.0,
+        maxiter=maxiter,
+        callback=make_residual_callback(A, b, history),
+    )
+    solve_time = time.perf_counter() - start
+    stats = {
+        "info": int(info),
+        "iterations": len(history),
+        "solve_time_s": solve_time,
+    }
+    return x, history, stats
+
+
 def main() -> int:
     args = parse_args()
     t0 = time.perf_counter()
@@ -1304,9 +1400,57 @@ def main() -> int:
     t_data = time.perf_counter()
 
     solver_label = "FD4+PyAMG-BiCGSTAB"
-    A, b, active_indices, u_exact, meta = assemble_fd4_system_shortley_weller_hybrid(mesh, fields)
+    pre = preprocess_fd4_system(mesh, fields)
+    t_pre = time.perf_counter()
+    A, b, active_indices, u_exact, meta = assemble_fd4_system_from_preprocessed(pre)
     t_assembly = time.perf_counter()
-    x, history, stats = solve_with_amg_bicgstab(A, b, tol=args.tol, maxiter=args.maxiter)
+    if args.benchmark_rhs <= 1:
+        x, history, stats = solve_with_amg_bicgstab(A, b, tol=args.tol, maxiter=args.maxiter)
+        benchmark_stats: dict[str, float | int] | None = None
+    else:
+        ml, amg_stats = build_amg_hierarchy(A)
+        # Repeat the same linear system solve to isolate the benefit of
+        # reusing preprocessing and the AMG hierarchy inside one process.
+        rhs_list = [b] * args.benchmark_rhs
+
+        solve_times: list[float] = []
+        iterations: list[int] = []
+        infos: list[int] = []
+        histories: list[list[float]] = []
+        x = np.zeros_like(b)
+        for rhs_k in rhs_list:
+            x, history_k, stats_k = solve_with_existing_amg(A, rhs_k, ml, tol=args.tol, maxiter=args.maxiter)
+            solve_times.append(float(stats_k["solve_time_s"]))
+            iterations.append(int(stats_k["iterations"]))
+            infos.append(int(stats_k["info"]))
+            histories.append(history_k)
+        history = histories[0] if histories else []
+        stats = {
+            "info": infos[0] if infos else 0,
+            "iterations": iterations[0] if iterations else 0,
+            "setup_time_s": float(amg_stats["setup_time_s"]),
+            "solve_time_s": solve_times[0] if solve_times else 0.0,
+            "total_time_s": float(amg_stats["setup_time_s"]) + (solve_times[0] if solve_times else 0.0),
+            "levels": int(amg_stats["levels"]),
+            "operator_complexity": float(amg_stats["operator_complexity"]),
+            "grid_complexity": float(amg_stats["grid_complexity"]),
+        }
+        benchmark_stats = {
+            "n_rhs": args.benchmark_rhs,
+            "amg_setup_time_s": float(amg_stats["setup_time_s"]),
+            "solve_time_first_s": solve_times[0] if solve_times else 0.0,
+            "solve_time_mean_s": float(np.mean(solve_times)) if solve_times else 0.0,
+            "solve_time_min_s": float(np.min(solve_times)) if solve_times else 0.0,
+            "solve_time_max_s": float(np.max(solve_times)) if solve_times else 0.0,
+            "iterations_mean": float(np.mean(iterations)) if iterations else 0.0,
+            "iterations_max": max(iterations) if iterations else 0,
+            "all_info_zero": int(all(info == 0 for info in infos)),
+            "amortized_total_per_rhs_s": (
+                (t_pre - t_data) + (t_assembly - t_pre) + float(amg_stats["setup_time_s"]) + float(np.sum(solve_times))
+            ) / float(args.benchmark_rhs)
+            if solve_times
+            else 0.0,
+        }
     t_solve = time.perf_counter()
     u_num = np.asarray(u_exact, dtype=np.float64).copy()
     u_num[np.asarray(active_indices, dtype=np.int32) - 1] = x
@@ -1330,7 +1474,8 @@ def main() -> int:
     print(f"{solver_label} total time [s]            : {stats['total_time_s']:.6e}")
     print(f"{solver_label} mesh load time [s]        : {t_mesh - t0:.6e}")
     print(f"{solver_label} data load time [s]        : {t_data - t_mesh:.6e}")
-    print(f"{solver_label} assembly wall time [s]    : {t_assembly - t_data:.6e}")
+    print(f"{solver_label} preprocessing time [s]   : {t_pre - t_data:.6e}")
+    print(f"{solver_label} online assembly time [s] : {t_assembly - t_pre:.6e}")
     print(f"{solver_label} end-to-end time [s]       : {t_solve - t0:.6e}")
     print(f"{solver_label} AMG levels                : {stats['levels']}")
     print(f"{solver_label} operator complexity       : {stats['operator_complexity']:.6e}")
@@ -1343,13 +1488,27 @@ def main() -> int:
         print(f"Irregular y-closure rows                : {meta['n_irregular_y_rows']}")
         print(f"Boundary setup time [s]                : {meta['boundary_setup_time_s']:.6e}")
         print(f"Lookup setup time [s]                  : {meta['lookup_setup_time_s']:.6e}")
-        print(f"Assembly loop time [s]                 : {meta['assembly_loop_time_s']:.6e}")
+        print(f"Template build time [s]                : {meta['template_build_time_s']:.6e}")
+        print(f"Preprocess total time [s]              : {meta['preprocess_total_time_s']:.6e}")
+        print(f"Triplet concat time [s]                : {meta['triplet_concat_time_s']:.6e}")
         print(f"CSR build time [s]                     : {meta['csr_build_time_s']:.6e}")
+        print(f"Online assembly time [s]               : {meta['online_assembly_time_s']:.6e}")
         print(f"Boundary trace calls                   : {meta['boundary_trace_calls']}")
         print(f"Boundary trace time [s]                : {meta['boundary_trace_time_s']:.6e}")
     print(f"Boundary support points                 : {meta['n_boundary']}")
     print(f"Ghost support points                    : {meta['n_ghost']}")
     print(f"Matrix nnz                              : {meta['nnz']}")
+    if benchmark_stats is not None:
+        print(f"Benchmark RHS count                     : {benchmark_stats['n_rhs']}")
+        print(f"Benchmark AMG setup time [s]           : {benchmark_stats['amg_setup_time_s']:.6e}")
+        print(f"Benchmark first solve time [s]         : {benchmark_stats['solve_time_first_s']:.6e}")
+        print(f"Benchmark mean solve time [s]          : {benchmark_stats['solve_time_mean_s']:.6e}")
+        print(f"Benchmark min solve time [s]           : {benchmark_stats['solve_time_min_s']:.6e}")
+        print(f"Benchmark max solve time [s]           : {benchmark_stats['solve_time_max_s']:.6e}")
+        print(f"Benchmark mean iterations              : {benchmark_stats['iterations_mean']:.6f}")
+        print(f"Benchmark max iterations               : {benchmark_stats['iterations_max']}")
+        print(f"Benchmark all converged                : {benchmark_stats['all_info_zero']}")
+        print(f"Benchmark amortized per RHS [s]        : {benchmark_stats['amortized_total_per_rhs_s']:.6e}")
 
     if args.plot or args.save_plots:
         import matplotlib.pyplot as plt
