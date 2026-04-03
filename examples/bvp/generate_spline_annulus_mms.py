@@ -21,6 +21,7 @@ DISTRICT_CLOSED = 814
 DISTRICT_WALL = 817
 
 TWO_PI = 2.0 * math.pi
+BOUNDARY_SPLINE_DEGREE = 4
 
 
 def fortran_nint(value: float) -> int:
@@ -109,8 +110,8 @@ def deformed_ellipse(theta: np.ndarray, *, a: float, b: float, eps_c: float, eps
 
 
 def build_boundary(theta: np.ndarray, x: np.ndarray, y: np.ndarray, *, name: str, n_dense: int = 4096) -> SplineBoundary:
-    spline_x = make_interp_spline(theta, x, k=3, bc_type="periodic")
-    spline_y = make_interp_spline(theta, y, k=3, bc_type="periodic")
+    spline_x = make_interp_spline(theta, x, k=BOUNDARY_SPLINE_DEGREE, bc_type="periodic")
+    spline_y = make_interp_spline(theta, y, k=BOUNDARY_SPLINE_DEGREE, bc_type="periodic")
     dense_t = np.linspace(0.0, TWO_PI, n_dense + 1, dtype=np.float64)
     dense_x = spline_x(dense_t)
     dense_y = spline_y(dense_t)

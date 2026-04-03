@@ -8,12 +8,27 @@ from dataclasses import dataclass
 from typing import Callable, Optional
 
 import numpy as np
-from scipy.fft import dstn, idstn
+from scipy.fft import dst, dstn, idst
+from scipy.fft import idstn
 from scipy import linalg as sla
 
 from ..operators.bspf1d import BSPF1D
 
 RHSInput = np.ndarray | Callable[[np.ndarray, np.ndarray], np.ndarray]
+
+
+@dataclass(frozen=True)
+class PODLayerBasis2D:
+    """POD-compressed zero-trace layer basis built from teacher corrector snapshots."""
+
+    solution_basis: np.ndarray
+    laplacian_basis: np.ndarray
+    singular_values: np.ndarray
+    n_snapshots: int
+
+    @property
+    def rank(self) -> int:
+        return int(self.singular_values.size)
 
 
 def _boundary_value_constraint(op: BSPF1D) -> np.ndarray:
@@ -146,6 +161,32 @@ def _uniform_spacing(grid: np.ndarray, *, name: str) -> float:
     return h
 
 
+def _stable_sinh_ratio(alpha: np.ndarray, frac: np.ndarray) -> np.ndarray:
+    """Return ``sinh(alpha * frac) / sinh(alpha)`` stably for ``0 <= frac <= 1``."""
+    alpha_arr = np.asarray(alpha, dtype=np.float64)[None, :]
+    frac_arr = np.asarray(frac, dtype=np.float64)[:, None]
+    exp_tail = np.exp(-alpha_arr * (1.0 - frac_arr))
+    numerator = 1.0 - np.exp(-2.0 * alpha_arr * frac_arr)
+    denominator = 1.0 - np.exp(-2.0 * alpha_arr)
+    return exp_tail * (numerator / denominator)
+
+
+def _left_layer_profile(s: np.ndarray, power: int) -> tuple[np.ndarray, np.ndarray]:
+    """Return a left boundary-layer profile and its second derivative in normalized coordinates."""
+    s_arr = np.asarray(s, dtype=np.float64)
+    values = s_arr * (1.0 - s_arr) ** power
+    second = power * (1.0 - s_arr) ** (power - 2) * ((power + 1.0) * s_arr - 2.0)
+    return values, second
+
+
+def _right_layer_profile(s: np.ndarray, power: int) -> tuple[np.ndarray, np.ndarray]:
+    """Return a right boundary-layer profile and its second derivative in normalized coordinates."""
+    s_arr = np.asarray(s, dtype=np.float64)
+    values = s_arr**power * (1.0 - s_arr)
+    second = power * s_arr ** (power - 2) * ((power - 1.0) - (power + 1.0) * s_arr)
+    return values, second
+
+
 
 def _negative_discrete_laplacian(field: np.ndarray, *, hx: float, hy: float) -> np.ndarray:
     """Return the 5-point ``-Delta_h`` of ``field`` on the interior grid."""
@@ -245,6 +286,25 @@ def _normalize_trace(
     return values
 
 
+def _validate_dirichlet_corners(
+    left_values: np.ndarray,
+    right_values: np.ndarray,
+    bottom_values: np.ndarray,
+    top_values: np.ndarray,
+) -> None:
+    """Validate that the four Dirichlet traces agree at the rectangle corners."""
+    corners_from_vertical = np.array(
+        [[left_values[0], left_values[-1]], [right_values[0], right_values[-1]]],
+        dtype=np.float64,
+    )
+    corners_from_horizontal = np.array(
+        [[bottom_values[0], top_values[0]], [bottom_values[-1], top_values[-1]]],
+        dtype=np.float64,
+    )
+    if not np.allclose(corners_from_vertical, corners_from_horizontal, rtol=0.0, atol=1.0e-10):
+        raise ValueError("Dirichlet boundary traces must agree at the four corners.")
+
+
 def _fit_trace_coefficients(op: BSPF1D, values: np.ndarray) -> np.ndarray:
     """Project one sampled boundary trace into the 1D spline basis with exact endpoints."""
     constraint = _boundary_value_constraint(op)
@@ -319,6 +379,7 @@ class Poisson2DDirichletSolver:
         self._integration_weights_y = _integration_weights(self.y_model)
         self._moment_projector_x = self._basis_x * self._integration_weights_x
         self._moment_projector_y = self._basis_y * self._integration_weights_y
+        self._layer_basis_cache: dict[tuple[int, int, int, int, int], tuple[np.ndarray, np.ndarray]] = {}
 
     @classmethod
     def from_grids(
@@ -429,17 +490,7 @@ class Poisson2DDirichletSolver:
         right_values = _normalize_trace(right, self.y, name="right")
         bottom_values = _normalize_trace(bottom, self.x, name="bottom")
         top_values = _normalize_trace(top, self.x, name="top")
-
-        corners_from_vertical = np.array(
-            [[left_values[0], left_values[-1]], [right_values[0], right_values[-1]]],
-            dtype=np.float64,
-        )
-        corners_from_horizontal = np.array(
-            [[bottom_values[0], top_values[0]], [bottom_values[-1], top_values[-1]]],
-            dtype=np.float64,
-        )
-        if not np.allclose(corners_from_vertical, corners_from_horizontal, rtol=0.0, atol=1.0e-10):
-            raise ValueError("Dirichlet boundary traces must agree at the four corners.")
+        _validate_dirichlet_corners(left_values, right_values, bottom_values, top_values)
 
         left_coeffs = _fit_trace_coefficients(self.y_model, left_values)
         right_coeffs = _fit_trace_coefficients(self.y_model, right_values)
@@ -487,17 +538,7 @@ class Poisson2DDirichletSolver:
         right_values = _normalize_trace(right, self.y, name="right")
         bottom_values = _normalize_trace(bottom, self.x, name="bottom")
         top_values = _normalize_trace(top, self.x, name="top")
-
-        corners_from_vertical = np.array(
-            [[left_values[0], left_values[-1]], [right_values[0], right_values[-1]]],
-            dtype=np.float64,
-        )
-        corners_from_horizontal = np.array(
-            [[bottom_values[0], top_values[0]], [bottom_values[-1], top_values[-1]]],
-            dtype=np.float64,
-        )
-        if not np.allclose(corners_from_vertical, corners_from_horizontal, rtol=0.0, atol=1.0e-10):
-            raise ValueError("Dirichlet boundary traces must agree at the four corners.")
+        _validate_dirichlet_corners(left_values, right_values, bottom_values, top_values)
 
         left_tangent_yy  = self.y_model.derivatives(left_values,   orders=2)[2]
         right_tangent_yy = self.y_model.derivatives(right_values,  orders=2)[2]
@@ -521,6 +562,394 @@ class Poisson2DDirichletSolver:
             top_second,
         )
 
+    def build_harmonic_extension(
+        self,
+        *,
+        left: float | np.ndarray | Callable[[np.ndarray], np.ndarray],
+        right: float | np.ndarray | Callable[[np.ndarray], np.ndarray],
+        bottom: float | np.ndarray | Callable[[np.ndarray], np.ndarray],
+        top: float | np.ndarray | Callable[[np.ndarray], np.ndarray],
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """Build a rectangle-spectral harmonic lift that matches the boundary exactly."""
+        left_values = _normalize_trace(left, self.y, name="left")
+        right_values = _normalize_trace(right, self.y, name="right")
+        bottom_values = _normalize_trace(bottom, self.x, name="bottom")
+        top_values = _normalize_trace(top, self.x, name="top")
+        _validate_dirichlet_corners(left_values, right_values, bottom_values, top_values)
+
+        xx, yy = np.meshgrid(self.x, self.y)
+        x0 = float(self.x[0])
+        x1 = float(self.x[-1])
+        y0 = float(self.y[0])
+        y1 = float(self.y[-1])
+        lx = x1 - x0
+        ly = y1 - y0
+        sx = (xx - x0) / lx
+        ty = (yy - y0) / ly
+        corner_bl = float(left_values[0])
+        corner_br = float(right_values[0])
+        corner_tl = float(left_values[-1])
+        corner_tr = float(right_values[-1])
+        corner_patch = (
+            (1.0 - sx) * (1.0 - ty) * corner_bl
+            + sx * (1.0 - ty) * corner_br
+            + (1.0 - sx) * ty * corner_tl
+            + sx * ty * corner_tr
+        )
+
+        left_residual = left_values - corner_patch[:, 0]
+        right_residual = right_values - corner_patch[:, -1]
+        bottom_residual = bottom_values - corner_patch[0, :]
+        top_residual = top_values - corner_patch[-1, :]
+
+        harmonic_sides = np.zeros_like(corner_patch)
+        nx_int = self.x.size - 2
+        ny_int = self.y.size - 2
+
+        if nx_int > 0:
+            x_modes = np.arange(1, nx_int + 1, dtype=np.float64)
+            x_decay = np.pi * x_modes / lx
+            x_alpha = x_decay * ly
+            y_int = self.y[1:-1] - y0
+
+            bottom_coeffs = dst(bottom_residual[1:-1], type=1, norm="ortho")
+            bottom_decay = _stable_sinh_ratio(x_alpha, (ly - y_int) / ly)
+            harmonic_sides[1:-1, 1:-1] += idst(bottom_decay * bottom_coeffs[None, :], type=1, norm="ortho", axis=1)
+
+            top_coeffs = dst(top_residual[1:-1], type=1, norm="ortho")
+            top_decay = _stable_sinh_ratio(x_alpha, y_int / ly)
+            harmonic_sides[1:-1, 1:-1] += idst(top_decay * top_coeffs[None, :], type=1, norm="ortho", axis=1)
+
+        if ny_int > 0:
+            y_modes = np.arange(1, ny_int + 1, dtype=np.float64)
+            y_decay = np.pi * y_modes / ly
+            y_alpha = y_decay * lx
+            x_int = self.x[1:-1] - x0
+
+            left_coeffs = dst(left_residual[1:-1], type=1, norm="ortho")
+            left_decay = _stable_sinh_ratio(y_alpha, (lx - x_int) / lx)
+            harmonic_sides[1:-1, 1:-1] += idst(left_decay * left_coeffs[None, :], type=1, norm="ortho", axis=1).T
+
+            right_coeffs = dst(right_residual[1:-1], type=1, norm="ortho")
+            right_decay = _stable_sinh_ratio(y_alpha, x_int / lx)
+            harmonic_sides[1:-1, 1:-1] += idst(right_decay * right_coeffs[None, :], type=1, norm="ortho", axis=1).T
+
+        harmonic_lift = corner_patch + harmonic_sides
+        harmonic_lift[:, 0] = left_values
+        harmonic_lift[:, -1] = right_values
+        harmonic_lift[0, :] = bottom_values
+        harmonic_lift[-1, :] = top_values
+
+        return harmonic_lift, corner_patch, harmonic_sides, np.zeros_like(harmonic_lift)
+
+    def build_zero_boundary_strip_correction(
+        self,
+        rhs_grid: np.ndarray,
+        *,
+        n_strip: int,
+        strip_weight: float = 1.0,
+        smoothness_weight: float = 1.0,
+        ridge: float = 1.0e-10,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Build a zero-trace boundary-layer correction from POD-compressed strip responses."""
+        rhs_arr = np.asarray(rhs_grid, dtype=np.float64)
+        if rhs_arr.shape != (self.y.size, self.x.size):
+            raise ValueError(
+                f"rhs_grid shape {rhs_arr.shape} must match (len(y), len(x))=({self.y.size}, {self.x.size})."
+            )
+        if n_strip <= 0:
+            return np.zeros_like(rhs_arr), np.zeros_like(rhs_arr)
+
+        nx = self.x.size
+        ny = self.y.size
+        strip_defs = [
+            (slice(None), slice(1, n_strip + 1)),
+            (slice(None), slice(nx - 1 - n_strip, nx - 1)),
+            (slice(1, n_strip + 1), slice(None)),
+            (slice(ny - 1 - n_strip, ny - 1), slice(None)),
+        ]
+        basis_solution, basis_forcing = self._get_operator_adapted_layer_basis(
+            n_strip=n_strip,
+            max_tangent_modes=8,
+            max_normal_samples=4,
+            max_rank=16,
+            energy_tol=0.999,
+        )
+
+        strip_index_blocks = [np.ravel_multi_index(np.indices(rhs_arr[sy, sx_sel].shape), rhs_arr[sy, sx_sel].shape) for sy, sx_sel in []]
+        strip_indices = []
+        for sy, sx_sel in strip_defs:
+            yy_idx, xx_idx = np.meshgrid(np.arange(ny)[sy], np.arange(nx)[sx_sel], indexing="ij")
+            strip_indices.append((yy_idx * nx + xx_idx).reshape(-1))
+        strip_indices_flat = np.concatenate(strip_indices)
+
+        A = basis_forcing[strip_indices_flat, :]
+        b = rhs_arr.reshape(-1)[strip_indices_flat]
+        gram = strip_weight * (A.T @ A) + (smoothness_weight + ridge) * np.eye(A.shape[1], dtype=np.float64)
+        rhs_vec = strip_weight * (A.T @ b)
+        coeffs = np.linalg.solve(gram, rhs_vec)
+
+        correction = (basis_solution @ coeffs).reshape(rhs_arr.shape)
+        laplacian = (basis_forcing @ coeffs).reshape(rhs_arr.shape)
+        return correction, laplacian
+
+    def build_pod_layer_basis_from_02(
+        self,
+        training_samples: list[dict[str, object]],
+        *,
+        rank: Optional[int] = None,
+        energy_tol: float = 0.999,
+        second_normal_weight: float = 100.0,
+        laplacian_weight: float = 1.0e-6,
+        ridge: float = 1.0e-10,
+        n_strip: int = 0,
+        strip_weight: float = 1.0,
+    ) -> PODLayerBasis2D:
+        """Build a POD layer basis from full `02` teacher corrector snapshots.
+
+        Each training sample is a dict with keys:
+        `rhs`, `left`, `right`, `bottom`, `top`.
+        The returned basis is zero-trace by construction.
+        """
+        if not training_samples:
+            raise ValueError("training_samples must contain at least one sample.")
+        if rank is not None and rank < 1:
+            raise ValueError("rank must be positive when provided.")
+        if not (0.0 < energy_tol <= 1.0):
+            raise ValueError("energy_tol must lie in (0, 1].")
+
+        layer_snapshots = []
+        laplacian_snapshots = []
+        for idx, sample in enumerate(training_samples):
+            missing = {"rhs", "left", "right", "bottom", "top"} - set(sample.keys())
+            if missing:
+                raise ValueError(f"training_samples[{idx}] is missing keys: {sorted(missing)}")
+
+            left_values = _normalize_trace(sample["left"], self.y, name=f"left[{idx}]")
+            right_values = _normalize_trace(sample["right"], self.y, name=f"right[{idx}]")
+            bottom_values = _normalize_trace(sample["bottom"], self.x, name=f"bottom[{idx}]")
+            top_values = _normalize_trace(sample["top"], self.x, name=f"top[{idx}]")
+
+            teacher_corrector, teacher_laplacian, _ = self.build_boundary_corrector_02(
+                sample["rhs"],
+                left=left_values,
+                right=right_values,
+                bottom=bottom_values,
+                top=top_values,
+                second_normal_weight=second_normal_weight,
+                laplacian_weight=laplacian_weight,
+                ridge=ridge,
+                n_strip=n_strip,
+                strip_weight=strip_weight,
+            )
+            harmonic_lift, _, _, _ = self.build_harmonic_extension(
+                left=left_values,
+                right=right_values,
+                bottom=bottom_values,
+                top=top_values,
+            )
+            raw_layer = teacher_corrector - harmonic_lift
+            residual_trace_harmonic, _, _, _ = self.build_harmonic_extension(
+                left=raw_layer[:, 0],
+                right=raw_layer[:, -1],
+                bottom=raw_layer[0, :],
+                top=raw_layer[-1, :],
+            )
+            zero_trace_layer = raw_layer - residual_trace_harmonic
+            zero_trace_layer[:, 0] = 0.0
+            zero_trace_layer[:, -1] = 0.0
+            zero_trace_layer[0, :] = 0.0
+            zero_trace_layer[-1, :] = 0.0
+
+            layer_snapshots.append(zero_trace_layer.reshape(-1))
+            laplacian_snapshots.append(teacher_laplacian.reshape(-1))
+
+        snapshot_matrix = np.column_stack(layer_snapshots)
+        laplacian_matrix = np.column_stack(laplacian_snapshots)
+        u, singular_values, vt = np.linalg.svd(snapshot_matrix, full_matrices=False)
+        if singular_values.size == 0 or singular_values[0] <= 0.0:
+            raise ValueError("Teacher snapshots are degenerate; cannot build POD layer basis.")
+
+        if rank is None:
+            cumulative_energy = np.cumsum(singular_values**2) / np.sum(singular_values**2)
+            rank_eff = int(np.searchsorted(cumulative_energy, energy_tol) + 1)
+        else:
+            rank_eff = int(rank)
+        rank_eff = min(rank_eff, singular_values.size)
+
+        basis_solution = u[:, :rank_eff]
+        combo = vt[:rank_eff, :].T / singular_values[:rank_eff][None, :]
+        basis_laplacian = laplacian_matrix @ combo
+        return PODLayerBasis2D(
+            solution_basis=basis_solution,
+            laplacian_basis=basis_laplacian,
+            singular_values=singular_values[:rank_eff].copy(),
+            n_snapshots=len(training_samples),
+        )
+
+    def solve_harmonic_pod_02(
+        self,
+        rhs: RHSInput,
+        *,
+        pod_basis: PODLayerBasis2D,
+        left: float | np.ndarray | Callable[[np.ndarray], np.ndarray],
+        right: float | np.ndarray | Callable[[np.ndarray], np.ndarray],
+        bottom: float | np.ndarray | Callable[[np.ndarray], np.ndarray],
+        top: float | np.ndarray | Callable[[np.ndarray], np.ndarray],
+        n_strip: int = 0,
+        strip_weight: float = 1.0,
+        ridge: float = 1.0e-10,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """Solve with harmonic trace lift + POD teacher-layer + zero-boundary DST bulk."""
+        rhs_grid = _sample_rhs_on_grid(rhs, self.x, self.y)
+        harmonic_lift, _, _, _ = self.build_harmonic_extension(
+            left=left,
+            right=right,
+            bottom=bottom,
+            top=top,
+        )
+
+        layer = np.zeros_like(rhs_grid)
+        layer_laplacian = np.zeros_like(rhs_grid)
+        if pod_basis.rank > 0 and n_strip > 0:
+            nx = self.x.size
+            ny = self.y.size
+            strip_defs = [
+                (slice(None), slice(1, n_strip + 1)),
+                (slice(None), slice(nx - 1 - n_strip, nx - 1)),
+                (slice(1, n_strip + 1), slice(None)),
+                (slice(ny - 1 - n_strip, ny - 1), slice(None)),
+            ]
+            strip_indices = []
+            for sy, sx_sel in strip_defs:
+                y_idx = np.arange(ny)[sy]
+                x_idx = np.arange(nx)[sx_sel]
+                yy_idx, xx_idx = np.meshgrid(y_idx, x_idx, indexing="ij")
+                strip_indices.append((yy_idx * nx + xx_idx).reshape(-1))
+            strip_indices_flat = np.concatenate(strip_indices)
+
+            a = pod_basis.laplacian_basis[strip_indices_flat, :]
+            b = rhs_grid.reshape(-1)[strip_indices_flat]
+            gram = strip_weight * (a.T @ a) + ridge * np.eye(pod_basis.rank, dtype=np.float64)
+            rhs_vec = strip_weight * (a.T @ b)
+            coeffs = np.linalg.solve(gram, rhs_vec)
+            layer = (pod_basis.solution_basis @ coeffs).reshape(rhs_grid.shape)
+            layer_laplacian = (pod_basis.laplacian_basis @ coeffs).reshape(rhs_grid.shape)
+            layer[:, 0] = 0.0
+            layer[:, -1] = 0.0
+            layer[0, :] = 0.0
+            layer[-1, :] = 0.0
+
+        hx = _uniform_spacing(self.x, name="x")
+        hy = _uniform_spacing(self.y, name="y")
+        remainder = np.zeros_like(rhs_grid)
+        corrected_rhs = rhs_grid - layer_laplacian
+        if self.x.size > 2 and self.y.size > 2:
+            remainder[1:-1, 1:-1] = _solve_zero_dirichlet_poisson_dst(
+                corrected_rhs[1:-1, 1:-1],
+                hx=hx,
+                hy=hy,
+            )
+
+        lift = harmonic_lift + layer
+        solution = lift + remainder
+        return solution, lift, remainder, harmonic_lift, layer
+
+    def _get_operator_adapted_layer_basis(
+        self,
+        *,
+        n_strip: int,
+        max_tangent_modes: int,
+        max_normal_samples: int,
+        max_rank: int,
+        energy_tol: float,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Return POD-compressed zero-boundary strip-response bases for solution and forcing."""
+        cache_key = (n_strip, max_tangent_modes, max_normal_samples, max_rank, int(round(energy_tol * 1000.0)))
+        if cache_key in self._layer_basis_cache:
+            return self._layer_basis_cache[cache_key]
+
+        nx = self.x.size
+        ny = self.y.size
+        hx = _uniform_spacing(self.x, name="x")
+        hy = _uniform_spacing(self.y, name="y")
+        x0 = float(self.x[0])
+        x1 = float(self.x[-1])
+        y0 = float(self.y[0])
+        y1 = float(self.y[-1])
+        lx = x1 - x0
+        ly = y1 - y0
+        sx = (self.x - x0) / lx
+        ty = (self.y - y0) / ly
+
+        tangent_modes_x = np.arange(1, max(1, min(max_tangent_modes, nx - 2)) + 1, dtype=np.float64)
+        tangent_modes_y = np.arange(1, max(1, min(max_tangent_modes, ny - 2)) + 1, dtype=np.float64)
+        strip_samples = np.unique(np.round(np.linspace(1, n_strip, min(n_strip, max_normal_samples))).astype(int))
+
+        forcing_snapshots: list[np.ndarray] = []
+        solution_snapshots: list[np.ndarray] = []
+
+        tangential_y = np.sin(np.pi * np.outer(ty, tangent_modes_y))
+        tangential_x = np.sin(np.pi * np.outer(sx, tangent_modes_x))
+
+        for offset in strip_samples:
+            left_col = offset
+            right_col = nx - 1 - offset
+            for mode_idx in range(tangent_modes_y.size):
+                q_left = np.zeros((ny, nx), dtype=np.float64)
+                q_left[:, left_col] = tangential_y[:, mode_idx]
+                q_right = np.zeros((ny, nx), dtype=np.float64)
+                q_right[:, right_col] = tangential_y[:, mode_idx]
+                for q in (q_left, q_right):
+                    scale = np.linalg.norm(q)
+                    if scale == 0.0:
+                        continue
+                    q /= scale
+                    sol = np.zeros_like(q)
+                    sol[1:-1, 1:-1] = _solve_zero_dirichlet_poisson_dst(q[1:-1, 1:-1], hx=hx, hy=hy)
+                    forcing_snapshots.append(q.reshape(-1))
+                    solution_snapshots.append(sol.reshape(-1))
+
+        for offset in strip_samples:
+            bottom_row = offset
+            top_row = ny - 1 - offset
+            for mode_idx in range(tangent_modes_x.size):
+                q_bottom = np.zeros((ny, nx), dtype=np.float64)
+                q_bottom[bottom_row, :] = tangential_x[:, mode_idx]
+                q_top = np.zeros((ny, nx), dtype=np.float64)
+                q_top[top_row, :] = tangential_x[:, mode_idx]
+                for q in (q_bottom, q_top):
+                    scale = np.linalg.norm(q)
+                    if scale == 0.0:
+                        continue
+                    q /= scale
+                    sol = np.zeros_like(q)
+                    sol[1:-1, 1:-1] = _solve_zero_dirichlet_poisson_dst(q[1:-1, 1:-1], hx=hx, hy=hy)
+                    forcing_snapshots.append(q.reshape(-1))
+                    solution_snapshots.append(sol.reshape(-1))
+
+        W = np.column_stack(solution_snapshots)
+        Q = np.column_stack(forcing_snapshots)
+        gram = 0.5 * (W.T @ W + (W.T @ W).T)
+        eigvals, eigvecs = np.linalg.eigh(gram)
+        order = np.argsort(eigvals)[::-1]
+        eigvals = eigvals[order]
+        eigvecs = eigvecs[:, order]
+        positive = eigvals > max(1.0e-14 * eigvals[0], 0.0)
+        eigvals = eigvals[positive]
+        eigvecs = eigvecs[:, positive]
+        if eigvals.size == 0:
+            raise ValueError("Failed to build an operator-adapted strip basis: no positive snapshot energy.")
+
+        cumulative_energy = np.cumsum(eigvals) / np.sum(eigvals)
+        rank = min(max_rank, int(np.searchsorted(cumulative_energy, energy_tol) + 1))
+        singular_values = np.sqrt(eigvals[:rank])
+        combination = eigvecs[:, :rank] / singular_values[None, :]
+        basis_solution = W @ combination
+        basis_forcing = Q @ combination
+        self._layer_basis_cache[cache_key] = (basis_solution, basis_forcing)
+        return basis_solution, basis_forcing
+
     def build_boundary_corrector_02(
         self,
         rhs: RHSInput,
@@ -529,6 +958,7 @@ class Poisson2DDirichletSolver:
         right: float | np.ndarray | Callable[[np.ndarray], np.ndarray],
         bottom: float | np.ndarray | Callable[[np.ndarray], np.ndarray],
         top: float | np.ndarray | Callable[[np.ndarray], np.ndarray],
+        second_normal_weight: float = 100.0,
         laplacian_weight: float = 1.0e-6,
         ridge: float = 1.0e-10,
         n_strip: int = 0,
@@ -536,9 +966,12 @@ class Poisson2DDirichletSolver:
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Build a spline boundary corrector using value and second-normal-derivative edge jets.
 
-        If ``n_strip > 0``, a soft penalty is added that encourages the analytic
-        Laplacian of the corrector to match ``rhs`` over the first ``n_strip``
-        interior rows/columns adjacent to each boundary edge.
+        Boundary values are enforced as hard constraints. Second-normal edge
+        data is matched by a soft least-squares penalty so the lifting surface
+        can relax high-frequency edge jets instead of oscillating to satisfy
+        them exactly. If ``n_strip > 0``, an additional soft penalty encourages
+        the analytic Laplacian of the corrector to match ``rhs`` over the first
+        ``n_strip`` interior rows/columns adjacent to each boundary edge.
         """
         rhs_grid = _sample_rhs_on_grid(rhs, self.x, self.y)
         (
@@ -581,22 +1014,14 @@ class Poisson2DDirichletSolver:
         constraints = [
             np.kron(eye_y, value_x[[0], :]),
             np.kron(eye_y, value_x[[1], :]),
-            np.kron(eye_y, second_x[[0], :]),
-            np.kron(eye_y, second_x[[1], :]),
             np.kron(value_y[[0], :], eye_x),
             np.kron(value_y[[1], :], eye_x),
-            np.kron(second_y[[0], :], eye_x),
-            np.kron(second_y[[1], :], eye_x),
         ]
         targets = [
             left_coeffs,
             right_coeffs,
-            left_second_coeffs,
-            right_second_coeffs,
             bottom_coeffs,
             top_coeffs,
-            bottom_second_coeffs,
-            top_second_coeffs,
         ]
 
         C = np.vstack(constraints)
@@ -653,13 +1078,25 @@ class Poisson2DDirichletSolver:
         )
         H = H_grad + laplacian_weight * H_lap + ridge * np.eye(nbx * nby, dtype=np.float64)
         H = 0.5 * (H + H.T)
+        g = np.zeros(nbx * nby, dtype=np.float64)
+
+        if second_normal_weight > 0.0:
+            second_penalties = [
+                (np.kron(eye_y, second_x[[0], :]), left_second_coeffs),
+                (np.kron(eye_y, second_x[[1], :]), right_second_coeffs),
+                (np.kron(second_y[[0], :], eye_x), bottom_second_coeffs),
+                (np.kron(second_y[[1], :], eye_x), top_second_coeffs),
+            ]
+            for A_second, target_second in second_penalties:
+                H = H + second_normal_weight * (A_second.T @ A_second)
+                g -= second_normal_weight * (A_second.T @ target_second)
+            H = 0.5 * (H + H.T)
 
         # Strip Laplacian penalty: encourage Δw = rhs over interior rows/cols near each edge.
         # A_strip maps the coefficient vector (Fortran order) to Laplacian values in the strip:
         #   A_strip = kron(B_y[strip_y, :], B_x2[strip_x, :]) + kron(B_y2[strip_y, :], B_x[strip_x, :])
         # Penalty: strip_weight * ||A_strip @ c - rhs_strip||^2
         # This adds strip_weight * A_strip.T @ A_strip to H and a linear term g = -strip_weight * A_strip.T @ rhs_strip.
-        g = np.zeros(nbx * nby, dtype=np.float64)
         if n_strip > 0:
             nx = self.x.size
             ny = self.y.size
@@ -704,6 +1141,7 @@ class Poisson2DDirichletSolver:
         right: float | np.ndarray | Callable[[np.ndarray], np.ndarray],
         bottom: float | np.ndarray | Callable[[np.ndarray], np.ndarray],
         top: float | np.ndarray | Callable[[np.ndarray], np.ndarray],
+        second_normal_weight: float = 100.0,
         laplacian_weight: float = 1.0e-6,
         ridge: float = 1.0e-10,
         n_strip: int = 0,
@@ -720,6 +1158,7 @@ class Poisson2DDirichletSolver:
             right=right_values,
             bottom=bottom_values,
             top=top_values,
+            second_normal_weight=second_normal_weight,
             laplacian_weight=laplacian_weight,
             ridge=ridge,
             n_strip=n_strip,
@@ -788,6 +1227,51 @@ class Poisson2DDirichletSolver:
             return solution, remainder, lift
         return solution
 
+    def solve_harmonic_extension_dst(
+        self,
+        rhs: RHSInput,
+        *,
+        left: float | np.ndarray | Callable[[np.ndarray], np.ndarray],
+        right: float | np.ndarray | Callable[[np.ndarray], np.ndarray],
+        bottom: float | np.ndarray | Callable[[np.ndarray], np.ndarray],
+        top: float | np.ndarray | Callable[[np.ndarray], np.ndarray],
+        n_strip: int = 0,
+        strip_weight: float = 1.0,
+        smoothness_weight: float = 1.0,
+        ridge: float = 1.0e-10,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """Solve ``Delta u = rhs`` using a harmonic lift, optional strip correction, and DST remainder."""
+        rhs_grid = _sample_rhs_on_grid(rhs, self.x, self.y)
+        hx = _uniform_spacing(self.x, name="x")
+        hy = _uniform_spacing(self.y, name="y")
+
+        harmonic_lift, patch, harmonic_correction, lap_patch = self.build_harmonic_extension(
+            left=left,
+            right=right,
+            bottom=bottom,
+            top=top,
+        )
+
+        strip_correction, strip_laplacian = self.build_zero_boundary_strip_correction(
+            rhs_grid,
+            n_strip=n_strip,
+            strip_weight=strip_weight,
+            smoothness_weight=smoothness_weight,
+            ridge=ridge,
+        )
+        total_lift = harmonic_lift + strip_correction
+
+        remainder = np.zeros_like(rhs_grid)
+        if self.x.size > 2 and self.y.size > 2:
+            remainder[1:-1, 1:-1] = _solve_zero_dirichlet_poisson_dst(
+                (rhs_grid - strip_laplacian)[1:-1, 1:-1],
+                hx=hx,
+                hy=hy,
+            )
+
+        solution = total_lift + remainder
+        return solution, total_lift, remainder, patch, harmonic_correction, strip_correction, strip_laplacian
+
     def solve(
         self,
         rhs: RHSInput,
@@ -854,4 +1338,4 @@ class Poisson2DDirichletSolver:
         return solution, laplacian
 
 
-__all__ = ["Poisson2DDirichletSolver"]
+__all__ = ["PODLayerBasis2D", "Poisson2DDirichletSolver"]

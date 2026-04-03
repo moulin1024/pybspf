@@ -16,15 +16,15 @@ from scipy.fft import dstn, idstn
 
 from pybspf import Poisson2DDirichletSolver
 
-NX = 512
-NY = 512
+NX = 128
+NY = 128
 DOMAIN_X = [0.0, 2.0 * np.pi]
 DOMAIN_Y = [0.0, 2.0 * np.pi]
 
-DEGREE = 6
-N_BASIS = 60
+DEGREE = 4
+N_BASIS = 40
 
-TURB_N_MODES = 10
+TURB_N_MODES = 40
 TURB_POWER_LAW = -5.0 / 3.0
 TURB_SEED = 123
 PHASE_MAGNITUDE = 0.5
@@ -93,7 +93,7 @@ def add_circular_shock_wave(X, Y, u, u_xx, u_yy, center_x, center_y, radius, amp
     r = np.sqrt((X - center_x) ** 2 + (Y - center_y) ** 2)
     step = np.tanh((r - radius) / width)
     shock = amplitude * (step + 1.0) / 2.0
-    u_shock = 0.0 # shock
+    u_shock = shock
 
     r_safe = np.where(r > 1.0e-10, r, 1.0e-10)
     sech2 = 1.0 / np.cosh((r - radius) / width) ** 2
@@ -102,8 +102,8 @@ def add_circular_shock_wave(X, Y, u, u_xx, u_yy, center_x, center_y, radius, amp
     d_factor_dx = -amplitude / (width**2) * sech2 * step * (X - center_x) / r_safe
     d_factor_dy = -amplitude / (width**2) * sech2 * step * (Y - center_y) / r_safe
 
-    shock_xx = 0.0 # factor * (1.0 / r_safe - (X - center_x) ** 2 / r_safe**3) + d_factor_dx * (X - center_x) / r_safe
-    shock_yy = 0.0 # factor * (1.0 / r_safe - (Y - center_y) ** 2 / r_safe**3) + d_factor_dy * (Y - center_y) / r_safe
+    shock_xx = factor * (1.0 / r_safe - (X - center_x) ** 2 / r_safe**3) + d_factor_dx * (X - center_x) / r_safe
+    shock_yy = factor * (1.0 / r_safe - (Y - center_y) ** 2 / r_safe**3) + d_factor_dy * (Y - center_y) / r_safe
 
     return u + u_shock, u_xx + shock_xx, u_yy + shock_yy
 
@@ -146,8 +146,12 @@ solver = Poisson2DDirichletSolver.from_grids(
 )
 
 # Use the spline boundary corrector plus zero-Dirichlet DST remainder solve.
-N_STRIP = NX // 10
+N_STRIP = NX // 20
 STRIP_WEIGHT = 1.0
+SECOND_NORMAL_WEIGHT = 100.0
+RUN_POD_02 = False
+POD_TRAINING_SEEDS = [101, 202, 303]
+POD_ENERGY_TOL = 0.999
 
 u_num, lifting_sol, _dst_remainder, lap_lift, _ = solver.solve_dst_corrected_02(
     rhs,
@@ -155,6 +159,7 @@ u_num, lifting_sol, _dst_remainder, lap_lift, _ = solver.solve_dst_corrected_02(
     right=u_exact[:, -1],
     bottom=u_exact[0, :],
     top=u_exact[-1, :],
+    second_normal_weight=SECOND_NORMAL_WEIGHT,
     n_strip=N_STRIP,
     strip_weight=STRIP_WEIGHT,
 )
@@ -163,6 +168,77 @@ error_norm = np.sqrt(np.mean(error**2))
 exact_norm = np.sqrt(np.mean(u_exact**2))
 print(f"B-spline+DST error L2 rms     : {error_norm:.6e}")
 print(f"B-spline+DST relative L2 error: {error_norm / exact_norm:.6e}")
+
+u_harm, harmonic_lift, harmonic_remainder, harmonic_patch, harmonic_patch_correction, harmonic_strip_correction, harmonic_strip_laplacian = (
+    solver.solve_harmonic_extension_dst(
+        rhs,
+        left=u_exact[:, 0],
+        right=u_exact[:, -1],
+        bottom=u_exact[0, :],
+        top=u_exact[-1, :],
+        n_strip=N_STRIP,
+        strip_weight=STRIP_WEIGHT,
+    )
+)
+error_harm = u_harm - u_exact
+error_harm_norm = np.sqrt(np.mean(error_harm**2))
+print(f"Harmonic+Strip+DST error L2 rms     : {error_harm_norm:.6e}")
+print(f"Harmonic+Strip+DST relative L2 error: {error_harm_norm / exact_norm:.6e}")
+
+if RUN_POD_02:
+    training_samples = []
+    for training_seed in POD_TRAINING_SEEDS:
+        u_train, u_xx_train, u_yy_train = evaluate_turbulence_field_on_grid(
+            x,
+            y,
+            Lx,
+            Ly,
+            TURB_N_MODES,
+            training_seed,
+        )
+        u_train, u_xx_train, u_yy_train = add_circular_shock_wave(
+            xx,
+            yy,
+            u_train,
+            u_xx_train,
+            u_yy_train,
+            center_x=SHOCK_CENTER_X,
+            center_y=SHOCK_CENTER_Y,
+            radius=SHOCK_RADIUS,
+            amplitude=SHOCK_AMPLITUDE,
+            width=SHOCK_WIDTH,
+        )
+        training_samples.append(
+            {
+                "rhs": u_xx_train + u_yy_train,
+                "left": u_train[:, 0],
+                "right": u_train[:, -1],
+                "bottom": u_train[0, :],
+                "top": u_train[-1, :],
+            }
+        )
+
+    pod_basis = solver.build_pod_layer_basis_from_02(
+        training_samples,
+        energy_tol=POD_ENERGY_TOL,
+        second_normal_weight=SECOND_NORMAL_WEIGHT,
+        n_strip=N_STRIP,
+        strip_weight=STRIP_WEIGHT,
+    )
+    u_pod, pod_lift, pod_remainder, pod_harmonic_lift, pod_layer = solver.solve_harmonic_pod_02(
+        rhs,
+        pod_basis=pod_basis,
+        left=u_exact[:, 0],
+        right=u_exact[:, -1],
+        bottom=u_exact[0, :],
+        top=u_exact[-1, :],
+        n_strip=N_STRIP,
+        strip_weight=STRIP_WEIGHT,
+    )
+    error_pod = u_pod - u_exact
+    error_pod_norm = np.sqrt(np.mean(error_pod**2))
+    print(f"Teacher-POD+DST error L2 rms     : {error_pod_norm:.6e}")
+    print(f"Teacher-POD+DST relative L2 error: {error_pod_norm / exact_norm:.6e}")
 
 # --- Direct DST with bilinear lift ---
 hx = x[1] - x[0]
@@ -232,9 +308,9 @@ for ax, (field, title) in zip(axes1.flat, [
     (u_exact,             "Exact Solution"),
     (u_num,               "B-spline+DST Solution"),
     (error,               "B-spline+DST Error"),
-    (u_dst,               "Direct DST Solution"),
-    (error_dst,           "Direct DST Error"),
-    (u_num - u_dst,       "B-spline+DST vs Direct DST"),
+    (u_harm,              "Harmonic+Strip+DST Solution"),
+    (error_harm,          "Harmonic+Strip+DST Error"),
+    (u_num - u_harm,      "B-spline+DST vs Harmonic+Strip"),
 ]):
     im = ax.imshow(field, origin="lower", extent=extent, aspect="auto", cmap="coolwarm")
     fig1.colorbar(im, ax=ax, shrink=0.85, format="%.2e")
@@ -253,4 +329,14 @@ for ax, (field, title) in zip(axes2.flat, [
     ax.set_title(title)
     ax.set_xlabel("x")
     ax.set_ylabel("y")
+plt.show()
+
+fig3 = plt.figure(figsize=(9, 6), constrained_layout=True)
+ax3 = fig3.add_subplot(111, projection="3d")
+surf = ax3.plot_surface(xx, yy, error, cmap="coolwarm", linewidth=0.0, antialiased=True)
+fig3.colorbar(surf, ax=ax3, shrink=0.75, pad=0.08, format="%.2e")
+ax3.set_title("B-spline+DST Error Surface")
+ax3.set_xlabel("x")
+ax3.set_ylabel("y")
+ax3.set_zlabel("error")
 plt.show()

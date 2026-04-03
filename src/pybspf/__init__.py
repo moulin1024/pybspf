@@ -10,6 +10,8 @@ being migrated away from the legacy monolithic implementation.
 from .grid import Grid1D
 from .ops.differentiation import DerivativeResult
 from .operators import BSPF1D, BSPF2D, PiecewiseBSPF1D, bspf1d, bspf2d
+from .solvers.poisson1d import Poisson1DDirichletSolver
+from .solvers.poisson2d import Poisson2DDirichletSolver
 from .time_integration import integrate_rk4
 
 __all__ = [
@@ -18,6 +20,8 @@ __all__ = [
     "DerivativeResult",
     "Grid1D",
     "PiecewiseBSPF1D",
+    "Poisson1DDirichletSolver",
+    "Poisson2DDirichletSolver",
     "bspf1d",
     "bspf2d",
     "integrate_rk4",

@@ -6,9 +6,18 @@ from __future__ import annotations
 
 import numpy as np
 
-from pybspf import BSPF1D, BSPF2D, PiecewiseBSPF1D
+from pybspf import BSPF1D, BSPF2D, PiecewiseBSPF1D, Poisson1DDirichletSolver, Poisson2DDirichletSolver
 from bspf1d import PiecewiseBSPF1D as LegacyPiecewiseBSPF1D
 from bspf1d import bspf1d as LegacyBSPF1D
+
+
+def _negative_discrete_laplacian(field: np.ndarray, *, hx: float, hy: float) -> np.ndarray:
+    """! @brief Return the 5-point interior ``-Delta_h`` of a sampled field."""
+    center = field[1:-1, 1:-1]
+    return (
+        (2.0 * center - field[1:-1, :-2] - field[1:-1, 2:]) / (hx * hx)
+        + (2.0 * center - field[:-2, 1:-1] - field[2:, 1:-1]) / (hy * hy)
+    )
 
 
 def _make_operator_pair():
@@ -209,3 +218,339 @@ def test_bspf2d_axis_derivatives_match_separable_analytical_field():
     np.testing.assert_allclose(dy_res[1][6:-6, 6:-6], expected_dy[6:-6, 6:-6], atol=1.2e-1, rtol=2.0e-2)
     np.testing.assert_allclose(dy_res[2][6:-6, 6:-6], expected_dyy[6:-6, 6:-6], atol=2.0e-1, rtol=2.0e-2)
     np.testing.assert_allclose(lap[6:-6, 6:-6], (expected_dxx + expected_dyy)[6:-6, 6:-6], atol=2.5e-1, rtol=2.0e-2)
+
+
+def test_poisson1d_direct_solver_matches_polynomial_mms():
+    """! @brief The 1D direct solver should recover a smooth polynomial Dirichlet MMS."""
+    x = np.linspace(0.0, 1.0, 129)
+    exact = x * (1.0 - x)
+    rhs = 2.0 * np.ones_like(x)
+
+    solver = Poisson1DDirichletSolver.from_grid(
+        x=x,
+        degree=5,
+        n_basis=32,
+        use_clustering=True,
+        clustering_factor=2.0,
+    )
+
+    numerical, curvature = solver.solve(rhs, u_left=0.0, u_right=0.0, return_curvature=True)
+
+    np.testing.assert_allclose(numerical, exact, atol=2.0e-10, rtol=2.0e-10)
+    np.testing.assert_allclose(curvature, -rhs, atol=2.0e-10, rtol=2.0e-10)
+
+
+def test_poisson1d_direct_solver_handles_nonzero_dirichlet_sine_solution():
+    """! @brief The 1D direct solver should combine the particular solve and linear patch correctly."""
+    x = np.linspace(0.0, 1.0, 257)
+    exact = 1.5 - 0.25 * x + np.sin(np.pi * x)
+    rhs = (np.pi**2) * np.sin(np.pi * x)
+
+    solver = Poisson1DDirichletSolver.from_grid(
+        x=x,
+        degree=6,
+        n_basis=48,
+        use_clustering=True,
+        clustering_factor=2.0,
+    )
+
+    numerical = solver.solve(rhs, u_left=float(exact[0]), u_right=float(exact[-1]))
+
+    np.testing.assert_allclose(numerical[0], exact[0], atol=1.0e-12, rtol=1.0e-12)
+    np.testing.assert_allclose(numerical[-1], exact[-1], atol=1.0e-12, rtol=1.0e-12)
+    np.testing.assert_allclose(numerical[6:-6], exact[6:-6], atol=2.0e-4, rtol=2.0e-4)
+
+
+def test_poisson2d_direct_solver_matches_mms_with_homogeneous_dirichlet():
+    """! @brief The Sylvester solver should recover a smooth zero-Dirichlet MMS field."""
+    x = np.linspace(0.0, 1.0, 65)
+    y = np.linspace(0.0, 1.0, 61)
+    xx, yy = np.meshgrid(x, y)
+
+    exact = xx * (1.0 - xx) * yy * (1.0 - yy)
+    rhs = 2.0 * (xx * (1.0 - xx) + yy * (1.0 - yy))
+
+    solver = Poisson2DDirichletSolver.from_grids(
+        x=x,
+        y=y,
+        degree_x=5,
+        degree_y=5,
+        n_basis_x=24,
+        n_basis_y=22,
+        use_clustering_x=True,
+        use_clustering_y=True,
+        clustering_factor_x=2.0,
+        clustering_factor_y=2.0,
+    )
+
+    numerical = solver.solve(rhs)
+
+    np.testing.assert_allclose(numerical[0, :], 0.0, atol=1.0e-10)
+    np.testing.assert_allclose(numerical[-1, :], 0.0, atol=1.0e-10)
+    np.testing.assert_allclose(numerical[:, 0], 0.0, atol=1.0e-10)
+    np.testing.assert_allclose(numerical[:, -1], 0.0, atol=1.0e-10)
+    np.testing.assert_allclose(numerical[4:-4, 4:-4], exact[4:-4, 4:-4], atol=6.0e-4, rtol=3.0e-2)
+
+
+def test_poisson2d_direct_solver_supports_general_dirichlet_traces():
+    """! @brief The direct solver should handle nonzero Dirichlet traces through a boundary lift."""
+    x = np.linspace(0.0, 1.0, 65)
+    y = np.linspace(0.0, 1.0, 61)
+    xx, yy = np.meshgrid(x, y)
+
+    exact = 1.0 + xx + 2.0 * yy + xx * (1.0 - xx) * yy * (1.0 - yy)
+    rhs = 2.0 * (xx * (1.0 - xx) + yy * (1.0 - yy))
+
+    solver = Poisson2DDirichletSolver.from_grids(
+        x=x,
+        y=y,
+        degree_x=5,
+        degree_y=5,
+        n_basis_x=24,
+        n_basis_y=22,
+        use_clustering_x=True,
+        use_clustering_y=True,
+        clustering_factor_x=2.0,
+        clustering_factor_y=2.0,
+    )
+
+    numerical = solver.solve(
+        rhs,
+        left=exact[:, 0],
+        right=exact[:, -1],
+        bottom=exact[0, :],
+        top=exact[-1, :],
+    )
+
+    np.testing.assert_allclose(numerical[0, :], exact[0, :], atol=1.0e-8)
+    np.testing.assert_allclose(numerical[-1, :], exact[-1, :], atol=1.0e-8)
+    np.testing.assert_allclose(numerical[:, 0], exact[:, 0], atol=1.0e-8)
+    np.testing.assert_allclose(numerical[:, -1], exact[:, -1], atol=1.0e-8)
+    np.testing.assert_allclose(numerical[4:-4, 4:-4], exact[4:-4, 4:-4], atol=8.0e-4, rtol=3.0e-2)
+
+
+def test_poisson2d_direct_solver_callable_rhs_recovers_homogeneous_polynomial_mms_to_roundoff():
+    """! @brief Callable RHS quadrature should recover the homogeneous polynomial MMS to near machine precision."""
+    x = np.linspace(0.0, 1.0, 33)
+    y = np.linspace(0.0, 1.0, 31)
+    xx, yy = np.meshgrid(x, y)
+
+    exact = xx * (1.0 - xx) * yy * (1.0 - yy)
+    rhs = lambda xq, yq: 2.0 * (xq * (1.0 - xq) + yq * (1.0 - yq))
+
+    solver = Poisson2DDirichletSolver.from_grids(
+        x=x,
+        y=y,
+        degree_x=5,
+        degree_y=5,
+        n_basis_x=24,
+        n_basis_y=22,
+        use_clustering_x=True,
+        use_clustering_y=True,
+        clustering_factor_x=2.0,
+        clustering_factor_y=2.0,
+    )
+
+    numerical = solver.solve(rhs)
+
+    np.testing.assert_allclose(numerical, exact, atol=1.0e-10, rtol=1.0e-10)
+
+
+def test_poisson2d_direct_solver_can_return_analytic_laplacian():
+    """! @brief The direct solver should expose the spline Laplacian alongside the solution."""
+    x = np.linspace(0.0, 1.0, 33)
+    y = np.linspace(0.0, 1.0, 31)
+    xx, yy = np.meshgrid(x, y)
+
+    exact = xx * (1.0 - xx) * yy * (1.0 - yy)
+    rhs = 2.0 * (xx * (1.0 - xx) + yy * (1.0 - yy))
+    rhs_callable = lambda xq, yq: 2.0 * (xq * (1.0 - xq) + yq * (1.0 - yq))
+
+    solver = Poisson2DDirichletSolver.from_grids(
+        x=x,
+        y=y,
+        degree_x=5,
+        degree_y=5,
+        n_basis_x=24,
+        n_basis_y=22,
+        use_clustering_x=True,
+        use_clustering_y=True,
+        clustering_factor_x=2.0,
+        clustering_factor_y=2.0,
+    )
+
+    numerical, laplacian = solver.solve(rhs_callable, return_laplacian=True)
+
+    np.testing.assert_allclose(numerical, exact, atol=1.0e-10, rtol=1.0e-10)
+    np.testing.assert_allclose(laplacian, -rhs, atol=1.0e-10, rtol=1.0e-10)
+
+
+def test_poisson2d_direct_solver_sampled_rhs_tracks_callable_quadrature_reference():
+    """! @brief Sampled RHS assembly should stay close to the callable high-order load reference."""
+    x = np.linspace(0.0, 1.0, 33)
+    y = np.linspace(0.0, 1.0, 31)
+    xx, yy = np.meshgrid(x, y)
+
+    exact = xx * (1.0 - xx) * yy * (1.0 - yy)
+    rhs_samples = 2.0 * (xx * (1.0 - xx) + yy * (1.0 - yy))
+    rhs_callable = lambda xq, yq: 2.0 * (xq * (1.0 - xq) + yq * (1.0 - yq))
+
+    solver = Poisson2DDirichletSolver.from_grids(
+        x=x,
+        y=y,
+        degree_x=5,
+        degree_y=5,
+        n_basis_x=24,
+        n_basis_y=22,
+        use_clustering_x=True,
+        use_clustering_y=True,
+        clustering_factor_x=2.0,
+        clustering_factor_y=2.0,
+    )
+
+    numerical_samples = solver.solve(rhs_samples)
+    numerical_callable = solver.solve(rhs_callable)
+
+    np.testing.assert_allclose(numerical_samples, numerical_callable, atol=6.0e-5, rtol=1.0e-3)
+    np.testing.assert_allclose(numerical_samples, exact, atol=6.0e-5, rtol=1.0e-3)
+
+
+def test_poisson2d_hybrid_dst_solver_reproduces_discrete_homogeneous_solution():
+    """! @brief The hybrid DST solver should exactly recover a zero-Dirichlet discrete solution."""
+    x = np.linspace(0.0, 1.0, 65)
+    y = np.linspace(0.0, 1.0, 61)
+    xx, yy = np.meshgrid(x, y)
+    hx = x[1] - x[0]
+    hy = y[1] - y[0]
+
+    exact = np.sin(2.0 * np.pi * xx) * np.sin(np.pi * yy)
+    rhs = np.zeros_like(exact)
+    rhs[1:-1, 1:-1] = _negative_discrete_laplacian(exact, hx=hx, hy=hy)
+
+    solver = Poisson2DDirichletSolver.from_grids(
+        x=x,
+        y=y,
+        degree_x=5,
+        degree_y=5,
+        n_basis_x=24,
+        n_basis_y=22,
+        use_clustering_x=True,
+        use_clustering_y=True,
+        clustering_factor_x=2.0,
+        clustering_factor_y=2.0,
+    )
+
+    numerical = solver.solve_hybrid_dst(rhs)
+
+    np.testing.assert_allclose(numerical, exact, atol=1.0e-11, rtol=1.0e-11)
+
+
+def test_poisson2d_hybrid_dst_solver_handles_general_dirichlet_traces():
+    """! @brief The hybrid DST solver should combine the spline boundary lift with the grid solve."""
+    x = np.linspace(0.0, 1.0, 65)
+    y = np.linspace(0.0, 1.0, 61)
+    xx, yy = np.meshgrid(x, y)
+    hx = x[1] - x[0]
+    hy = y[1] - y[0]
+
+    exact = 1.0 + xx + 2.0 * yy + xx * (1.0 - xx) * yy * (1.0 - yy)
+    rhs = np.zeros_like(exact)
+    rhs[1:-1, 1:-1] = _negative_discrete_laplacian(exact, hx=hx, hy=hy)
+
+    solver = Poisson2DDirichletSolver.from_grids(
+        x=x,
+        y=y,
+        degree_x=5,
+        degree_y=5,
+        n_basis_x=24,
+        n_basis_y=22,
+        use_clustering_x=True,
+        use_clustering_y=True,
+        clustering_factor_x=2.0,
+        clustering_factor_y=2.0,
+    )
+
+    numerical = solver.solve_hybrid_dst(
+        rhs,
+        left=exact[:, 0],
+        right=exact[:, -1],
+        bottom=exact[0, :],
+        top=exact[-1, :],
+    )
+
+    np.testing.assert_allclose(numerical, exact, atol=1.0e-10, rtol=1.0e-10)
+
+
+def test_poisson2d_boundary_corrector_02_matches_dirichlet_edges():
+    """! @brief The 0/2-jet boundary corrector should use a zero-mean gauge without changing residual shapes."""
+    x = np.linspace(0.0, 1.0, 65)
+    y = np.linspace(0.0, 1.0, 61)
+    xx, yy = np.meshgrid(x, y)
+
+    exact = 1.0 + xx + 2.0 * yy + xx * (1.0 - xx) * yy * (1.0 - yy)
+    rhs = 2.0 * (xx * (1.0 - xx) + yy * (1.0 - yy))
+
+    solver = Poisson2DDirichletSolver.from_grids(
+        x=x,
+        y=y,
+        degree_x=5,
+        degree_y=5,
+        n_basis_x=24,
+        n_basis_y=22,
+        use_clustering_x=True,
+        use_clustering_y=True,
+        clustering_factor_x=2.0,
+        clustering_factor_y=2.0,
+    )
+
+    corrector, laplacian, corrected_rhs = solver.build_boundary_corrector_02(
+        rhs,
+        left=exact[:, 0],
+        right=exact[:, -1],
+        bottom=exact[0, :],
+        top=exact[-1, :],
+    )
+
+    np.testing.assert_allclose(np.mean(corrector), 0.0, atol=1.0e-10)
+    assert laplacian.shape == exact.shape
+    assert corrected_rhs.shape == exact.shape
+
+
+def test_poisson2d_fft_corrected_solver_recovers_periodic_mode():
+    """! @brief The 0/2 corrector plus periodic FFT inversion should recover a smooth sine mode."""
+    x = np.linspace(0.0, 2.0 * np.pi, 65)
+    y = np.linspace(0.0, 2.0 * np.pi, 65)
+    xx, yy = np.meshgrid(x, y)
+
+    exact = np.sin(2.0 * xx) * np.sin(3.0 * yy)
+    rhs = 13.0 * exact
+
+    solver = Poisson2DDirichletSolver.from_grids(
+        x=x,
+        y=y,
+        degree_x=5,
+        degree_y=5,
+        n_basis_x=24,
+        n_basis_y=24,
+        use_clustering_x=False,
+        use_clustering_y=False,
+    )
+
+    solution, corrector, fft_remainder, harmonic_patch, laplacian, corrected_rhs = solver.solve_fft_corrected_02(
+        rhs,
+        left=exact[:, 0],
+        right=exact[:, -1],
+        bottom=exact[0, :],
+        top=exact[-1, :],
+    )
+
+    np.testing.assert_allclose(solution, exact, atol=5.0e-3, rtol=5.0e-3)
+    np.testing.assert_allclose(solution[0, :], exact[0, :], atol=1.0e-8)
+    np.testing.assert_allclose(solution[-1, :], exact[-1, :], atol=1.0e-8)
+    np.testing.assert_allclose(solution[:, 0], exact[:, 0], atol=1.0e-8)
+    np.testing.assert_allclose(solution[:, -1], exact[:, -1], atol=1.0e-8)
+    assert corrector.shape == exact.shape
+    assert fft_remainder.shape == exact.shape
+    assert harmonic_patch.shape == exact.shape
+    assert laplacian.shape == exact.shape
+    assert corrected_rhs.shape == exact.shape

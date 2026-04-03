@@ -6,7 +6,18 @@ from __future__ import annotations
 
 import numpy as np
 
-from pybspf import BSPF1D, BSPF2D, DerivativeResult, Grid1D, PiecewiseBSPF1D, bspf1d, bspf2d, integrate_rk4
+from pybspf import (
+    BSPF1D,
+    BSPF2D,
+    DerivativeResult,
+    Grid1D,
+    PiecewiseBSPF1D,
+    Poisson1DDirichletSolver,
+    Poisson2DDirichletSolver,
+    bspf1d,
+    bspf2d,
+    integrate_rk4,
+)
 
 
 def test_public_api_exports():
@@ -16,6 +27,8 @@ def test_public_api_exports():
     assert DerivativeResult.__name__ == "DerivativeResult"
     assert Grid1D.__name__ == "Grid1D"
     assert PiecewiseBSPF1D.__name__ == "PiecewiseBSPF1D"
+    assert Poisson1DDirichletSolver.__name__ == "Poisson1DDirichletSolver"
+    assert Poisson2DDirichletSolver.__name__ == "Poisson2DDirichletSolver"
     assert callable(integrate_rk4)
 
 

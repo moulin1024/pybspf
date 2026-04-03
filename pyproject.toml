@@ -21,6 +21,9 @@ dependencies = [
 gpu = [
   "cupy-cuda12x",
 ]
+fem = [
+  "ngsolve>=6.2",
+]
 dev = [
   "pytest>=8.0",
 ]
