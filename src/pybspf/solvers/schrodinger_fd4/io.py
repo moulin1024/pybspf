@@ -26,6 +26,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tol", type=float, default=1.0e-10, help="Relative tolerance for BiCGSTAB.")
     parser.add_argument("--maxiter", type=int, default=1000, help="Maximum BiCGSTAB iterations.")
     parser.add_argument(
+        "--amg-type",
+        choices=("rs", "sa"),
+        default="sa",
+        help="AMG hierarchy type: classical Ruge-Stuben (rs) or smoothed aggregation (sa).",
+    )
+    parser.add_argument(
         "--benchmark-rhs",
         type=int,
         default=1,

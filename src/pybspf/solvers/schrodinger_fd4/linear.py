@@ -44,6 +44,14 @@ class BenchmarkStats:
     amortized_total_per_rhs_s: float
 
 
+def build_amg_solver(A: sparse.csr_matrix, amg_type: str) -> object:
+    if amg_type == "rs":
+        return pyamg.ruge_stuben_solver(A)
+    if amg_type == "sa":
+        return pyamg.smoothed_aggregation_solver(A)
+    raise ValueError(f"Unsupported AMG type: {amg_type}")
+
+
 def make_residual_callback(A: sparse.spmatrix, b: np.ndarray, history: list[float]):
     b_norm = float(np.linalg.norm(b))
     denom = b_norm if b_norm > 0.0 else 1.0
@@ -116,9 +124,16 @@ def compute_operator_diagnostics(
     return out
 
 
-def solve_with_amg_bicgstab(A: sparse.csr_matrix, b: np.ndarray, *, tol: float, maxiter: int) -> tuple[np.ndarray, list[float], LinearSolveStats]:
+def solve_with_amg_bicgstab(
+    A: sparse.csr_matrix,
+    b: np.ndarray,
+    *,
+    tol: float,
+    maxiter: int,
+    amg_type: str,
+) -> tuple[np.ndarray, list[float], LinearSolveStats]:
     start = time.perf_counter()
-    ml = pyamg.ruge_stuben_solver(A)
+    ml = build_amg_solver(A, amg_type)
     setup_time = time.perf_counter() - start
 
     history: list[float] = []
@@ -148,7 +163,20 @@ def solve_with_amg_bicgstab(A: sparse.csr_matrix, b: np.ndarray, *, tol: float, 
 
 def build_amg_hierarchy(A: sparse.csr_matrix) -> tuple[object, AMGHierarchyStats]:
     start = time.perf_counter()
-    ml = pyamg.ruge_stuben_solver(A)
+    ml = build_amg_solver(A, "rs")
+    setup_time = time.perf_counter() - start
+    stats = AMGHierarchyStats(
+        setup_time_s=setup_time,
+        levels=len(ml.levels),
+        operator_complexity=float(ml.operator_complexity()),
+        grid_complexity=float(ml.grid_complexity()),
+    )
+    return ml, stats
+
+
+def build_amg_hierarchy_with_type(A: sparse.csr_matrix, amg_type: str) -> tuple[object, AMGHierarchyStats]:
+    start = time.perf_counter()
+    ml = build_amg_solver(A, amg_type)
     setup_time = time.perf_counter() - start
     stats = AMGHierarchyStats(
         setup_time_s=setup_time,

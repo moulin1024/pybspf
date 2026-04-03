@@ -10,7 +10,7 @@ from .linear import (
     AMGHierarchyStats,
     BenchmarkStats,
     LinearSolveStats,
-    build_amg_hierarchy,
+    build_amg_hierarchy_with_type,
     compute_operator_diagnostics,
     solve_with_amg_bicgstab,
     solve_with_existing_amg,
@@ -27,7 +27,8 @@ def main() -> int:
     fields = load_fields(args.data.resolve())
     t_data = time.perf_counter()
 
-    solver_label = "FD4+PyAMG-BiCGSTAB"
+    amg_label = "RSAMG" if args.amg_type == "rs" else "SAAMG"
+    solver_label = f"FD4+PyAMG-{amg_label}-BiCGSTAB"
     pre = preprocess_fd4_system(mesh, fields)
     t_pre = time.perf_counter()
     assembled = assemble_fd4_system_from_preprocessed(pre)
@@ -38,10 +39,10 @@ def main() -> int:
     meta = assembled.meta
     t_assembly = time.perf_counter()
     if args.benchmark_rhs <= 1:
-        x, history, stats = solve_with_amg_bicgstab(A, b, tol=args.tol, maxiter=args.maxiter)
+        x, history, stats = solve_with_amg_bicgstab(A, b, tol=args.tol, maxiter=args.maxiter, amg_type=args.amg_type)
         benchmark_stats: BenchmarkStats | None = None
     else:
-        ml, amg_stats = build_amg_hierarchy(A)
+        ml, amg_stats = build_amg_hierarchy_with_type(A, args.amg_type)
         rhs_list = [b] * args.benchmark_rhs
 
         solve_times: list[float] = []

@@ -11,10 +11,12 @@ from .boundary import (
     build_boundary_models_from_samples,
     build_trace_splines,
     build_trace_splines_from_samples,
-    evaluate_boundary_trace_value,
+    evaluate_boundary_trace_values_batch,
 )
 from .common import PINFO_BOUNDARY, PINFO_GHOST, PINFO_INNER, default_circular_params
 from .io import point_coordinates
+
+MAX_TEMPLATE_STEPS = 8
 
 
 @dataclass(frozen=True)
@@ -84,84 +86,141 @@ def build_cartesian_lookup(mesh: dict[str, np.ndarray | float | int]) -> tuple[n
     return lut, imin, jmin
 
 
-def finite_difference_second_derivative_weights(offsets: list[float]) -> np.ndarray:
+def finite_difference_second_derivative_weights_batch(offsets: np.ndarray) -> np.ndarray:
     pts = np.asarray(offsets, dtype=np.float64)
-    n = pts.size
+    if pts.ndim != 2:
+        raise ValueError("Expected a 2D array of stencil offsets.")
+    n_templates, n = pts.shape
     if n < 3:
         raise ValueError("Need at least 3 stencil points for a second derivative.")
-    vand = np.vstack([pts**k for k in range(n)])
-    rhs = np.zeros(n, dtype=np.float64)
-    rhs[2] = 2.0
-    return np.linalg.solve(vand, rhs)
+    powers = np.arange(n, dtype=np.float64)
+    vand = pts[:, np.newaxis, :] ** powers[np.newaxis, :, np.newaxis]
+    rhs = np.zeros((n_templates, n), dtype=np.float64)
+    rhs[:, 2] = 2.0
+    return np.linalg.solve(vand, rhs[..., np.newaxis])[..., 0]
 
 
-def build_axis_fd4_stencil(
+def collect_side_batch(
     *,
-    gidx0: int,
-    row: int,
+    lut_pad: np.ndarray,
+    base_i: np.ndarray,
+    base_j: np.ndarray,
+    di: int,
+    dj: int,
+    pinfo: np.ndarray,
+    global_to_inner: np.ndarray,
+    spacing: float,
+    sign: float,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    n = base_i.size
+    steps = np.arange(1, MAX_TEMPLATE_STEPS + 1, dtype=np.int32)
+    ii = base_i[:, None] + di * steps[None, :]
+    jj = base_j[:, None] + dj * steps[None, :]
+    gids = lut_pad[jj, ii]
+
+    valid = gids > 0
+    kinds = np.zeros_like(gids, dtype=np.int32)
+    kinds[valid] = pinfo[gids[valid] - 1]
+    prefix_valid = np.logical_and.accumulate(valid & (kinds == PINFO_INNER), axis=1)
+    counts = np.sum(prefix_valid, axis=1, dtype=np.int32)
+
+    cols = np.full((n, MAX_TEMPLATE_STEPS), -1, dtype=np.int32)
+    cols[prefix_valid] = global_to_inner[gids[prefix_valid]]
+    offsets = sign * spacing * np.broadcast_to(steps[None, :], (n, MAX_TEMPLATE_STEPS)).astype(np.float64)
+    return offsets, cols, counts
+
+
+def build_axis_fd4_templates_batch(
+    *,
     axis: str,
+    rows: np.ndarray,
+    inner_indices: np.ndarray,
     cart_i_all: np.ndarray,
     cart_j_all: np.ndarray,
     pinfo: np.ndarray,
-    cart_lookup: np.ndarray,
+    lut_pad: np.ndarray,
     cart_i_min: int,
     cart_j_min: int,
     global_to_inner: np.ndarray,
     spacing: float,
-    x_i: float,
-    y_i: float,
+    x_all: np.ndarray,
+    y_all: np.ndarray,
     trace_splines: dict[str, object],
     rhomin: float,
     rhomax: float,
-    boundary_models: dict[str, dict[str, np.ndarray | object]] | None = None,
-    axis_tables: dict[str, object] | None = None,
+    boundary_models: dict[str, dict[str, np.ndarray | object]] | None,
+    axis_tables: dict[str, object] | None,
     perf: dict[str, float | int] | None = None,
-) -> tuple[list[tuple[int, float]], float, float, bool]:
-    step = (1, 0) if axis == "x" else (0, 1)
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    rows = np.asarray(rows, dtype=np.int32)
+    if rows.size == 0:
+        return (
+            np.empty(0, dtype=np.int32),
+            np.empty((0, 6), dtype=np.float64),
+            np.empty((0, 6), dtype=np.int8),
+            np.empty((0, 6), dtype=np.int32),
+            np.empty((0, 6), dtype=np.float64),
+        )
 
-    i0 = int(cart_i_all[gidx0])
-    j0 = int(cart_j_all[gidx0])
+    gidx0 = inner_indices[rows] - 1
+    x_i = np.asarray(x_all[gidx0], dtype=np.float64)
+    y_i = np.asarray(y_all[gidx0], dtype=np.float64)
+    i0 = np.asarray(cart_i_all[gidx0], dtype=np.int32)
+    j0 = np.asarray(cart_j_all[gidx0], dtype=np.int32)
+    base_i = i0 - cart_i_min + MAX_TEMPLATE_STEPS
+    base_j = j0 - cart_j_min + MAX_TEMPLATE_STEPS
 
-    def collect_side(sign: int, max_steps: int = 8) -> tuple[np.ndarray, np.ndarray]:
-        offsets = np.empty(max_steps, dtype=np.float64)
-        cols = np.empty(max_steps, dtype=np.int32)
-        n_found = 0
-        di = sign * step[0]
-        dj = sign * step[1]
-        for k in range(1, max_steps + 1):
-            ii = i0 + k * di - cart_i_min
-            jj = j0 + k * dj - cart_j_min
-            if ii < 0 or jj < 0 or jj >= cart_lookup.shape[0] or ii >= cart_lookup.shape[1]:
-                break
-            nidx1 = int(cart_lookup[jj, ii])
-            if nidx1 <= 0 or pinfo[nidx1 - 1] != PINFO_INNER:
-                break
-            offsets[n_found] = sign * k * spacing
-            cols[n_found] = int(global_to_inner[nidx1])
-            n_found += 1
-        return offsets[:n_found], cols[:n_found]
-
-    neg_offsets, neg_cols = collect_side(-1)
-    pos_offsets, pos_cols = collect_side(1)
-
-    if neg_offsets.size >= 2 and pos_offsets.size >= 2:
-        weights = {
-            -2.0 * spacing: -1.0 / (12.0 * spacing * spacing),
-            -1.0 * spacing: 16.0 / (12.0 * spacing * spacing),
-            0.0: -30.0 / (12.0 * spacing * spacing),
-            1.0 * spacing: 16.0 / (12.0 * spacing * spacing),
-            2.0 * spacing: -1.0 / (12.0 * spacing * spacing),
-        }
-        entries: list[tuple[int, float]] = [(row, weights[0.0])]
-        entries.append((int(neg_cols[1]), weights[-2.0 * spacing]))
-        entries.append((int(neg_cols[0]), weights[-1.0 * spacing]))
-        entries.append((int(pos_cols[0]), weights[1.0 * spacing]))
-        entries.append((int(pos_cols[1]), weights[2.0 * spacing]))
-        return entries, 0.0, 0.0, False
+    if axis == "x":
+        neg_offsets_batch, neg_cols_batch, neg_counts = collect_side_batch(
+            lut_pad=lut_pad,
+            base_i=base_i,
+            base_j=base_j,
+            di=-1,
+            dj=0,
+            pinfo=pinfo,
+            global_to_inner=global_to_inner,
+            spacing=spacing,
+            sign=-1.0,
+        )
+        pos_offsets_batch, pos_cols_batch, pos_counts = collect_side_batch(
+            lut_pad=lut_pad,
+            base_i=base_i,
+            base_j=base_j,
+            di=1,
+            dj=0,
+            pinfo=pinfo,
+            global_to_inner=global_to_inner,
+            spacing=spacing,
+            sign=1.0,
+        )
+    else:
+        neg_offsets_batch, neg_cols_batch, neg_counts = collect_side_batch(
+            lut_pad=lut_pad,
+            base_i=base_i,
+            base_j=base_j,
+            di=0,
+            dj=-1,
+            pinfo=pinfo,
+            global_to_inner=global_to_inner,
+            spacing=spacing,
+            sign=-1.0,
+        )
+        pos_offsets_batch, pos_cols_batch, pos_counts = collect_side_batch(
+            lut_pad=lut_pad,
+            base_i=base_i,
+            base_j=base_j,
+            di=0,
+            dj=1,
+            pinfo=pinfo,
+            global_to_inner=global_to_inner,
+            spacing=spacing,
+            sign=1.0,
+        )
 
     start = time.perf_counter()
-    neg_delta, neg_value = evaluate_boundary_trace_value(
-        direction=(-step[0], -step[1]),
+    neg_delta, neg_value = evaluate_boundary_trace_values_batch(
+        axis=axis,
+        direction_sign=-1,
         cart_i0=i0,
         cart_j0=j0,
         x_i=x_i,
@@ -172,8 +231,9 @@ def build_axis_fd4_stencil(
         boundary_models=boundary_models,
         axis_tables=axis_tables,
     )
-    pos_delta, pos_value = evaluate_boundary_trace_value(
-        direction=(step[0], step[1]),
+    pos_delta, pos_value = evaluate_boundary_trace_values_batch(
+        axis=axis,
+        direction_sign=1,
         cart_i0=i0,
         cart_j0=j0,
         x_i=x_i,
@@ -185,89 +245,98 @@ def build_axis_fd4_stencil(
         axis_tables=axis_tables,
     )
     if perf is not None:
-        perf["boundary_trace_calls"] = int(perf.get("boundary_trace_calls", 0)) + 2
+        perf["boundary_trace_calls"] = int(perf.get("boundary_trace_calls", 0)) + 2 * rows.size
         perf["boundary_trace_time_s"] = float(perf.get("boundary_trace_time_s", 0.0)) + (time.perf_counter() - start)
 
-    all_offsets = [0.0]
-    all_kinds = [0]  # 0=center, 1=interior, 2=boundary
-    all_cols = [row]
-    all_vals = [0.0]
+    n_rows = rows.size
+    n_interior_slots = 2 * MAX_TEMPLATE_STEPS
+    n_candidate_slots = 1 + 2 + n_interior_slots + 2
+    candidate_offsets = np.zeros((n_rows, n_candidate_slots), dtype=np.float64)
+    candidate_kinds = np.full((n_rows, n_candidate_slots), -1, dtype=np.int8)
+    candidate_cols = np.full((n_rows, n_candidate_slots), -1, dtype=np.int32)
+    candidate_vals = np.zeros((n_rows, n_candidate_slots), dtype=np.float64)
+    candidate_valid = np.zeros((n_rows, n_candidate_slots), dtype=bool)
 
-    if neg_offsets.size < 2:
-        all_offsets.append(-neg_delta)
-        all_kinds.append(2)
-        all_cols.append(-1)
-        all_vals.append(neg_value)
-    if pos_offsets.size < 2:
-        all_offsets.append(pos_delta)
-        all_kinds.append(2)
-        all_cols.append(-1)
-        all_vals.append(pos_value)
+    # Center point is always present.
+    candidate_kinds[:, 0] = 0
+    candidate_cols[:, 0] = rows
+    candidate_valid[:, 0] = True
 
-    interior_offsets = np.concatenate((neg_offsets, pos_offsets))
-    interior_cols = np.concatenate((neg_cols, pos_cols))
-    if interior_offsets.size:
-        order = np.lexsort((interior_offsets, np.abs(interior_offsets)))
-        interior_offsets = interior_offsets[order]
-        interior_cols = interior_cols[order]
+    neg_boundary_offset = -neg_delta
+    pos_boundary_offset = pos_delta
+    neg_need_early = neg_counts < 2
+    pos_need_early = pos_counts < 2
 
-    for off, col in zip(interior_offsets.tolist(), interior_cols.tolist()):
-        all_offsets.append(off)
-        all_kinds.append(1)
-        all_cols.append(col)
-        all_vals.append(0.0)
+    # Early boundary points preserve the original ordering when a side has too
+    # few interior points to anchor the stencil near the cut boundary.
+    candidate_offsets[:, 1] = neg_boundary_offset
+    candidate_kinds[:, 1] = 2
+    candidate_vals[:, 1] = neg_value
+    candidate_valid[:, 1] = neg_need_early
 
-    offset_set = set(all_offsets)
-    if -neg_delta not in offset_set:
-        all_offsets.append(-neg_delta)
-        all_kinds.append(2)
-        all_cols.append(-1)
-        all_vals.append(neg_value)
-    if pos_delta not in offset_set:
-        all_offsets.append(pos_delta)
-        all_kinds.append(2)
-        all_cols.append(-1)
-        all_vals.append(pos_value)
+    candidate_offsets[:, 2] = pos_boundary_offset
+    candidate_kinds[:, 2] = 2
+    candidate_vals[:, 2] = pos_value
+    candidate_valid[:, 2] = pos_need_early
 
-    selected_idx_list: list[int] = []
-    used_offsets: set[float] = set()
-    for idx, offset in enumerate(all_offsets):
-        if offset in used_offsets:
-            continue
-        selected_idx_list.append(idx)
-        used_offsets.add(offset)
-        if len(selected_idx_list) >= 6:
-            break
+    # Interior candidates are already ordered by increasing |offset|, with the
+    # negative side preceding the positive side at equal distance.
+    interior_offsets = np.empty((n_rows, n_interior_slots), dtype=np.float64)
+    interior_cols = np.empty((n_rows, n_interior_slots), dtype=np.int32)
+    interior_valid = np.empty((n_rows, n_interior_slots), dtype=bool)
+    step_ids = np.arange(MAX_TEMPLATE_STEPS, dtype=np.int32)
+    interior_offsets[:, 0::2] = neg_offsets_batch
+    interior_offsets[:, 1::2] = pos_offsets_batch
+    interior_cols[:, 0::2] = neg_cols_batch
+    interior_cols[:, 1::2] = pos_cols_batch
+    interior_valid[:, 0::2] = step_ids[None, :] < neg_counts[:, None]
+    interior_valid[:, 1::2] = step_ids[None, :] < pos_counts[:, None]
 
-    if len(selected_idx_list) < 6:
-        raise SystemExit(f"Unable to build a 4th-order cut-cell stencil in {axis}-direction at row {row}.")
+    interior_slice = slice(3, 3 + n_interior_slots)
+    candidate_offsets[:, interior_slice] = interior_offsets
+    candidate_kinds[:, interior_slice] = 1
+    candidate_cols[:, interior_slice] = interior_cols
+    candidate_valid[:, interior_slice] = interior_valid
 
-    selected_idx = np.asarray(selected_idx_list[:6], dtype=np.int32)
-    selected_offsets = np.asarray([all_offsets[i] for i in selected_idx], dtype=np.float64)
-    selected_kinds = np.asarray([all_kinds[i] for i in selected_idx], dtype=np.int8)
-    selected_cols = np.asarray([all_cols[i] for i in selected_idx], dtype=np.int32)
-    selected_vals = np.asarray([all_vals[i] for i in selected_idx], dtype=np.float64)
+    # Late boundary points are always appended; duplicate suppression is handled
+    # in bulk below, which reproduces the prior first-occurrence semantics.
+    candidate_offsets[:, -2] = neg_boundary_offset
+    candidate_kinds[:, -2] = 2
+    candidate_vals[:, -2] = neg_value
+    candidate_valid[:, -2] = True
 
-    order = np.argsort(selected_offsets)
-    selected_offsets = selected_offsets[order]
-    selected_kinds = selected_kinds[order]
-    selected_cols = selected_cols[order]
-    selected_vals = selected_vals[order]
+    candidate_offsets[:, -1] = pos_boundary_offset
+    candidate_kinds[:, -1] = 2
+    candidate_vals[:, -1] = pos_value
+    candidate_valid[:, -1] = True
 
-    weights = finite_difference_second_derivative_weights(selected_offsets.tolist())
+    prev_mask = np.tril(np.ones((n_candidate_slots, n_candidate_slots), dtype=bool), k=-1)
+    equal_offsets = candidate_offsets[:, :, None] == candidate_offsets[:, None, :]
+    valid_pairs = candidate_valid[:, :, None] & candidate_valid[:, None, :]
+    duplicate = np.any(equal_offsets & valid_pairs & prev_mask[None, :, :], axis=2)
+    first_occurrence = candidate_valid & ~duplicate
 
-    interior_mask = selected_kinds == 1
-    boundary_mask = selected_kinds == 2
-    center_mask = selected_kinds == 0
+    n_unique = np.sum(first_occurrence, axis=1, dtype=np.int32)
+    if np.any(n_unique < 6):
+        bad_idx = int(np.nonzero(n_unique < 6)[0][0])
+        raise SystemExit(f"Unable to build a 4th-order cut-cell stencil in {axis}-direction at row {int(rows[bad_idx])}.")
 
-    matrix_entries = [
-        (int(col), float(weight))
-        for col, weight in zip(selected_cols[interior_mask].tolist(), weights[interior_mask].tolist())
-    ]
-    rhs_shift = float(np.dot(weights[boundary_mask], selected_vals[boundary_mask]))
-    center_weight = float(weights[center_mask][0])
-    matrix_entries.append((row, center_weight))
-    return matrix_entries, rhs_shift, center_weight, True
+    candidate_pos = np.broadcast_to(np.arange(n_candidate_slots, dtype=np.int32), (n_rows, n_candidate_slots))
+    select_score = np.where(first_occurrence, candidate_pos, n_candidate_slots + candidate_pos)
+    selected_pos = np.argsort(select_score, axis=1)[:, :6]
+
+    selected_offsets = np.take_along_axis(candidate_offsets, selected_pos, axis=1)
+    selected_kinds = np.take_along_axis(candidate_kinds, selected_pos, axis=1)
+    selected_cols = np.take_along_axis(candidate_cols, selected_pos, axis=1)
+    selected_vals = np.take_along_axis(candidate_vals, selected_pos, axis=1)
+
+    order = np.argsort(selected_offsets, axis=1)
+    templ_rows = rows.astype(np.int32, copy=False)
+    templ_offsets = np.take_along_axis(selected_offsets, order, axis=1)
+    templ_kinds = np.take_along_axis(selected_kinds, order, axis=1)
+    templ_cols = np.take_along_axis(selected_cols, order, axis=1)
+    templ_vals = np.take_along_axis(selected_vals, order, axis=1)
+    return templ_rows, templ_offsets, templ_kinds, templ_cols, templ_vals
 
 
 def preprocess_fd4_system(
@@ -322,12 +391,12 @@ def preprocess_fd4_system(
     std_near = 16.0 / (12.0 * spacing * spacing)
     std_far = -1.0 / (12.0 * spacing * spacing)
 
-    lut_pad = np.pad(cart_lookup, ((2, 2), (2, 2)), mode="constant")
+    lut_pad = np.pad(cart_lookup, ((MAX_TEMPLATE_STEPS, MAX_TEMPLATE_STEPS), (MAX_TEMPLATE_STEPS, MAX_TEMPLATE_STEPS)), mode="constant")
     inner_gidx0 = inner_indices - 1
     b = rhs_all[inner_gidx0].astype(np.float64).copy()
     diag = lambda_inner.astype(np.float64).copy()
-    ii0 = cart_i_all[inner_gidx0] - cart_i_min + 2
-    jj0 = cart_j_all[inner_gidx0] - cart_j_min + 2
+    ii0 = cart_i_all[inner_gidx0] - cart_i_min + MAX_TEMPLATE_STEPS
+    jj0 = cart_j_all[inner_gidx0] - cart_j_min + MAX_TEMPLATE_STEPS
 
     x_gids = np.stack([lut_pad[jj0, ii0 - 2], lut_pad[jj0, ii0 - 1], lut_pad[jj0, ii0 + 1], lut_pad[jj0, ii0 + 2]], axis=1)
     y_gids = np.stack([lut_pad[jj0 - 2, ii0], lut_pad[jj0 - 1, ii0], lut_pad[jj0 + 1, ii0], lut_pad[jj0 + 2, ii0]], axis=1)
@@ -356,92 +425,80 @@ def preprocess_fd4_system(
     y_reg_triplet_cols = y_cols_regular[y_reg_rows].reshape(-1).astype(np.int32, copy=False)
     y_reg_triplet_vals = -np.tile(regular_weights, y_reg_rows.size)
 
-    irr_rows: list[int] = []
-    irr_cols: list[int] = []
-    irr_vals: list[float] = []
+    x_irregular_rows = np.nonzero(~x_regular)[0].astype(np.int32)
+    y_irregular_rows = np.nonzero(~y_regular)[0].astype(np.int32)
+    n_irregular_x = int(x_irregular_rows.size)
+    n_irregular_y = int(y_irregular_rows.size)
 
-    for row, gidx1 in enumerate(inner_indices.tolist()):
-        gidx0 = gidx1 - 1
-        x_i = float(x_all[gidx0])
-        y_i = float(y_all[gidx0])
-        if bool(x_regular[row]):
-            x_rhs_shift = 0.0
-            x_irregular = False
-        else:
-            x_entries, x_rhs_shift, _, x_irregular = build_axis_fd4_stencil(
-                gidx0=gidx0,
-                row=row,
-                axis="x",
-                cart_i_all=cart_i_all,
-                cart_j_all=cart_j_all,
-                pinfo=pinfo,
-                cart_lookup=cart_lookup,
-                cart_i_min=cart_i_min,
-                cart_j_min=cart_j_min,
-                global_to_inner=global_to_inner,
-                spacing=spacing,
-                x_i=x_i,
-                y_i=y_i,
-                trace_splines=trace_splines,
-                rhomin=rhomin,
-                rhomax=rhomax,
-                boundary_models=boundary_models,
-                axis_tables=axis_tables,
-                perf=perf,
-            )
-            for col, weight in x_entries:
-                if col == row:
-                    diag[row] -= weight
-                else:
-                    irr_rows.append(row)
-                    irr_cols.append(col)
-                    irr_vals.append(-weight)
+    x_templ_rows, x_templ_offsets, x_templ_kinds, x_templ_cols, x_templ_vals = build_axis_fd4_templates_batch(
+        axis="x",
+        rows=x_irregular_rows,
+        inner_indices=inner_indices,
+        cart_i_all=cart_i_all,
+        cart_j_all=cart_j_all,
+        pinfo=pinfo,
+        lut_pad=lut_pad,
+        cart_i_min=cart_i_min,
+        cart_j_min=cart_j_min,
+        global_to_inner=global_to_inner,
+        spacing=spacing,
+        x_all=x_all,
+        y_all=y_all,
+        trace_splines=trace_splines,
+        rhomin=rhomin,
+        rhomax=rhomax,
+        boundary_models=boundary_models,
+        axis_tables=axis_tables,
+        perf=perf,
+    )
 
-        if bool(y_regular[row]):
-            y_rhs_shift = 0.0
-            y_irregular = False
-        else:
-            y_entries, y_rhs_shift, _, y_irregular = build_axis_fd4_stencil(
-                gidx0=gidx0,
-                row=row,
-                axis="y",
-                cart_i_all=cart_i_all,
-                cart_j_all=cart_j_all,
-                pinfo=pinfo,
-                cart_lookup=cart_lookup,
-                cart_i_min=cart_i_min,
-                cart_j_min=cart_j_min,
-                global_to_inner=global_to_inner,
-                spacing=spacing,
-                x_i=x_i,
-                y_i=y_i,
-                trace_splines=trace_splines,
-                rhomin=rhomin,
-                rhomax=rhomax,
-                boundary_models=boundary_models,
-                axis_tables=axis_tables,
-                perf=perf,
-            )
-            for col, weight in y_entries:
-                if col == row:
-                    diag[row] -= weight
-                else:
-                    irr_rows.append(row)
-                    irr_cols.append(col)
-                    irr_vals.append(-weight)
+    y_templ_rows, y_templ_offsets, y_templ_kinds, y_templ_cols, y_templ_vals = build_axis_fd4_templates_batch(
+        axis="y",
+        rows=y_irregular_rows,
+        inner_indices=inner_indices,
+        cart_i_all=cart_i_all,
+        cart_j_all=cart_j_all,
+        pinfo=pinfo,
+        lut_pad=lut_pad,
+        cart_i_min=cart_i_min,
+        cart_j_min=cart_j_min,
+        global_to_inner=global_to_inner,
+        spacing=spacing,
+        x_all=x_all,
+        y_all=y_all,
+        trace_splines=trace_splines,
+        rhomin=rhomin,
+        rhomax=rhomax,
+        boundary_models=boundary_models,
+        axis_tables=axis_tables,
+        perf=perf,
+    )
+    templ_rows_arr = np.concatenate((x_templ_rows, y_templ_rows))
+    offsets_batch = np.concatenate((x_templ_offsets, y_templ_offsets), axis=0)
+    kinds_batch = np.concatenate((x_templ_kinds, y_templ_kinds), axis=0)
+    cols_batch = np.concatenate((x_templ_cols, y_templ_cols), axis=0)
+    vals_batch = np.concatenate((x_templ_vals, y_templ_vals), axis=0)
 
-        b[row] += x_rhs_shift + y_rhs_shift
-        n_irregular_x += int(x_irregular)
-        n_irregular_y += int(y_irregular)
+    weights_batch = finite_difference_second_derivative_weights_batch(offsets_batch)
+
+    boundary_contrib = np.where(kinds_batch == 2, vals_batch, 0.0)
+    center_mask = kinds_batch == 0
+    interior_mask = kinds_batch == 1
+    rhs_shifts = np.sum(weights_batch * boundary_contrib, axis=1)
+    center_weights = np.sum(weights_batch * center_mask.astype(np.float64), axis=1)
+
+    np.add.at(b, templ_rows_arr, rhs_shifts)
+    np.add.at(diag, templ_rows_arr, -center_weights)
+
+    interior_counts = np.sum(interior_mask, axis=1, dtype=np.int32)
+    irr_rows_arr = np.repeat(templ_rows_arr, interior_counts).astype(np.int32, copy=False)
+    irr_cols_arr = cols_batch[interior_mask].astype(np.int32, copy=False)
+    irr_vals_arr = (-weights_batch[interior_mask]).astype(np.float64, copy=False)
 
     t_loop = time.perf_counter()
     diag_rows = np.arange(n_rows, dtype=np.int32)
     diag_cols = diag_rows
     diag_vals = diag
-
-    irr_rows_arr = np.asarray(irr_rows, dtype=np.int32) if irr_rows else np.empty(0, dtype=np.int32)
-    irr_cols_arr = np.asarray(irr_cols, dtype=np.int32) if irr_cols else np.empty(0, dtype=np.int32)
-    irr_vals_arr = np.asarray(irr_vals, dtype=np.float64) if irr_vals else np.empty(0, dtype=np.float64)
 
     t_pre = time.perf_counter()
     meta = PreprocessMeta(
