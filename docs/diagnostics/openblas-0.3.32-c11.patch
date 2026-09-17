@@ -1,0 +1,13 @@
+--- a/c_check
++++ b/c_check
+@@ -342,8 +342,8 @@
+ is_appleclang=0
+ if [ "$architecture" = "arm64" ]; then
+     if [ "$compiler" = "CLANG" ]; then
+-        data=`$compiler_name --version`
+-	case "$data" in Apple*)
++        clang_version=`$compiler_name --version`
++	case "$clang_version" in Apple*)
+ 	is_appleclang=1
+ 	esac
+     fi
