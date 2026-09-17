@@ -26,12 +26,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tol", type=float, default=1.0e-10, help="Relative tolerance for BiCGSTAB.")
     parser.add_argument("--maxiter", type=int, default=1000, help="Maximum BiCGSTAB iterations.")
     parser.add_argument(
-        "--amg-type",
-        choices=("rs", "sa"),
-        default="sa",
-        help="AMG hierarchy type: classical Ruge-Stuben (rs) or smoothed aggregation (sa).",
-    )
-    parser.add_argument(
         "--benchmark-rhs",
         type=int,
         default=1,
@@ -41,6 +35,16 @@ def parse_args() -> argparse.Namespace:
         "--report-boundary-bands",
         action="store_true",
         help="Print error statistics in distance-to-boundary bands.",
+    )
+    parser.add_argument(
+        "--report-operator-diagnostics",
+        action="store_true",
+        help="Print operator diagnostics such as potential-to-K ratios and Rayleigh probes.",
+    )
+    parser.add_argument(
+        "--debug-checks",
+        action="store_true",
+        help="Run expensive structural validation checks on the preprocessed CSR/operator data.",
     )
     return parser.parse_args()
 

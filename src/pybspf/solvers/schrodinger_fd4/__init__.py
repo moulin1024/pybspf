@@ -1,20 +1,46 @@
-from .assembly import AssemblyResult, PreprocessMeta, PreprocessedSystem, assemble_fd4_system_from_preprocessed, preprocess_fd4_system
+from .assembly import (
+    AssemblyResult,
+    BaseOperatorK,
+    BoundaryGeometryData,
+    CSRPattern,
+    OperatorValues,
+    PreprocessMeta,
+    PreprocessedSystem,
+    assemble_fd4_system_from_preprocessed,
+    assemble_rhs,
+    build_base_operator_k,
+    build_scipy_csr_matrix,
+    inject_potential_into_csr_data,
+    preprocess_fd4_system,
+    validate_csr_pattern,
+    validate_preprocessed_system,
+)
 from .cli import main
 from .io import load_fields, load_mesh, parse_args
 from .linear import build_amg_hierarchy, compute_operator_diagnostics, solve_with_amg_bicgstab, solve_with_existing_amg
 
 __all__ = [
     "assemble_fd4_system_from_preprocessed",
+    "assemble_rhs",
     "AssemblyResult",
+    "BaseOperatorK",
+    "BoundaryGeometryData",
+    "build_base_operator_k",
     "build_amg_hierarchy",
+    "build_scipy_csr_matrix",
     "compute_operator_diagnostics",
+    "CSRPattern",
+    "inject_potential_into_csr_data",
     "load_fields",
     "load_mesh",
     "main",
+    "OperatorValues",
     "parse_args",
     "PreprocessMeta",
     "PreprocessedSystem",
     "preprocess_fd4_system",
     "solve_with_amg_bicgstab",
     "solve_with_existing_amg",
+    "validate_csr_pattern",
+    "validate_preprocessed_system",
 ]

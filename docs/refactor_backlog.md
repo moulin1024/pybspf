@@ -1,3 +1,6 @@
+> Historical migration plan. Many phases below are already implemented.
+> See [assessment.md](assessment.md) for the current status and remaining work.
+
 # BSPF Refactor Backlog
 
 This backlog turns the package reorganization plan into an execution sequence with clear deliverables and exit criteria.

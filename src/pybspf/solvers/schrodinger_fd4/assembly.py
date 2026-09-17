@@ -32,6 +32,7 @@ class PreprocessMeta:
     boundary_setup_time_s: float
     lookup_setup_time_s: float
     template_build_time_s: float
+    csr_pattern_build_time_s: float
     preprocess_total_time_s: float
     boundary_trace_calls: int
     boundary_trace_time_s: float
@@ -42,36 +43,161 @@ class PreprocessMeta:
 
 
 @dataclass(frozen=True)
-class PreprocessedSystem:
-    n_rows: int
+class BoundaryGeometryData:
     inner_indices: np.ndarray
-    potential: np.ndarray
     x_inner: np.ndarray
     y_inner: np.ndarray
     u_exact: np.ndarray
+
+
+@dataclass(frozen=True)
+class CSRPattern:
+    n_rows: int
+    csr_indptr: np.ndarray
+    csr_indices: np.ndarray
+    diag_positions: np.ndarray
+
+
+@dataclass(frozen=True)
+class OperatorValues:
+    potential: np.ndarray
     b_base: np.ndarray
-    diag_rows: np.ndarray
-    diag_cols: np.ndarray
-    diag_vals: np.ndarray
-    x_reg_rows: np.ndarray
-    x_reg_cols: np.ndarray
-    x_reg_vals: np.ndarray
-    y_reg_rows: np.ndarray
-    y_reg_cols: np.ndarray
-    y_reg_vals: np.ndarray
-    irr_rows: np.ndarray
-    irr_cols: np.ndarray
-    irr_vals: np.ndarray
+    csr_base_data: np.ndarray
+
+
+@dataclass(frozen=True)
+class PreprocessedSystem:
+    geometry: BoundaryGeometryData
+    pattern: CSRPattern
+    operator: OperatorValues
     meta: PreprocessMeta
 
 
 @dataclass(frozen=True)
+class BaseOperatorK:
+    pattern: CSRPattern
+    csr_data: np.ndarray
+
+
+@dataclass(frozen=True)
 class AssemblyResult:
-    A: sparse.csr_matrix
+    csr_indptr: np.ndarray
+    csr_indices: np.ndarray
+    csr_data: np.ndarray
     b: np.ndarray
     active_indices: np.ndarray
     u_exact: np.ndarray
     meta: PreprocessMeta
+
+
+def validate_csr_pattern(pattern: CSRPattern) -> None:
+    n_rows = int(pattern.n_rows)
+    indptr = np.asarray(pattern.csr_indptr, dtype=np.int64)
+    indices = np.asarray(pattern.csr_indices, dtype=np.int64)
+    diag_positions = np.asarray(pattern.diag_positions, dtype=np.int64)
+
+    if indptr.ndim != 1 or indptr.size != n_rows + 1:
+        raise ValueError(f"CSR indptr has shape {indptr.shape}; expected ({n_rows + 1},).")
+    if indices.ndim != 1:
+        raise ValueError(f"CSR indices must be 1D, got shape {indices.shape}.")
+    if indptr[0] != 0:
+        raise ValueError(f"CSR indptr must start at 0, got {indptr[0]}.")
+    if np.any(indptr[1:] < indptr[:-1]):
+        raise ValueError("CSR indptr must be monotonically nondecreasing.")
+    if int(indptr[-1]) != indices.size:
+        raise ValueError(f"CSR indptr[-1]={int(indptr[-1])} does not match nnz={indices.size}.")
+    if diag_positions.shape != (n_rows,):
+        raise ValueError(f"diag_positions has shape {diag_positions.shape}; expected ({n_rows},).")
+    if np.any(diag_positions < indptr[:-1]) or np.any(diag_positions >= indptr[1:]):
+        raise ValueError("diag_positions contains entries outside their owning CSR row.")
+    if np.unique(diag_positions).size != diag_positions.size:
+        raise ValueError("diag_positions must be unique.")
+    if np.any(indices < 0) or np.any(indices >= n_rows):
+        raise ValueError("CSR column indices are out of bounds.")
+
+    row_nnz = np.diff(indptr)
+    if np.any(row_nnz != 9):
+        bad_row = int(np.nonzero(row_nnz != 9)[0][0])
+        raise ValueError(f"Expected fixed 9-point sparsity; row {bad_row} has nnz={int(row_nnz[bad_row])}.")
+
+    for row in range(n_rows):
+        start = int(indptr[row])
+        end = int(indptr[row + 1])
+        row_cols = indices[start:end]
+        if np.any(row_cols[1:] < row_cols[:-1]):
+            raise ValueError(f"CSR row {row} column indices are not sorted.")
+        if int(indices[int(diag_positions[row])]) != row:
+            raise ValueError(f"CSR row {row} diagonal entry is not located at diag_positions[{row}].")
+
+
+def validate_preprocessed_system(pre: PreprocessedSystem) -> None:
+    pattern = pre.pattern
+    operator = pre.operator
+    geometry = pre.geometry
+
+    validate_csr_pattern(pattern)
+
+    n_rows = int(pattern.n_rows)
+    potential = np.asarray(operator.potential, dtype=np.float64)
+    b_base = np.asarray(operator.b_base, dtype=np.float64)
+    csr_base_data = np.asarray(operator.csr_base_data, dtype=np.float64)
+    inner_indices = np.asarray(geometry.inner_indices, dtype=np.int64)
+    x_inner = np.asarray(geometry.x_inner, dtype=np.float64)
+    y_inner = np.asarray(geometry.y_inner, dtype=np.float64)
+    u_exact = np.asarray(geometry.u_exact, dtype=np.float64)
+
+    if potential.shape != (n_rows,):
+        raise ValueError(f"potential has shape {potential.shape}; expected ({n_rows},).")
+    if b_base.shape != (n_rows,):
+        raise ValueError(f"b_base has shape {b_base.shape}; expected ({n_rows},).")
+    if csr_base_data.shape != np.asarray(pattern.csr_indices).shape:
+        raise ValueError("csr_base_data must have the same length as csr_indices.")
+    if inner_indices.shape != (n_rows,):
+        raise ValueError(f"inner_indices has shape {inner_indices.shape}; expected ({n_rows},).")
+    if x_inner.shape != (n_rows,) or y_inner.shape != (n_rows,):
+        raise ValueError("x_inner and y_inner must both be 1D arrays of length n_rows.")
+    if np.any(inner_indices <= 0):
+        raise ValueError("inner_indices must use positive 1-based indexing.")
+    if np.unique(inner_indices).size != inner_indices.size:
+        raise ValueError("inner_indices must be unique.")
+    if np.max(inner_indices, initial=0) > u_exact.size:
+        raise ValueError("u_exact is too short to cover all inner_indices.")
+
+
+def build_base_operator_k(pre: PreprocessedSystem) -> BaseOperatorK:
+    return BaseOperatorK(
+        pattern=pre.pattern,
+        csr_data=np.asarray(pre.operator.csr_base_data, dtype=np.float64).copy(),
+    )
+
+
+def inject_potential_into_csr_data(
+    pattern: CSRPattern,
+    csr_data: np.ndarray,
+    potential: np.ndarray,
+) -> np.ndarray:
+    data = np.asarray(csr_data, dtype=np.float64).copy()
+    data[np.asarray(pattern.diag_positions, dtype=np.int32)] += np.asarray(potential, dtype=np.float64)
+    return data
+
+
+def assemble_rhs(pre: PreprocessedSystem) -> np.ndarray:
+    return np.asarray(pre.operator.b_base, dtype=np.float64).copy()
+
+
+def build_scipy_csr_matrix(
+    pattern: CSRPattern,
+    csr_data: np.ndarray,
+) -> sparse.csr_matrix:
+    return sparse.csr_matrix(
+        (
+            np.asarray(csr_data, dtype=np.float64),
+            np.asarray(pattern.csr_indices, dtype=np.int32),
+            np.asarray(pattern.csr_indptr, dtype=np.int32),
+        ),
+        shape=(pattern.n_rows, pattern.n_rows),
+        copy=False,
+    )
 
 
 def build_cartesian_lookup(mesh: dict[str, np.ndarray | float | int]) -> tuple[np.ndarray, int, int]:
@@ -342,6 +468,8 @@ def build_axis_fd4_templates_batch(
 def preprocess_fd4_system(
     mesh: dict[str, np.ndarray | float | int],
     fields: dict[str, np.ndarray],
+    *,
+    validate: bool = False,
 ) -> PreprocessedSystem:
     t0 = time.perf_counter()
     if not np.allclose(fields["co"], 1.0) or not np.allclose(fields["xi_inner"], 1.0):
@@ -394,7 +522,7 @@ def preprocess_fd4_system(
     lut_pad = np.pad(cart_lookup, ((MAX_TEMPLATE_STEPS, MAX_TEMPLATE_STEPS), (MAX_TEMPLATE_STEPS, MAX_TEMPLATE_STEPS)), mode="constant")
     inner_gidx0 = inner_indices - 1
     b = rhs_all[inner_gidx0].astype(np.float64).copy()
-    diag = lambda_inner.astype(np.float64).copy()
+    diag = np.zeros_like(lambda_inner, dtype=np.float64)
     ii0 = cart_i_all[inner_gidx0] - cart_i_min + MAX_TEMPLATE_STEPS
     jj0 = cart_j_all[inner_gidx0] - cart_j_min + MAX_TEMPLATE_STEPS
 
@@ -500,6 +628,37 @@ def preprocess_fd4_system(
     diag_cols = diag_rows
     diag_vals = diag
 
+    all_rows = np.concatenate((
+        x_reg_triplet_rows,
+        y_reg_triplet_rows,
+        irr_rows_arr,
+        diag_rows,
+    ))
+    all_cols = np.concatenate((
+        x_reg_triplet_cols,
+        y_reg_triplet_cols,
+        irr_cols_arr,
+        diag_cols,
+    ))
+    all_vals = np.concatenate((
+        x_reg_triplet_vals,
+        y_reg_triplet_vals,
+        irr_vals_arr,
+        diag_vals,
+    ))
+    t_triplet = time.perf_counter()
+    k_base = sparse.coo_matrix((all_vals, (all_rows, all_cols)), shape=(n_rows, n_rows)).tocsr()
+    t_csr = time.perf_counter()
+    diag_positions = np.empty(n_rows, dtype=np.int32)
+    for row in range(n_rows):
+        start = k_base.indptr[row]
+        end = k_base.indptr[row + 1]
+        row_indices = k_base.indices[start:end]
+        matches = np.nonzero(row_indices == row)[0]
+        if matches.size != 1:
+            raise RuntimeError(f"Expected exactly one diagonal entry in row {row}, found {matches.size}.")
+        diag_positions[row] = start + int(matches[0])
+
     t_pre = time.perf_counter()
     meta = PreprocessMeta(
         n_inner=int(np.count_nonzero(pinfo == PINFO_INNER)),
@@ -513,61 +672,47 @@ def preprocess_fd4_system(
         boundary_setup_time_s=t_boundary_setup - t0,
         lookup_setup_time_s=t_lookup - t_boundary_setup,
         template_build_time_s=t_loop - t_lookup,
+        csr_pattern_build_time_s=t_csr - t_loop,
         preprocess_total_time_s=t_pre - t0,
         boundary_trace_calls=int(perf["boundary_trace_calls"]),
         boundary_trace_time_s=float(perf["boundary_trace_time_s"]),
+        triplet_concat_time_s=t_triplet - t_loop,
+        csr_build_time_s=t_csr - t_triplet,
+        nnz=int(k_base.nnz),
     )
-    return PreprocessedSystem(
-        n_rows=n_rows,
-        inner_indices=inner_indices,
-        potential=lambda_inner,
-        x_inner=x_all[inner_gidx0].astype(np.float64, copy=False),
-        y_inner=y_all[inner_gidx0].astype(np.float64, copy=False),
-        u_exact=u_exact,
-        b_base=b,
-        diag_rows=diag_rows,
-        diag_cols=diag_cols,
-        diag_vals=diag_vals,
-        x_reg_rows=x_reg_triplet_rows,
-        x_reg_cols=x_reg_triplet_cols,
-        x_reg_vals=x_reg_triplet_vals,
-        y_reg_rows=y_reg_triplet_rows,
-        y_reg_cols=y_reg_triplet_cols,
-        y_reg_vals=y_reg_triplet_vals,
-        irr_rows=irr_rows_arr,
-        irr_cols=irr_cols_arr,
-        irr_vals=irr_vals_arr,
+    pre = PreprocessedSystem(
+        geometry=BoundaryGeometryData(
+            inner_indices=inner_indices,
+            x_inner=x_all[inner_gidx0].astype(np.float64, copy=False),
+            y_inner=y_all[inner_gidx0].astype(np.float64, copy=False),
+            u_exact=u_exact,
+        ),
+        pattern=CSRPattern(
+            n_rows=n_rows,
+            csr_indptr=np.asarray(k_base.indptr, dtype=np.int32),
+            csr_indices=np.asarray(k_base.indices, dtype=np.int32),
+            diag_positions=diag_positions,
+        ),
+        operator=OperatorValues(
+            potential=lambda_inner,
+            b_base=b,
+            csr_base_data=np.asarray(k_base.data, dtype=np.float64),
+        ),
         meta=meta,
     )
+    if validate:
+        validate_preprocessed_system(pre)
+    return pre
 
 
 def assemble_fd4_system_from_preprocessed(
     pre: PreprocessedSystem,
 ) -> AssemblyResult:
     t0 = time.perf_counter()
-    n_rows = int(pre.n_rows)
-    b = np.asarray(pre.b_base, dtype=np.float64).copy()
-
-    all_rows = np.concatenate((
-        np.asarray(pre.x_reg_rows, dtype=np.int32),
-        np.asarray(pre.y_reg_rows, dtype=np.int32),
-        np.asarray(pre.irr_rows, dtype=np.int32),
-        np.asarray(pre.diag_rows, dtype=np.int32),
-    ))
-    all_cols = np.concatenate((
-        np.asarray(pre.x_reg_cols, dtype=np.int32),
-        np.asarray(pre.y_reg_cols, dtype=np.int32),
-        np.asarray(pre.irr_cols, dtype=np.int32),
-        np.asarray(pre.diag_cols, dtype=np.int32),
-    ))
-    all_vals = np.concatenate((
-        np.asarray(pre.x_reg_vals, dtype=np.float64),
-        np.asarray(pre.y_reg_vals, dtype=np.float64),
-        np.asarray(pre.irr_vals, dtype=np.float64),
-        np.asarray(pre.diag_vals, dtype=np.float64),
-    ))
+    k = build_base_operator_k(pre)
+    b = assemble_rhs(pre)
     t_triplet = time.perf_counter()
-    A = sparse.coo_array((all_vals, (all_rows, all_cols)), shape=(n_rows, n_rows)).tocsr()
+    data = inject_potential_into_csr_data(k.pattern, k.csr_data, pre.operator.potential)
     t_csr = time.perf_counter()
 
     meta = PreprocessMeta(
@@ -582,18 +727,21 @@ def assemble_fd4_system_from_preprocessed(
         boundary_setup_time_s=pre.meta.boundary_setup_time_s,
         lookup_setup_time_s=pre.meta.lookup_setup_time_s,
         template_build_time_s=pre.meta.template_build_time_s,
+        csr_pattern_build_time_s=pre.meta.csr_pattern_build_time_s,
         preprocess_total_time_s=pre.meta.preprocess_total_time_s,
         boundary_trace_calls=pre.meta.boundary_trace_calls,
         boundary_trace_time_s=pre.meta.boundary_trace_time_s,
         triplet_concat_time_s=t_triplet - t0,
         csr_build_time_s=t_csr - t_triplet,
         online_assembly_time_s=t_csr - t0,
-        nnz=int(A.nnz),
+        nnz=pre.meta.nnz,
     )
     return AssemblyResult(
-        A=A,
+        csr_indptr=np.asarray(pre.pattern.csr_indptr, dtype=np.int32),
+        csr_indices=np.asarray(pre.pattern.csr_indices, dtype=np.int32),
+        csr_data=np.asarray(data, dtype=np.float64),
         b=b,
-        active_indices=np.asarray(pre.inner_indices, dtype=np.int32),
-        u_exact=np.asarray(pre.u_exact, dtype=np.float64),
+        active_indices=np.asarray(pre.geometry.inner_indices, dtype=np.int32),
+        u_exact=np.asarray(pre.geometry.u_exact, dtype=np.float64),
         meta=meta,
     )

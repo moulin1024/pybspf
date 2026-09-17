@@ -7,18 +7,8 @@ between CPU and GPU arrays.
 
 from __future__ import annotations
 
-import os
-
 import numpy as np
 from scipy import linalg as sla
-
-# Set CUDA_PATH for NVHPC SDK before importing CuPy so CuPy's JIT machinery can
-# find the CUDA toolkit headers when that toolchain layout is present.
-if "CUDA_PATH" not in os.environ:
-    nvhpc_cuda_path = "/opt/nvidia/hpc_sdk/Linux_x86_64/24.9/cuda/12.6"
-    if os.path.exists(nvhpc_cuda_path):
-        os.environ["CUDA_PATH"] = nvhpc_cuda_path
-        os.environ["CUDA_HOME"] = nvhpc_cuda_path
 
 _HAS_CUPY = False
 try:
@@ -27,10 +17,22 @@ try:
     import cupyx.scipy.linalg as cpla
 
     _HAS_CUPY = True
-except Exception:
+except (ImportError, OSError):
     cp = None
     cpla = None
     cp_interp = None
+
+
+def get_array_module(*, use_gpu: bool = False):
+    """Return NumPy or CuPy, failing explicitly if the GPU stack is missing."""
+    if use_gpu:
+        if not _HAS_CUPY:
+            raise RuntimeError(
+                "CuPy is not available. Install a CuPy build matching your CUDA "
+                "runtime or set use_gpu=False."
+            )
+        return cp
+    return np
 
 
 def is_cupy_array(a) -> bool:
@@ -191,6 +193,7 @@ class _Backend:
             )
 
 __all__ = [
+    "get_array_module",
     "_Backend",
     "_HAS_CUPY",
     "cp",

@@ -8,14 +8,14 @@ implemented inside the package modules.
 
 from __future__ import annotations
 
-from typing import Callable, Dict, Optional, Tuple
+from typing import Optional, Tuple
+from numbers import Integral
 
 import numpy as np
 
 from ..backend import _Backend, _HAS_CUPY, cp, is_cupy_array, normalize_backend_array
 from ..basis import BSplineBasis1D
 from ..boundary import EndpointOps1D
-from ..correction import ResidualCorrection
 from ..grid import Grid1D
 from ..kkt import KKTLUCache
 from ..knots import _Knot
@@ -62,6 +62,17 @@ class BSPF1D:
         self.order = self.degree - 1 if order is None else int(order)
         self.num_bd = self.degree if num_boundary_points is None else int(num_boundary_points)
 
+        if grid.use_gpu != self.use_gpu:
+            raise ValueError("grid and operator must use the same backend.")
+        if correction not in ("spectral", "none"):
+            raise ValueError("correction must be 'spectral' or 'none'.")
+        if self.degree < 1 or self.degree != degree:
+            raise ValueError("degree must be a positive integer.")
+        if not 0 <= self.order <= self.degree or (order is not None and self.order != order):
+            raise ValueError("order must be an integer between 0 and degree.")
+        if not max(1, self.order) <= self.num_bd <= grid.n:
+            raise ValueError("num_boundary_points must be between max(1, order) and grid size.")
+
         self.knots = normalize_backend_array(
             knots,
             use_gpu=self.use_gpu,
@@ -84,57 +95,13 @@ class BSPF1D:
         self._kkt_solver = KKTLUCache(self.Q, self.end.C, use_gpu=self.use_gpu)
         self._kkt_cache = self._kkt_solver._cache
 
-        if self.use_gpu and _HAS_CUPY:
-            # On GPU, reusing the same arrays is enough; CuPy handles device-side
-            # linear algebra efficiently without a Fortran-order copy.
-            self._BW_f = self.BW
-            self._BND_f = self.end.BND
-            self._BT0_f = self.basis.BT0
-            self._B1T_f = self.basis.BkT(1)
-            self._B2T_f = self.basis.BkT(2)
-            self._B3T_f = self.basis.BkT(3)
-            self._B4T_f = self.basis.BkT(4)
-            n_b = self.basis.B0.shape[0]
-            self._rhs_buf = cp.empty(n_b + 2 * self.order, dtype=cp.float64)
-            omega = self.grid.omega
-            self._iomega = 1j * omega
-            self._iomega2 = self._iomega**2
-            self._iomega3 = self._iomega**3
-            self._iomega4 = self._iomega**4
-            self._residual_buf = cp.empty(self.grid.n, dtype=cp.float64)
-        else:
-        # Preserve the CPU layout and preallocation strategy used by the
-        # package-owned numerical routines.
-            self._BW_f = np.asfortranarray(self.BW)
-            self._BND_f = np.asfortranarray(self.end.BND)
-            self._BT0_f = np.asfortranarray(self.basis.BT0)
-            self._B1T_f = np.asfortranarray(self.basis.BkT(1))
-            self._B2T_f = np.asfortranarray(self.basis.BkT(2))
-            self._B3T_f = np.asfortranarray(self.basis.BkT(3))
-            self._B4T_f = np.asfortranarray(self.basis.BkT(4))
-            n_b = self.basis.B0.shape[0]
-            self._rhs_buf = np.empty(n_b + 2 * self.order, dtype=np.float64)
-            omega = self.grid.omega
-            self._iomega = 1j * omega
-            self._iomega2 = self._iomega**2
-            self._iomega3 = self._iomega**3
-            self._iomega4 = self._iomega**4
-            self._residual_buf = np.empty(self.grid.n, dtype=np.float64)
-
+        layout = (lambda a: a) if self.use_gpu else np.asfortranarray
+        self._BW_f = layout(self.BW)
+        self._BND_f = layout(self.end.BND)
+        self._BT0_f = layout(self.basis.BT0)
+        for k in range(1, 5):
+            setattr(self, f"_B{k}T_f", layout(self.basis.BkT(k)))
         self.correction = correction
-        if correction == "spectral":
-            self._correct = lambda residual, omega, kind, order, n: ResidualCorrection.spectral(
-                residual,
-                omega,
-                kind=kind,
-                order=order,
-                n=n,
-                x=self.grid.x,
-            )
-        else:
-            self._correct = ResidualCorrection.none
-
-        self._cached_arrays: Dict[str, Array] = {}
 
     @classmethod
     def from_grid(
@@ -167,7 +134,9 @@ class BSPF1D:
         @param use_gpu Whether to create a GPU-backed operator.
         @return Configured ``BSPF1D`` instance.
         """
-        x = normalize_backend_array(x, use_gpu=use_gpu, dtype=np.float64, name="BSPF1D x")
+        if isinstance(degree, bool) or not isinstance(degree, Integral) or degree < 1:
+            raise ValueError("degree must be a positive integer.")
+        x = normalize_backend_array(x, use_gpu=use_gpu, dtype=None, name="BSPF1D x")
 
         grid = Grid1D(x, use_gpu=use_gpu)
         k = _Knot.resolve(
@@ -195,41 +164,21 @@ class BSPF1D:
             use_gpu=use_gpu,
         )
 
+    # Numerical implementations live in the operation modules.
+    differentiate = differentiate
+    derivatives = derivatives
+    derivatives_batched = derivatives_batched
+    definite_integral = definite_integral
+    antiderivative = antiderivative
+    enforced_zero_flux = enforced_zero_flux
+    interpolate = interpolate
+    fit_spline = fit_spline
+    interpolate_split_mesh = interpolate_split_mesh
+
     def _kkt_lu(self, lam: float):
         """! @brief Return a cached KKT LU factorization for ``lam``."""
         return self._kkt_solver.factorize(lam)
 
-    def _get_or_compute_array(
-        self,
-        key: str,
-        compute_func: Callable[[], Array],
-        *,
-        no_cache: bool = False,
-    ) -> Array:
-        """! @brief Cache helper kept for compatibility with legacy-style methods.
-
-        @param key Cache key.
-        @param compute_func Callable used when the array is not cached.
-        @param no_cache If ``True``, bypass the cache.
-        @return Cached or newly computed array.
-        """
-        if no_cache:
-            return compute_func()
-        if key not in self._cached_arrays:
-            self._cached_arrays[key] = compute_func()
-        return self._cached_arrays[key]
-
-
-# Bind the package-owned operation-family functions onto the operator class.
-BSPF1D.differentiate = differentiate
-BSPF1D.derivatives = derivatives
-BSPF1D.derivatives_batched = derivatives_batched
-BSPF1D.definite_integral = definite_integral
-BSPF1D.antiderivative = antiderivative
-BSPF1D.enforced_zero_flux = enforced_zero_flux
-BSPF1D.interpolate = interpolate
-BSPF1D.fit_spline = fit_spline
-BSPF1D.interpolate_split_mesh = interpolate_split_mesh
 
 # Preserve the original lowercase class name so older call sites continue to
 # work while the package API is introduced.

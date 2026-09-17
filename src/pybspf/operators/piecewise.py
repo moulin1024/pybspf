@@ -8,7 +8,9 @@ from typing import List, Optional, Tuple
 
 import numpy as np
 
-from ..ops.differentiation import DerivativeResult
+from ..backend import get_array_module, validate_backend_array
+from ..grid import Grid1D
+from ..ops.differentiation import DerivativeResult, _normalize_orders
 from ..types import Array
 from .bspf1d import BSPF1D
 
@@ -32,36 +34,39 @@ class PiecewiseBSPF1D:
         **bspf_kwargs,
     ):
         self.degree = int(degree)
-        self.x = np.asarray(x, dtype=np.float64)
-        self.breakpoints = sorted(breakpoints or [])
+        self.use_gpu = bool(bspf_kwargs.get("use_gpu", False))
+        self._xp = get_array_module(use_gpu=self.use_gpu)
+        validate_backend_array(x, use_gpu=self.use_gpu, name="x")
+        self.x = Grid1D(x, use_gpu=self.use_gpu).x
+        self.breakpoints = sorted([] if breakpoints is None else breakpoints)
         self.min_points_per_seg = int(min_points_per_seg)
 
+        if self.min_points_per_seg < 2:
+            raise ValueError("min_points_per_seg must be at least 2.")
+        if any(not np.isfinite(bp) or not self.x[0] < bp < self.x[-1] for bp in self.breakpoints):
+            raise ValueError("breakpoints must be finite and strictly inside the grid domain.")
         N = self.x.size
 
         # Convert physical breakpoint coordinates into segment boundaries between
         # grid cells. Each boundary splits the data into independent BSPF solves.
         cut_indices = []
         for bp in self.breakpoints:
-            idx = int(np.searchsorted(self.x, bp))
+            idx = int(self._xp.searchsorted(self.x, bp))
             if 1 <= idx <= N - 1:
                 cut_indices.append(idx)
         cut_indices = sorted(set(cut_indices))
 
         self.segments = []
 
-        i_start = 0
-        for idx in cut_indices:
-            i_end = idx - 1
-            if i_end - i_start + 1 >= self.min_points_per_seg:
-                x_seg = self.x[i_start : i_end + 1]
-                op = BSPF1D.from_grid(degree=self.degree, x=x_seg, **bspf_kwargs)
-                self.segments.append(dict(i0=i_start, i1=i_end, op=op))
-            i_start = idx
-
-        if N - i_start >= self.min_points_per_seg:
-            x_seg = self.x[i_start:]
-            op = BSPF1D.from_grid(degree=self.degree, x=x_seg, **bspf_kwargs)
-            self.segments.append(dict(i0=i_start, i1=N - 1, op=op))
+        boundaries = [0, *cut_indices, N]
+        for i_start, i_stop in zip(boundaries[:-1], boundaries[1:]):
+            if i_stop - i_start < self.min_points_per_seg:
+                raise ValueError(
+                    f"Segment [{i_start}:{i_stop}] has fewer than "
+                    f"min_points_per_seg={self.min_points_per_seg} samples."
+                )
+            op = BSPF1D.from_grid(degree=self.degree, x=self.x[i_start:i_stop], **bspf_kwargs)
+            self.segments.append(dict(i0=i_start, i1=i_stop - 1, op=op))
 
     def derivatives(
         self,
@@ -71,20 +76,16 @@ class PiecewiseBSPF1D:
         neumann_bc_global: Optional[Tuple[Optional[float], Optional[float]]] = None,
     ):
         """Compute requested derivative orders on each segment and stitch them."""
-        f = np.asarray(f, dtype=np.float64)
-        if f.shape[0] != self.x.size:
-            raise ValueError(f"f length {f.shape[0]} must match x length {self.x.size}")
-
-        if isinstance(orders, int):
-            normalized_orders = (int(orders),)
-        else:
-            normalized_orders = tuple(sorted({int(order) for order in orders}))
-
-        derivative_full = {
-            order: np.zeros_like(f, dtype=np.float64)
-            for order in normalized_orders
-        }
-        fs_full = np.zeros_like(f, dtype=np.float64)
+        validate_backend_array(f, use_gpu=self.use_gpu, name="f")
+        xp = self._xp
+        f = xp.asarray(f)
+        if f.ndim != 1 or f.size != self.x.size:
+            raise ValueError(f"f must have shape ({self.x.size},).")
+        dtype = xp.complex128 if xp.iscomplexobj(f) else xp.float64
+        f = f.astype(dtype, copy=False)
+        normalized_orders = _normalize_orders(orders)
+        derivative_full = {order: xp.empty_like(f) for order in normalized_orders}
+        fs_full = xp.empty_like(f)
 
         if neumann_bc_global is not None:
             left_flux_global, right_flux_global = neumann_bc_global

@@ -1,45 +1,35 @@
-# BSPF Compatibility Strategy
+# Compatibility and migration
 
-## Status
+Use `from pybspf import BSPF1D, BSPF2D, PiecewiseBSPF1D` for new code.
+`pybspf.bspf1d` and `pybspf.bspf2d` remain aliases. Existing package exports,
+including solver and decomposition functions, remain available.
 
-The preferred user-facing API is now the package API:
+The root `bspf1d.py` is a source-checkout compatibility shim over
+`legacy/bspf1d.py`. It is not part of the installed wheel. Legacy implementations
+remain frozen as regression references. Package operations do not import them.
+
+The generalized derivative API replaces legacy methods:
 
 ```python
-from pybspf import BSPF1D, PiecewiseBSPF1D, Grid1D
+result = op.derivatives(f, orders=(1, 2))
+d1, d2, spline = result[1], result[2], result.spline
+# For several signals: op.derivatives_batched(f_matrix, orders=(1, 2))
 ```
 
-The root-level [`bspf1d.py`](/Users/moulin/Library/CloudStorage/Dropbox/Workspace/pybspf/bspf1d.py) remains in the repository as the **legacy compatibility implementation**.
+Intentional corrections in the core refactor:
 
-## What Is Considered Stable
+- Invalid grid coordinates, derivative orders, regularization, and backend
+  combinations now fail at the boundary of the operation.
+- `correction="none"` now actually disables Fourier differentiation correction.
+- Complex fitting retains imaginary data.
+- Neumann fluxes require `order >= 2`; `order=1` has only value constraints.
+- Piecewise construction raises for short segments instead of omitting samples.
+- Repeated interpolation on different grids no longer reuses stale evaluations.
+- Partial definite integrals include only the residual within the requested bounds.
+- GPU antiderivatives return device arrays; explicit host conversion is the caller's job.
+- The previously ignored `use_fft=True` interpolation option raises an explicit error.
 
-For new code:
-
-- import from `pybspf`
-- treat `BSPF1D` as the canonical 1D operator
-- treat `PiecewiseBSPF1D` as the canonical piecewise wrapper
-
-For existing code:
-
-- imports from `bspf1d.py` are still expected to work
-- the lowercase alias `pybspf.bspf1d` is still available
-
-## Current Compatibility Policy
-
-1. The package API is the main development target.
-2. The root-level legacy module is kept to avoid breaking downstream scripts and notebooks.
-3. Behavioral changes should be validated against the legacy implementation with regression tests before package-native replacements are accepted.
-4. New internal development should happen under `src/pybspf/`, not by adding new features directly to the monolithic legacy file.
-
-## Migration Guidance
-
-Preferred migration path for downstream users:
-
-1. Replace `from bspf1d import bspf1d` with `from pybspf import BSPF1D`.
-2. Replace `from bspf1d import PiecewiseBSPF1D` with `from pybspf import PiecewiseBSPF1D`.
-3. Keep the old imports only where legacy notebooks or scripts require zero code churn.
-
-## Repository Policy
-
-- [`bspf1d.py`](/Users/moulin/Library/CloudStorage/Dropbox/Workspace/pybspf/bspf1d.py) is treated as a frozen legacy reference unless a bug fix is required for compatibility.
-- `src/pybspf/` is where the package architecture, tests, and new refactors should continue.
-- Regression tests should keep comparing package behavior to the legacy implementation until the package is considered fully independent.
+Matrix and vector BLAS operations may differ at floating-point roundoff. Regression
+tolerances allow small absolute errors near zero while retaining relative checks.
+The Poisson solver convention mismatches remain visible test failures; this
+refactor does not silently redefine those research methods.

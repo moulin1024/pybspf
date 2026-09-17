@@ -8,6 +8,7 @@ from typing import Optional, Tuple
 
 import numpy as np
 
+from .backend import normalize_backend_array
 from .grid import Grid1D
 from .types import Array
 
@@ -33,8 +34,13 @@ class _Knot:
         @param clustering_factor Strength of the tanh-based clustering.
         @return One-dimensional knot vector.
         """
-        if n_basis <= degree:
+        if not isinstance(n_basis, (int, np.integer)) or n_basis <= degree:
             raise ValueError("n_basis must exceed degree.")
+        a, b = domain
+        if not np.isfinite(a) or not np.isfinite(b) or a >= b:
+            raise ValueError("domain must contain finite increasing endpoints.")
+        if use_clustering and (not np.isfinite(clustering_factor) or clustering_factor <= 0):
+            raise ValueError("clustering_factor must be finite and positive.")
         n_knots = n_basis + degree + 1
         n_interior = n_knots - 2 * (degree + 1)
 
@@ -81,7 +87,7 @@ class _Knot:
         @return One-dimensional knot vector.
         """
         if knots is not None:
-            k = np.asarray(knots, dtype=np.float64)
+            k = normalize_backend_array(knots, use_gpu=grid.use_gpu, name="knots")
             if k.ndim != 1:
                 raise ValueError("knots must be a 1D array.")
             return k

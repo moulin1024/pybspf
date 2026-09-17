@@ -1,13 +1,16 @@
-"""! @file types.py
-@brief Shared typing helpers used across the package.
-"""
+"""Array annotations for the real and complex CPU/GPU numerical API."""
 
 from __future__ import annotations
+
+from typing import TYPE_CHECKING, Union
 
 import numpy as np
 import numpy.typing as npt
 
-# Canonical dense real-valued array type used in the current API surface.
-Array = npt.NDArray[np.float64]
+if TYPE_CHECKING:
+    import cupy
+
+# A forward reference keeps CuPy optional at runtime.
+Array = Union[npt.NDArray[np.float64], npt.NDArray[np.complex128], "cupy.ndarray"]
 
 __all__ = ["Array"]

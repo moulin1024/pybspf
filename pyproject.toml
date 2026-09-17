@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pybspf"
 version = "0.1.0"
-description = "pybspf: B-spline plus spectral/Fourier operators for 1D sampled data."
+description = "pybspf: B-spline plus Fourier operators for sampled data with NumPy and CuPy backends."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "Proprietary"}
@@ -34,3 +34,10 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["pybspf*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+  "gpu: requires CuPy and a working CUDA device",
+  "performance: timing comparisons requiring a quiet machine",
+]

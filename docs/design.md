@@ -1,90 +1,40 @@
-# Design Notes
+# Architecture
 
-## Design Goal
-
-The package is organized around the mathematical objects the user works with,
-rather than around one monolithic implementation file.
-
-The package architecture is currently:
+The numerical model fits a constrained B-spline, subtracts it from the samples,
+and applies Fourier differentiation or integration to the residual.
 
 ```text
-src/pybspf/
-  backend.py
-  grid.py
-  knots.py
-  basis.py
-  boundary.py
-  correction.py
-  kkt.py
-  ops/
-  operators/
+User API:  pybspf / operators / problem-specific solvers
+                 |
+Operations: differentiation / interpolation / integration
+                 |
+Shared fitting: ops/_common.py -> kkt.py
+                 |
+Primitives: backend / grid / knots / basis / boundary
 ```
 
-## Numerical Model
+`BSPF1D` composes grid metadata, spline evaluations, endpoint stencils, and a
+cached KKT factorization. Its methods bind package-owned operation functions
+inside the class definition. `BSPF2D` composes two 1D operators and performs
+matrix solves along each axis. Piecewise operators stitch independent segments.
 
-The operator follows a split formulation:
+`ops/_common.py` owns sample shape/device/dtype validation and the constrained
+spline solve. Fitting, differentiation, and integration share it. Batched
+derivatives use matrix right-hand sides and FFTs along the sample axis, avoiding
+a Python loop over signals. Real FFTs handle real data; complex signals use the
+full frequency vector on both backends.
 
-1. fit a constrained B-spline approximation to the sampled data
-2. compute a residual `r = f - f_spline`
-3. correct derivatives or antiderivatives using FFT-based operations on the residual
+`backend.py` owns optional CuPy imports and explicit device checks. Construction
+may upload geometry; computation rejects mixed backends. No machine-specific
+CUDA environment setup belongs in the package. CPU-only operations reject GPU
+mode explicitly rather than attempting implicit NumPy conversion.
 
-This is why the package separates:
+Basis derivative matrices on the fixed operator grid are cached by order.
+Arbitrary evaluation grids are evaluated afresh: caching by their first
+coordinate was incorrect because different grids commonly share an endpoint.
+KKT factorizations remain cached by regularization parameter.
 
-- spline basis construction
-- endpoint constraint operators
-- residual correction
-- constrained KKT solves
-- high-level operation families
-
-## Package Layers
-
-### Foundational layer
-
-- [`backend.py`](/Users/moulin/Workspace/pybspf/src/pybspf/backend.py)
-- [`grid.py`](/Users/moulin/Workspace/pybspf/src/pybspf/grid.py)
-- [`knots.py`](/Users/moulin/Workspace/pybspf/src/pybspf/knots.py)
-
-This layer defines backend/device rules, uniform-grid metadata, and knot generation.
-
-### Spline operator layer
-
-- [`basis.py`](/Users/moulin/Workspace/pybspf/src/pybspf/basis.py)
-- [`boundary.py`](/Users/moulin/Workspace/pybspf/src/pybspf/boundary.py)
-- [`correction.py`](/Users/moulin/Workspace/pybspf/src/pybspf/correction.py)
-- [`kkt.py`](/Users/moulin/Workspace/pybspf/src/pybspf/kkt.py)
-
-This layer contains the reusable numerical kernels used by the main operator.
-
-### Operation layer
-
-- [`ops/differentiation.py`](/Users/moulin/Workspace/pybspf/src/pybspf/ops/differentiation.py)
-- [`ops/integration.py`](/Users/moulin/Workspace/pybspf/src/pybspf/ops/integration.py)
-- [`ops/interpolation.py`](/Users/moulin/Workspace/pybspf/src/pybspf/ops/interpolation.py)
-
-This layer groups public operations by behavior rather than by class size.
-
-### Public API layer
-
-- [`operators/bspf1d.py`](/Users/moulin/Workspace/pybspf/src/pybspf/operators/bspf1d.py)
-- [`operators/piecewise.py`](/Users/moulin/Workspace/pybspf/src/pybspf/operators/piecewise.py)
-- [`__init__.py`](/Users/moulin/Workspace/pybspf/src/pybspf/__init__.py)
-
-This layer exposes the package-facing API.
-
-## Compatibility Design
-
-The repository still keeps [`bspf1d.py`](/Users/moulin/Workspace/pybspf/bspf1d.py) as a legacy compatibility implementation and regression reference.
-
-That allows the package to:
-
-- migrate functionality incrementally
-- verify numerical behavior during refactors
-- avoid breaking downstream scripts immediately
-
-The compatibility policy itself is documented in [compatibility_strategy.md](/Users/moulin/Workspace/pybspf/docs/compatibility_strategy.md).
-
-## Current Tradeoff
-
-The package owns the public module structure and most foundational implementation now, but some operation-family functions still delegate internally to legacy numerical bodies. This keeps risk low while the public API and package boundaries stabilize under test coverage.
-
-The next meaningful cleanup after Phase 8 would be replacing those remaining internal delegations with fully package-native numerical implementations.
+Core imports are independent of the root compatibility shim and `legacy/`.
+Solver exports are lazy, and optional FEM dependencies are imported through
+individual solver modules. Existing research workflows remain in place; their
+further separation is described in the [assessment](assessment.md).

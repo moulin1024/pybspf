@@ -9,6 +9,9 @@ import time
 from statistics import median
 
 import numpy as np
+import pytest
+
+pytestmark = pytest.mark.performance
 
 from pybspf import BSPF1D
 from bspf1d import bspf1d as LegacyBSPF1D

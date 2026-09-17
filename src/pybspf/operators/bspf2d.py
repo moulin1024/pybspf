@@ -7,8 +7,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
-import numpy as np
-
+from ..backend import normalize_backend_array, validate_backend_array
 from ..ops.differentiation import DerivativeResult
 from ..types import Array
 from .bspf1d import BSPF1D
@@ -53,8 +52,8 @@ class BSPF2D:
         if degree_y is None:
             degree_y = degree_x
 
-        x_arr = np.asarray(x, dtype=np.float64)
-        y_arr = np.asarray(y, dtype=np.float64)
+        x_arr = normalize_backend_array(x, use_gpu=use_gpu, dtype=None, name="x")
+        y_arr = normalize_backend_array(y, use_gpu=use_gpu, dtype=None, name="y")
         x_model = BSPF1D.from_grid(
             degree=degree_x,
             x=x_arr,
@@ -81,11 +80,12 @@ class BSPF2D:
             correction=correction,
             use_gpu=use_gpu,
         )
-        return cls(x=x_arr, y=y_arr, x_model=x_model, y_model=y_model, use_gpu=use_gpu)
+        return cls(x=x_model.grid.x, y=y_model.grid.x, x_model=x_model, y_model=y_model, use_gpu=use_gpu)
 
     def _check_shape(self, field: Array) -> tuple[int, int]:
         """! @brief Validate that ``field`` has shape ``(len(y), len(x))``."""
-        f_arr = np.asarray(field)
+        validate_backend_array(field, use_gpu=self.use_gpu, name="field")
+        f_arr = normalize_backend_array(field, use_gpu=self.use_gpu, dtype=None, name="field")
         if f_arr.ndim != 2:
             raise ValueError("F must be 2D with shape (len(y), len(x)).")
         ny, nx = f_arr.shape
@@ -106,7 +106,8 @@ class BSPF2D:
     ) -> DerivativeResult:
         """! @brief Compute requested derivatives along one axis through batched 1D solves."""
         self._check_shape(field)
-        f_arr = np.asarray(field)
+        validate_backend_array(field, use_gpu=self.use_gpu, name="field")
+        f_arr = normalize_backend_array(field, use_gpu=self.use_gpu, dtype=None, name="field")
 
         if axis == 1:
             result = self.x_model.derivatives_batched(

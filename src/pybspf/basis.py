@@ -4,7 +4,8 @@
 
 from __future__ import annotations
 
-from typing import Dict, Tuple
+from dataclasses import dataclass
+from typing import Dict
 
 import numpy as np
 from scipy.interpolate import BSpline
@@ -61,7 +62,6 @@ class BSplineBasis1D:
         # Cache derivative evaluations because several public methods need the
         # same basis derivative matrices on the original grid.
         self._BkT: Dict[int, Array] = {}
-        self._eval_cache: Dict[Tuple[float, int], Array] = {}
 
     def _mk_splines(self):
         """! @brief Build one spline object per basis function.
@@ -92,12 +92,6 @@ class BSplineBasis1D:
         @param deriv_order Derivative order to evaluate.
         @return Matrix with shape ``(n_basis, len(x))``.
         """
-        # The code currently only evaluates on uniform grids, so the first
-        # coordinate plus derivative order is enough to key the cache.
-        cache_key = (float(x[0]), deriv_order)
-        if cache_key in self._eval_cache:
-            return self._eval_cache[cache_key]
-
         n_basis = len(self._splines)
 
         if self.use_gpu and _HAS_CUPY:
@@ -118,7 +112,6 @@ class BSplineBasis1D:
         for i, spline in enumerate(self._splines):
             result[i, :] = (spline.derivative(deriv_order) if deriv_order else spline)(x_eval)
 
-        self._eval_cache[cache_key] = result
         return result
 
     @property
@@ -156,9 +149,69 @@ class BSplineBasis1D:
         @param b Right integration bound.
         @return One integral per basis function.
         """
-        # Basis integration is currently kept on CPU because SciPy's spline API
-        # provides the reference behavior used by the legacy implementation.
-        return np.array([spline.integrate(a, b) for spline in self._splines])
+        xp = cp if self.use_gpu else np
+        return xp.stack([xp.asarray(spline.integrate(a, b)) for spline in self._splines])
 
 
-__all__ = ["BSplineBasis1D"]
+@dataclass
+class BSplineValues:
+    """! @brief Open-uniform B-spline basis values and physical derivatives on a grid.
+
+    Bundles a :class:`BSplineBasis1D` with its value and first three derivative
+    matrices (shape ``(nbasis, N)``) evaluated on the physical grid.
+    """
+
+    t: np.ndarray            # grid coordinates (N,)
+    L: float
+    nbasis: int
+    deg: int
+    knots: np.ndarray
+    basis: BSplineBasis1D
+    B0: np.ndarray           # values
+    B1: np.ndarray           # first derivative
+    B2: np.ndarray           # second derivative
+    B3: np.ndarray           # third derivative
+
+
+def make_bspline_basis_values(t, deg: int = 6, nbasis: int = 18) -> BSplineValues:
+    """! @brief Build a clamped open-uniform B-spline basis and its grid derivatives.
+
+    Uses ``nbasis - deg`` interior segments with a clamped knot vector on the
+    physical interval ``[t[0], t[-1]]`` and evaluates the basis values plus the
+    first three physical derivatives via :class:`BSplineBasis1D`.
+
+    @param t Strictly increasing grid coordinates.
+    @param deg B-spline degree.
+    @param nbasis Number of basis functions.
+    @return A :class:`BSplineValues` bundle.
+    """
+    t = np.asarray(t, dtype=float).ravel()
+    t0, t1 = t[0], t[-1]
+    L = t1 - t0
+    if L <= 0:
+        raise ValueError("make_bspline_basis_values: t must be strictly increasing.")
+
+    order = deg + 1
+    nseg = nbasis - deg
+    if nseg < 1:
+        raise ValueError(f"deg={deg} too large for nbasis={nbasis} (need nbasis-deg >= 1).")
+
+    interior = np.arange(1, nseg) / nseg
+    knots_unit = np.concatenate([np.zeros(order), interior, np.ones(order)])
+    knots = t0 + L * knots_unit
+
+    grid = Grid1D(t)
+    basis = BSplineBasis1D(deg, knots, grid)
+
+    B0 = np.asarray(basis.B0, dtype=float)
+    B1 = np.asarray(basis.BkT(1).T, dtype=float)
+    B2 = np.asarray(basis.BkT(2).T, dtype=float)
+    B3 = np.asarray(basis.BkT(3).T, dtype=float)
+
+    return BSplineValues(
+        t=t, L=L, nbasis=nbasis, deg=deg, knots=knots, basis=basis,
+        B0=B0, B1=B1, B2=B2, B3=B3,
+    )
+
+
+__all__ = ["BSplineBasis1D", "BSplineValues", "make_bspline_basis_values"]

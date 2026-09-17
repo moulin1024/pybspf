@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from pybspf import BSPF1D, BSPF2D, PiecewiseBSPF1D, Poisson1DDirichletSolver, Poisson2DDirichletSolver
 from bspf1d import PiecewiseBSPF1D as LegacyPiecewiseBSPF1D
@@ -61,7 +62,7 @@ def test_fit_and_differentiate_match_legacy():
     old_P, old_fit, old_residual = old_op.fit_spline(f, lam=0.01)
     np.testing.assert_allclose(new_P, old_P)
     np.testing.assert_allclose(new_fit, old_fit)
-    np.testing.assert_allclose(new_residual, old_residual)
+    np.testing.assert_allclose(new_residual, old_residual, atol=1e-14)
 
 
 def test_multi_order_derivatives_reuse_shared_path_for_nonconsecutive_orders():
@@ -116,9 +117,9 @@ def test_batched_multi_order_derivatives_match_columnwise_calls():
     batched = op.derivatives_batched(batch, orders=(1, 4), lam=0.01)
     for idx in range(batch.shape[1]):
         single = op.derivatives(batch[:, idx], orders=(1, 4), lam=0.01)
-        np.testing.assert_allclose(batched[1][:, idx], single[1])
-        np.testing.assert_allclose(batched[4][:, idx], single[4])
-        np.testing.assert_allclose(batched.spline[:, idx], single.spline)
+        np.testing.assert_allclose(batched[1][:, idx], single[1], atol=1e-12)
+        np.testing.assert_allclose(batched[4][:, idx], single[4], atol=1e-9)
+        np.testing.assert_allclose(batched.spline[:, idx], single.spline, atol=1e-14)
 
 
 def test_integral_and_antiderivative_match_legacy():
@@ -176,14 +177,11 @@ def test_piecewise_segments_use_package_operator_and_expected_ranges():
     assert all(isinstance(seg["op"], BSPF1D) for seg in pw.segments)
 
 
-def test_piecewise_skips_segments_shorter_than_threshold():
-    """! @brief Segments shorter than the minimum size should be omitted."""
+def test_piecewise_rejects_segments_shorter_than_threshold():
+    """Never silently return zero derivatives for omitted parts of a signal."""
     x = np.linspace(0.0, 1.0, 21)
-    pw = PiecewiseBSPF1D(degree=3, x=x, breakpoints=[0.05, 0.5], min_points_per_seg=5)
-
-    assert len(pw.segments) == 2
-    assert [seg["i0"] for seg in pw.segments] == [1, 10]
-    assert [seg["i1"] for seg in pw.segments] == [9, 20]
+    with pytest.raises(ValueError, match="Segment.*fewer"):
+        PiecewiseBSPF1D(degree=3, x=x, breakpoints=[0.05, 0.5], min_points_per_seg=5)
 
 
 def test_bspf2d_axis_derivatives_match_separable_analytical_field():

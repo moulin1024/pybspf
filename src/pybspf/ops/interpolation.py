@@ -7,16 +7,19 @@ from __future__ import annotations
 from typing import Optional, Tuple
 
 import numpy as np
-from scipy import linalg as sla
 from scipy.interpolate import make_interp_spline
 
-from ..backend import _HAS_CUPY, cp, cpla
+from ._common import solve_spline, prepare_samples
 from ..types import Array
 
 
 def enforced_zero_flux(self, f: Array) -> Tuple[float, float]:
     """Repair endpoint values to satisfy a zero-flux condition."""
-    f = np.asarray(f, dtype=np.float64)
+    if self.use_gpu:
+        raise ValueError("enforced_zero_flux currently supports only use_gpu=False.")
+    f = prepare_samples(self, f)
+    if np.iscomplexobj(f):
+        raise ValueError("This operation currently requires real samples.")
     if f.shape[0] != self.grid.n:
         raise ValueError("Length of f must match grid size.")
 
@@ -69,65 +72,19 @@ def fit_spline(
     neumann_bc: Optional[Tuple[Optional[float], Optional[float]]] = None,
 ):
     """Fit spline coefficients and return the fitted spline and residual."""
-    if self.use_gpu and _HAS_CUPY:
-        xp = cp
-        la = cpla
-        f_x = xp.asarray(f, dtype=xp.float64)
-        input_was_numpy = isinstance(f, np.ndarray) or not isinstance(f, cp.ndarray)
-        BW = self.BW
-        BND = self.end.BND
-        BT0 = self.basis.BT0
-    else:
-        xp = np
-        la = sla
-        f_x = np.asarray(f, dtype=np.float64)
-        input_was_numpy = True
-        BW = self.BW
-        BND = self.end.BND
-        BT0 = self.basis.BT0
-
-    if f_x.shape[0] != self.grid.n:
-        raise ValueError(f"Length of f ({f_x.shape[0]}) must match grid size ({self.grid.n})")
-
-    rhs_2bw = 2.0 * (BW @ f_x)
-    dY = BND @ f_x
-    if neumann_bc is not None:
-        if self.order < 1:
-            raise ValueError("Neumann BC requires order >= 1.")
-        left_flux, right_flux = neumann_bc
-        if left_flux is not None:
-            dY[1] = float(left_flux)
-        if right_flux is not None:
-            dY[self.order + 1] = float(right_flux)
-
-    rhs = xp.concatenate((rhs_2bw, dY), axis=0)
-    lu_cpu, piv_cpu = self._kkt_lu(lam)
-    if self.use_gpu and _HAS_CUPY:
-        sol = la.lu_solve((xp.asarray(lu_cpu), xp.asarray(piv_cpu)), rhs, overwrite_b=True)
-    else:
-        sol = la.lu_solve((lu_cpu, piv_cpu), rhs, overwrite_b=True)
-
-    n_b = self.basis.B0.shape[0]
-    P = sol[:n_b]
-    f_spline = BT0 @ P
-    residual = f_x - f_spline
-
-    if self.use_gpu and _HAS_CUPY and input_was_numpy:
-        raise ValueError(
-            "Cannot convert GPU results back to NumPy. "
-            "When use_gpu=True, provide CuPy arrays as input to avoid GPU↔CPU conversions. "
-            "Either: (1) convert input to CuPy array before calling, or (2) use use_gpu=False."
-        )
-
-    return P, f_spline, residual
+    return solve_spline(self, f, lam, neumann_bc)
 
 
 def interpolate(self, f: Array, lam: float = 0.0, use_fft: bool = False):
     """Interpolate the signal onto a grid with inserted midpoints."""
-    if self.use_gpu and _HAS_CUPY:
+    if use_fft:
+        raise NotImplementedError("FFT interpolation is not implemented; use use_fft=False.")
+    if self.use_gpu:
         raise ValueError("interpolate currently supports only use_gpu=False.")
 
-    f = np.asarray(f, dtype=np.float64)
+    f = prepare_samples(self, f)
+    if np.iscomplexobj(f):
+        raise ValueError("This operation currently requires real samples.")
     if f.shape[0] != self.grid.n:
         raise ValueError(f"Length of f ({f.shape[0]}) must match grid size ({self.grid.n})")
 
@@ -151,16 +108,18 @@ def interpolate_split_mesh(
     neumann_bc: Optional[Tuple[Optional[float], Optional[float]]] = None,
 ):
     """Interpolate onto an arbitrarily refined mesh with spline/residual split."""
-    if self.use_gpu and _HAS_CUPY:
+    if self.use_gpu:
         raise ValueError("interpolate_split_mesh currently supports only use_gpu=False.")
 
-    f = np.asarray(f, dtype=np.float64)
+    f = prepare_samples(self, f)
+    if np.iscomplexobj(f):
+        raise ValueError("This operation currently requires real samples.")
     N = self.grid.n
     if f.shape[0] != N:
         raise ValueError(f"Length of f ({f.shape[0]}) must match grid size ({N})")
 
     M = int(refine_factor)
-    if M < 1:
+    if M < 1 or M != refine_factor:
         raise ValueError("refine_factor must be a positive integer")
 
     P, _f_spline, residual = fit_spline(self, f, lam=lam, neumann_bc=neumann_bc)

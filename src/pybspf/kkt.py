@@ -9,7 +9,7 @@ from typing import Dict, Tuple
 import numpy as np
 from scipy import linalg as sla
 
-from .backend import _HAS_CUPY, cp, cpla, is_cupy_array
+from .backend import _HAS_CUPY, cp, cpla, is_cupy_array, validate_backend_array
 from .types import Array
 
 
@@ -22,6 +22,10 @@ def assemble_kkt_matrix(Q: Array, C: Array, lam: float, *, use_gpu: bool = False
     @param use_gpu Whether to assemble the system on the GPU.
     @return Assembled KKT matrix.
     """
+    validate_backend_array(Q, use_gpu=use_gpu, name="Q")
+    validate_backend_array(C, use_gpu=use_gpu, name="C")
+    if not np.isfinite(lam) or lam < 0:
+        raise ValueError("lam must be finite and nonnegative.")
     if use_gpu and _HAS_CUPY and is_cupy_array(Q):
         xp = cp
     else:
@@ -86,10 +90,13 @@ class KKTLUCache:
         @param overwrite_b Forwarded to the LU solve implementation when supported.
         @return Solution with the same backend as the configured cache.
         """
+        validate_backend_array(rhs, use_gpu=self.use_gpu, name="rhs")
         lu, piv = self.factorize(lam)
 
         if self.use_gpu and _HAS_CUPY and is_cupy_array(lu):
             rhs_dev = rhs if is_cupy_array(rhs) else cp.asarray(rhs)
+            if cp.iscomplexobj(rhs_dev):
+                lu = lu.astype(rhs_dev.dtype)
             return cpla.lu_solve((lu, piv), rhs_dev, overwrite_b=overwrite_b)
 
         if is_cupy_array(rhs):

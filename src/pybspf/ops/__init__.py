@@ -1,8 +1,4 @@
-"""! @file ops/__init__.py
-@brief Namespace package for extracted numerical operation families.
+"""Numerical implementations composed by the public operator classes.
 
-These modules will eventually host extracted differentiation, integration, and
-interpolation workflows.
+Use :class:`pybspf.BSPF1D` and :class:`pybspf.BSPF2D` for the supported API.
 """
-
-__all__: list[str] = []
