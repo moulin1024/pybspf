@@ -11,7 +11,10 @@ requires-python = ">=3.10"
 dependencies = ["jax>=0.4.35", "numpy>=1.24"]
 
 [project.optional-dependencies]
-test = ["pytest>=8", "scipy>=1.10"]
+weak-ns = ["scipy>=1.10", "gmpy2>=2.1"]
+rational-flow = ["scipy>=1.15", "gmpy2>=2.1"]
+compression = ["scipy>=1.10"]
+test = ["pytest>=8", "scipy>=1.15"]
 notebook = ["jupyterlab", "matplotlib"]
 
 [tool.setuptools.packages.find]

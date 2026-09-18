@@ -57,6 +57,12 @@ laplacian = op2.laplacian(field)
 
 Axis 0 is y; axis 1 is x. Batched 1D solves underpin the 2D methods.
 
+For a no-slip pressure projection using `div(Q grad p) = div(Q raw)`, see the
+[2D tensor pressure solver](docs/pressure_projection2d.md) and
+[runnable example](examples/pressure_projection2d.py). It includes the BSPF line
+operators, tensor inverse, and seven-mode wall-pressure completion extracted
+from the 3D NS benchmark.
+
 ## GPU usage
 
 ```python

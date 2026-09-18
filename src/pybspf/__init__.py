@@ -18,6 +18,8 @@ __all__ = [
     "PiecewiseBSPF1D",
     "Poisson1DDirichletSolver",
     "Poisson2DDirichletSolver",
+    "PressurePoisson2D",
+    "PressurePoisson2DResult",
     "bspf1d",
     "bspf2d",
     "bspf_kkt_1d_decompose_precompute",
@@ -33,6 +35,8 @@ __all__ = [
 _SOLVER_EXPORTS = {
     "Poisson1DDirichletSolver": ".solvers.poisson1d",
     "Poisson2DDirichletSolver": ".solvers.poisson2d",
+    "PressurePoisson2D": ".solvers.pressure_poisson2d",
+    "PressurePoisson2DResult": ".solvers.pressure_poisson2d",
     "bspf_kkt_poisson_neumann_apply": ".solvers.poisson_neumann_bspf",
     "bspf_kkt_poisson_neumann_precompute": ".solvers.poisson_neumann_bspf",
 }

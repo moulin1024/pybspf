@@ -8,9 +8,23 @@ third-party `jax`.
 The implementation does not call the existing NumPy/CuPy operators. B-spline
 recurrences, endpoint stencils, constrained linear algebra, FFTs, interpolation,
 and integration are all expressed with JAX. NumPy is used only for validation
-of static geometry in the checked constructors, and SciPy only in reference tests.
+of static geometry in the checked constructors, and SciPy in reference tests and optional DCT/HODLR pressure compression setup.
 
 ## Install and run
+
+For a rectangle with a fixed eccentric analytic hole, see the
+[smooth-field immersed Poisson prototype](../docs/jax_immersed_poisson.md).
+`ImmersedPoissonPlan` reuses BSPF rectangular derivatives and the tensor
+Poisson inverse, jointly fits the physical field and its hole extension, and
+caches a dense SVD for repeated right-hand sides. This accuracy reference
+uses NumPy/SciPy on the host; it is not a GPU/JIT implementation.
+
+The [immersed channel-flow prototype](../docs/jax_immersed_channel_flow.md)
+adds divergence-free Navier–Stokes flow around the hole, prescribed parabolic
+inflow, no-slip walls, and a smooth outlet buffer with implicit damping.
+Its optional [rationally corrected BSPF space](../docs/jax_hybrid_rational_flow.md)
+includes the rational field in mass, diffusion and nonlinear terms, with
+continuous unsteady NS MMS validation on a fixed background grid.
 
 From the repository root:
 
@@ -138,7 +152,56 @@ universal optimum. Wider windows can introduce bias and high derivative orders
 amplify roundoff/noise. This option is local Chebyshev fitting, not Local Defect
 Correction. It does not add the standalone benchmark's Fourier cutoff.
 
+## 2D pressure projection
+
+An experimental `transform_backend="dct_hodlr"` option applies DCT plus
+hierarchical low-rank factors directly, with zero refinement by default. Install
+`pip install -e 'jax[compression]'` for its optional host setup dependency.
+See the [compressed direct-transform benchmark](../docs/jax_layered_pressure.md).
+
+`plan_pressure_poisson2d` builds the masked pressure solver with either the
+original Taylor jets or the optional Chebyshev estimator:
+
+```python
+plan = bspf.plan_pressure_poisson2d(
+    x, y, endpoint_method="chebyshev",
+    chebyshev_modes=14, baseline_points=18,
+)
+projected, result = jax.jit(bspf.project_pressure2d)(plan, raw)
+assert bool(result.converged)
+```
+
+Use uniform endpoint-inclusive grids and `(nx, ny, 2)` vector data. This solves
+`div(Q grad p) = div(Q raw)` with exact zero wall projection and optional
+wall-gradient completion. It supports JIT, vmap, and field autodiff. See the
+[pressure API and validation notes](../docs/jax_pressure_projection2d.md) for
+the scalar solve, diagnostics, shape differences from NumPy, and limitations.
+
+## 3D pressure direct core
+
+`plan_pressure_poisson3d(x, y, z, transform_backend="dense")` and
+`transform_backend="dct_hodlr"` provide the same masked tensor direct core.
+Use `jax.jit(bspf.solve_pressure_poisson3d)(plan, rhs)` for compatible
+`div(Q grad p) = rhs`. The application always uses zero refinement. Identical
+axis grids share their factors; transforms process 2048 grid lines per batch.
+
+This includes face elimination/recovery and null-mode lifts, but **does not yet
+include physical wall-gradient completion or a 3D NS integrator**. For unique
+pressure recovery tests, form `rhs = bspf.pressure_action3d(plan, p)` and use
+`jax.jit(lambda a, f: bspf.solve_pressure_poisson3d(a, f, lifted=True))(plan, rhs)`.
+Check `result.converged`. See the [64³–256³ comparison](../docs/jax_pressure3d_benchmark.md)
+for zero-refinement accuracy, timings, memory, and the benchmark command.
+A separate [FD + PyAMG comparison](../docs/jax_pressure3d_pyamg.md) reports
+sparse assembly, AMG setup, V-cycle/CG iterations, and distinguishes discrete
+recovery error from continuous-PDE discretization error.
+
 ## Functional design
+
+For a computed nonperiodic Kelvin–Helmholtz example using this pressure solver,
+see [the NS setup, validation, and MP4 workflow](../docs/jax_kh_nonperiodic.md).
+The reusable kernels are `plan_navier_stokes2d`, `ns_rhs`, and `ns_rk4_step`;
+the example uses fixed shear boundary velocities with explicit base forcing
+and boundary damping.
 
 - `Plan1D` and `TensorPlan` are frozen registered PyTrees holding explicit arrays.
   They do not contain mutable caches, methods that mutate state, or device flags.
@@ -397,3 +460,67 @@ Explicit time steps and velocity resolution must be checked; no positivity
 limiter or energy-conservation guarantee is imposed. See the
 [open-domain notebook](../examples/pde/landau_open_1d.ipynb) and
 [validation](../docs/jax_landau_open_example.md).
+
+### Experimental SBP comparison (not the BSPF accuracy-preserving fix)
+
+`plan_navier_stokes2d(p, closure="sbp84")` selects uniform-grid SBP derivatives
+(interior order 8, boundary order 4), compatible viscosity, split advection,
+and an orthogonal tensor-direct pressure projection with zero refinement.
+Use `ns_divergence` and `ns_project_velocity` with this option. It changes the
+spatial discretization and does not retain BSPF spectral accuracy; the default
+`closure="bspf"` is unchanged. See [the energy estimate and KH validation](../docs/kh_energy_stable_closure.md).
+
+The subsequent [1D weak BSPF study](../docs/bspf_weak_advection_diffusion_1d.md)
+retains the original BSPF trial space and demonstrates energy stability with
+high-order PDE accuracy. It is a research prototype with JAX x64 time-stepping
+validation, not yet integrated into the NS solver.
+
+### Nonperiodic KH without a sponge
+
+The compatible 2D streamfunction backend keeps high-order BSPF approximation,
+constructs pointwise divergence-free velocity, and directly inverts its tensor
+Poisson kinetic mass. Optional exponential trial functions resolve the thin
+physical outflow layers without adding a damping term or lowering boundary
+order. The KH example retains the original four fixed velocity boundaries.
+
+See [diagnosis and validation](../docs/kh_stream_boundary_enrichment.md),
+`bspf_jax.plan_stream_navier_stokes2d`, and `scratch/run_kh_stream.py`. Install
+`bspf-jax[weak-ns]` for its SciPy/MPFR host setup; runtime remains JAX float64.
+
+
+For open vertical boundaries, pass `x_boundary="open"` to
+`plan_stream_navier_stokes2d`. Local outflow has zero Laplacian traction;
+local inflow couples to the reference shear through a boundary-only Robin term.
+Horizontal velocity remains fixed. The pointwise-divergence-free direct tensor
+solve is retained. See [open KH boundary conditions](../docs/kh_open_boundary.md)
+for equations, energy balance, limitations, and the movie runner.
+
+The KH runner `scratch/run_kh_stream.py` now defaults to an external buffer of
+width **1 on each side**: the region of interest is `[-3,3] x [-1,1]`, and the
+computational domain is `[-4,4] x [-1,1]` on a `128 x 80` grid. It uses the
+ordinary open boundary, peak sponge strength 4, and no exponential enrichment.
+Absorption is exactly zero inside the region of interest. `--accuracy` retains
+the fixed-boundary, no-buffer validation configuration. Explicit options still
+override these defaults; `--extension 0` disables the default sponge as well.
+
+To configure absorption through the library, build an extended-domain plan
+and call `plan_stream_sponge(plan, interior=(-3, 3), strength=4)`. Pass the
+returned object as `sponge=` to `stream_ns_rhs` or `stream_ns_rk4_step`.
+It relaxes only the perturbation to the prescribed lift, with an exactly zero
+coefficient in the interior and a smooth exterior ramp. Example runner options:
+`--nx 128 --ny 80 --x-boundary open --layers --extension 1 --sponge-strength 4`.
+
+
+Dynamic open boundaries are available with `x_boundary="dynamic", boundary_D0=1`.
+`with_stream_dynamic_boundary(open_plan, D0=1)` reuses existing factors and
+adds a direct generalized-eigenvalue inertia inverse. Volume operators and
+initial projection remain unchanged. Dynamic outflow remains optional.
+See [dynamic outflow experiment](../docs/kh_dynamic_outflow.md) for the exact
+reference-flow boundary law, tests, KH comparison, and limitations.
+
+
+Dynamic outflow can be combined with `plan_stream_sponge` on an extended domain.
+The [matched narrow-layer study](../docs/kh_hybrid_outflow.md) compares widths
+0.5 and 1 against width 2. At D0=1 and peak damping 4 the narrower layers stayed
+stable, but the dynamic condition did not preserve the wider-domain interior
+solution; see the reported quantitative differences before reducing the layer.

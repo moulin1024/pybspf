@@ -17,8 +17,68 @@ from .operators import (endpoint_jets, Split, decompose, derivatives, differenti
                         gradient, divergence, curl, hessian, laplacian, tensor_decompose,
                         noise_diagnostics)
 from .calculus import interpolate, interpolate_grid, integrate, integrate_box, antiderivative
+from .pressure import (
+    PressurePoisson2DPlan, PressurePoisson2DResult, plan_pressure_poisson2d, compress_pressure_plan,
+    pressure_gradient, pressure_divergence, pressure_schur, pressure_remove_mean,
+    solve_pressure_poisson2d, project_pressure2d,
+)
+from .pressure3d import (
+    PressurePoisson3DPlan, PressurePoisson3DResult, plan_pressure_poisson3d,
+    compress_pressure_plan3d, pressure_schur3d, pressure_lift3d,
+    pressure_action3d, solve_pressure_poisson3d,
+)
+from .navier_stokes import (
+    NavierStokes2DPlan, NSStageDiagnostics, plan_navier_stokes2d,
+    ns_rhs, ns_raw_rhs, ns_rk4_step, ns_vorticity, kh_initial_velocity,
+    ns_divergence, ns_project_velocity,
+)
+from .weak_navier_stokes import (
+    WeakNavierStokes2DPlan, plan_weak_navier_stokes2d,
+    weak_ns_project, weak_ns_divergence, weak_ns_pointwise_divergence, weak_ns_vorticity,
+    weak_ns_load, weak_ns_momentum_load, weak_ns_rhs, weak_ns_rk4_step,
+    weak_ns_energy, weak_ns_helmholtz, weak_kh_initial_velocity,
+)
+from .stream_navier_stokes import (
+    StreamNavierStokes2DPlan, plan_stream_navier_stokes2d,
+    stream_ns_velocity, stream_ns_vorticity, stream_ns_divergence,
+    with_stream_dynamic_boundary, stream_ns_inertia_apply, stream_ns_inertia_solve,
+    StreamSponge2D, plan_stream_sponge, stream_ns_sponge_load,
+    stream_ns_boundary_load, stream_ns_open_velocity,
+    stream_ns_load, stream_ns_rhs, stream_ns_rk4_step, stream_ns_energy,
+    stream_kh_initial, stream_evaluate_line,
+)
+from .convex_poisson import ConvexPoissonPlan, ConvexPoissonSolution
+from .convex_poisson_grid import ConvexPoissonGridPlan, ConvexPoissonGridResult
+from .convex_poisson_tensor import TensorConvexPoissonPlan, PoissonIterationError
+from .immersed_poisson import EllipticHole, ImmersedPoissonPlan, ImmersedPoissonSolution
+from .immersed_flow import ImmersedFlowPlan, ImmersedFlowStepper
 
 __all__ = [
+    "ImmersedFlowPlan", "ImmersedFlowStepper",
+    "EllipticHole", "ImmersedPoissonPlan", "ImmersedPoissonSolution",
+    "ConvexPoissonPlan", "ConvexPoissonSolution",
+    "ConvexPoissonGridPlan", "ConvexPoissonGridResult",
+    "TensorConvexPoissonPlan", "PoissonIterationError",
+    "StreamNavierStokes2DPlan", "plan_stream_navier_stokes2d",
+    "stream_ns_velocity", "stream_ns_vorticity", "stream_ns_divergence",
+    "with_stream_dynamic_boundary", "stream_ns_inertia_apply", "stream_ns_inertia_solve",
+    "StreamSponge2D", "plan_stream_sponge", "stream_ns_sponge_load",
+    "stream_ns_boundary_load", "stream_ns_open_velocity",
+    "stream_ns_load", "stream_ns_rhs", "stream_ns_rk4_step", "stream_ns_energy",
+    "stream_kh_initial", "stream_evaluate_line",
+    "WeakNavierStokes2DPlan", "plan_weak_navier_stokes2d",
+    "weak_ns_project", "weak_ns_divergence", "weak_ns_pointwise_divergence", "weak_ns_vorticity",
+    "weak_ns_load", "weak_ns_momentum_load", "weak_ns_rhs", "weak_ns_rk4_step",
+    "weak_ns_energy", "weak_ns_helmholtz", "weak_kh_initial_velocity",
+    "PressurePoisson3DPlan", "PressurePoisson3DResult", "plan_pressure_poisson3d",
+    "compress_pressure_plan3d", "pressure_schur3d", "pressure_lift3d",
+    "pressure_action3d", "solve_pressure_poisson3d",
+    "NavierStokes2DPlan", "NSStageDiagnostics", "plan_navier_stokes2d",
+    "ns_rhs", "ns_raw_rhs", "ns_rk4_step", "ns_vorticity", "kh_initial_velocity",
+    "ns_divergence", "ns_project_velocity",
+    "PressurePoisson2DPlan", "PressurePoisson2DResult", "plan_pressure_poisson2d", "compress_pressure_plan",
+    "pressure_gradient", "pressure_divergence", "pressure_schur", "pressure_remove_mean",
+    "solve_pressure_poisson2d", "project_pressure2d",
     "VlasovPoissonPlan", "poisson_dirichlet", "plan_vlasov_poisson",
     "vlasov_poisson_fields", "integrate_vlasov_poisson",
     "ParallelKineticPlan", "plan_parallel_kinetic", "integrate_parallel_kinetic",
