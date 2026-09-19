@@ -1,0 +1,374 @@
+{
+  "case": "mms",
+  "device": "cuda:0",
+  "gpu": "NVIDIA A100-SXM4-40GB",
+  "reynolds": null,
+  "end_time": 0.1,
+  "cases": [
+    {
+      "elements": 4,
+      "degree": 3,
+      "boundary": "strong",
+      "dofs": 73,
+      "viscosity": 0.02,
+      "dt": 0.002,
+      "steps": 50,
+      "setup_seconds": 16.6794584649615,
+      "setup_timings": {
+        "geometry_and_basis_seconds": 7.094261595979333,
+        "assembly_seconds": 8.66947088809684,
+        "factorization_seconds": 0.9157110447995365
+      },
+      "compile_and_batch_seconds": 2.104467735160142,
+      "evolution_seconds": 0.010926037095487118,
+      "milliseconds_per_step": 0.21852074190974236,
+      "initial_errors": {
+        "velocity_l2": 0.04508387520042167,
+        "velocity_relative_l2": 0.1523848110114619,
+        "velocity_max_sample_error": 0.08185482089734071
+      },
+      "final": {
+        "time": 0.1,
+        "boundary_fluxes": [
+          [
+            -9.432460964477574e-20,
+            0.0
+          ],
+          [
+            -9.432460964477564e-20,
+            0.0
+          ],
+          [
+            -9.432460964477572e-20,
+            0.0
+          ],
+          [
+            -9.43246096447757e-20,
+            0.0
+          ]
+        ],
+        "boundary_normal_error": 1.247576018265637e-17,
+        "boundary_velocity_error": 1.287652365051023e-17,
+        "convection_power": -8.673617379884035e-19,
+        "divergence_linf": 2.6645352591003757e-15,
+        "kinetic_energy": 0.031912619626924814,
+        "max_speed": 0.24735600941042418,
+        "net_boundary_flux": -3.772984385791028e-19,
+        "normal_jump_linf": 3.920475055707584e-16,
+        "tangent_jump_l2": 0.039513652701595306,
+        "viscous_quadratic": 2.0325254840563707
+      },
+      "history": [
+        {
+          "time": 0.0,
+          "boundary_fluxes": [
+            [
+              2.6438056095395305e-21,
+              0.0
+            ],
+            [
+              2.6438056095395298e-21,
+              0.0
+            ],
+            [
+              2.6438056095395305e-21,
+              0.0
+            ],
+            [
+              2.6438056095395305e-21,
+              0.0
+            ]
+          ],
+          "boundary_normal_error": 3.4968058578129147e-19,
+          "boundary_velocity_error": 3.609135048296793e-19,
+          "convection_power": 3.2526065174565133e-19,
+          "divergence_linf": 8.881784197001252e-16,
+          "kinetic_energy": 0.04274894260396038,
+          "max_speed": 0.2821567167981479,
+          "net_boundary_flux": 1.0575222438158125e-20,
+          "normal_jump_linf": 2.96637714392034e-16,
+          "tangent_jump_l2": 0.07616180214915995,
+          "viscous_quadratic": 6.349282102073972
+        },
+        {
+          "time": 0.1,
+          "boundary_fluxes": [
+            [
+              -9.432460964477574e-20,
+              0.0
+            ],
+            [
+              -9.432460964477564e-20,
+              0.0
+            ],
+            [
+              -9.432460964477572e-20,
+              0.0
+            ],
+            [
+              -9.43246096447757e-20,
+              0.0
+            ]
+          ],
+          "boundary_normal_error": 1.247576018265637e-17,
+          "boundary_velocity_error": 1.287652365051023e-17,
+          "convection_power": -8.673617379884035e-19,
+          "divergence_linf": 2.6645352591003757e-15,
+          "kinetic_energy": 0.031912619626924814,
+          "max_speed": 0.24735600941042418,
+          "net_boundary_flux": -3.772984385791028e-19,
+          "normal_jump_linf": 3.920475055707584e-16,
+          "tangent_jump_l2": 0.039513652701595306,
+          "viscous_quadratic": 2.0325254840563707
+        }
+      ],
+      "velocity_l2": 0.05947862697774171,
+      "velocity_relative_l2": 0.22218299904933952,
+      "velocity_max_sample_error": 0.07143407090503986
+    },
+    {
+      "elements": 8,
+      "degree": 3,
+      "boundary": "strong",
+      "dofs": 281,
+      "viscosity": 0.02,
+      "dt": 0.002,
+      "steps": 50,
+      "setup_seconds": 16.399917584843934,
+      "setup_timings": {
+        "geometry_and_basis_seconds": 7.134838871890679,
+        "assembly_seconds": 8.277476857881993,
+        "factorization_seconds": 0.9875913839787245
+      },
+      "compile_and_batch_seconds": 2.8673877250403166,
+      "evolution_seconds": 0.03908902499824762,
+      "milliseconds_per_step": 0.7817804999649525,
+      "initial_errors": {
+        "velocity_l2": 0.004398413610007195,
+        "velocity_relative_l2": 0.014866766079469311,
+        "velocity_max_sample_error": 0.009413983773585035
+      },
+      "final": {
+        "time": 0.1,
+        "boundary_fluxes": [
+          [
+            3.476780159278863e-21,
+            0.0
+          ],
+          [
+            3.476780159278865e-21,
+            0.0
+          ],
+          [
+            3.476780159278865e-21,
+            0.0
+          ],
+          [
+            3.476780159278864e-21,
+            -0.0
+          ]
+        ],
+        "boundary_normal_error": 3.7374283701517283e-19,
+        "boundary_velocity_error": 3.8567164870026233e-19,
+        "convection_power": -6.640738306473715e-19,
+        "divergence_linf": 7.105427357601002e-15,
+        "kinetic_energy": 0.0357223521349065,
+        "max_speed": 0.27096985874367635,
+        "net_boundary_flux": 1.390712063711546e-20,
+        "normal_jump_linf": 4.0787685728904677e-16,
+        "tangent_jump_l2": 0.005233742473206915,
+        "viscous_quadratic": 1.5545034305151555
+      },
+      "history": [
+        {
+          "time": 0.0,
+          "boundary_fluxes": [
+            [
+              -3.9186330787586507e-22,
+              0.0
+            ],
+            [
+              -3.91863307875865e-22,
+              0.0
+            ],
+            [
+              -3.918633078758652e-22,
+              0.0
+            ],
+            [
+              -3.91863307875865e-22,
+              -0.0
+            ]
+          ],
+          "boundary_normal_error": 4.212406240780352e-20,
+          "boundary_velocity_error": 4.346854304557758e-20,
+          "convection_power": 1.6263032587282567e-19,
+          "divergence_linf": 7.105427357601002e-15,
+          "kinetic_energy": 0.04375554747240906,
+          "max_speed": 0.2995098422000074,
+          "net_boundary_flux": -1.56745323150346e-21,
+          "normal_jump_linf": 4.666406150377611e-16,
+          "tangent_jump_l2": 0.011315777738484384,
+          "viscous_quadratic": 1.9765498416903973
+        },
+        {
+          "time": 0.1,
+          "boundary_fluxes": [
+            [
+              3.476780159278863e-21,
+              0.0
+            ],
+            [
+              3.476780159278865e-21,
+              0.0
+            ],
+            [
+              3.476780159278865e-21,
+              0.0
+            ],
+            [
+              3.476780159278864e-21,
+              -0.0
+            ]
+          ],
+          "boundary_normal_error": 3.7374283701517283e-19,
+          "boundary_velocity_error": 3.8567164870026233e-19,
+          "convection_power": -6.640738306473715e-19,
+          "divergence_linf": 7.105427357601002e-15,
+          "kinetic_energy": 0.0357223521349065,
+          "max_speed": 0.27096985874367635,
+          "net_boundary_flux": 1.390712063711546e-20,
+          "normal_jump_linf": 4.0787685728904677e-16,
+          "tangent_jump_l2": 0.005233742473206915,
+          "viscous_quadratic": 1.5545034305151555
+        }
+      ],
+      "velocity_l2": 0.006279258999362823,
+      "velocity_relative_l2": 0.023456234060257427,
+      "velocity_max_sample_error": 0.015610453877929177,
+      "velocity_l2_rate": 3.2437051189609813
+    },
+    {
+      "elements": 12,
+      "degree": 3,
+      "boundary": "strong",
+      "dofs": 617,
+      "viscosity": 0.02,
+      "dt": 0.002,
+      "steps": 50,
+      "setup_seconds": 18.148804251104593,
+      "setup_timings": {
+        "geometry_and_basis_seconds": 7.750749766128138,
+        "assembly_seconds": 9.323148889001459,
+        "factorization_seconds": 1.074900483014062
+      },
+      "compile_and_batch_seconds": 2.6032173030544072,
+      "evolution_seconds": 0.12808225187473,
+      "milliseconds_per_step": 2.5616450374946,
+      "initial_errors": {
+        "velocity_l2": 0.0011982539632205533,
+        "velocity_relative_l2": 0.004050133287707679,
+        "velocity_max_sample_error": 0.003989029061347571
+      },
+      "final": {
+        "time": 0.1,
+        "boundary_fluxes": [
+          [
+            1.255516079379758e-21,
+            0.0
+          ],
+          [
+            1.2555160793797581e-21,
+            0.0
+          ],
+          [
+            1.255516079379758e-21,
+            0.0
+          ],
+          [
+            1.255516079379758e-21,
+            -0.0
+          ]
+        ],
+        "boundary_normal_error": 5.1398153230894565e-19,
+        "boundary_velocity_error": 5.258292006134382e-19,
+        "convection_power": -4.336808689942018e-19,
+        "divergence_linf": 1.4210854715202004e-14,
+        "kinetic_energy": 0.035817392782205706,
+        "max_speed": 0.26049347297082126,
+        "net_boundary_flux": 5.0220643175190325e-21,
+        "normal_jump_linf": 8.533213198547163e-16,
+        "tangent_jump_l2": 0.0016486652971271433,
+        "viscous_quadratic": 1.525265597170286
+      },
+      "history": [
+        {
+          "time": 0.0,
+          "boundary_fluxes": [
+            [
+              -2.3154349982682407e-22,
+              0.0
+            ],
+            [
+              -2.315434998268241e-22,
+              0.0
+            ],
+            [
+              -2.3154349982682416e-22,
+              0.0
+            ],
+            [
+              -2.3154349982682407e-22,
+              -0.0
+            ]
+          ],
+          "boundary_normal_error": 9.478897545936589e-20,
+          "boundary_velocity_error": 9.697393400276007e-20,
+          "convection_power": 1.0842021724855044e-18,
+          "divergence_linf": 1.0769163338864018e-14,
+          "kinetic_energy": 0.04376450258726952,
+          "max_speed": 0.2878976437067698,
+          "net_boundary_flux": -9.261739993072967e-22,
+          "normal_jump_linf": 7.53791560420547e-16,
+          "tangent_jump_l2": 0.0031808790440276563,
+          "viscous_quadratic": 1.870201141167561
+        },
+        {
+          "time": 0.1,
+          "boundary_fluxes": [
+            [
+              1.255516079379758e-21,
+              0.0
+            ],
+            [
+              1.2555160793797581e-21,
+              0.0
+            ],
+            [
+              1.255516079379758e-21,
+              0.0
+            ],
+            [
+              1.255516079379758e-21,
+              -0.0
+            ]
+          ],
+          "boundary_normal_error": 5.1398153230894565e-19,
+          "boundary_velocity_error": 5.258292006134382e-19,
+          "convection_power": -4.336808689942018e-19,
+          "divergence_linf": 1.4210854715202004e-14,
+          "kinetic_energy": 0.035817392782205706,
+          "max_speed": 0.26049347297082126,
+          "net_boundary_flux": 5.0220643175190325e-21,
+          "normal_jump_linf": 8.533213198547163e-16,
+          "tangent_jump_l2": 0.0016486652971271433,
+          "viscous_quadratic": 1.525265597170286
+        }
+      ],
+      "velocity_l2": 0.0017614516004162786,
+      "velocity_relative_l2": 0.006579919864648208,
+      "velocity_max_sample_error": 0.005878714801703887,
+      "velocity_l2_rate": 3.1349522123902176
+    }
+  ]
+}

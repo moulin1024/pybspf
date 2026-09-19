@@ -1,0 +1,119 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "elements": [
+        16,
+        16
+      ],
+      "degree": 3,
+      "quadrature": 6,
+      "dofs": 1081,
+      "stokes_d4x": 0.036142186623620114,
+      "t2_d4x": 0.08842118202741135,
+      "t2_d4y": 0.015322810190763635,
+      "stokes_mean_value_rms_R005": 0.0780748707324984
+    },
+    {
+      "case": "quadrature10",
+      "elements": [
+        16,
+        16
+      ],
+      "degree": 3,
+      "quadrature": 10,
+      "dofs": 1081,
+      "stokes_d4x": 0.036137603232501425,
+      "t2_d4x": 0.08842189827121795,
+      "t2_d4y": 0.015319097480858785,
+      "stokes_mean_value_rms_R005": 0.07807486650609034,
+      "line_detrended_rms": 0.4148784640489804,
+      "line_peak_cycles_per_r": 8.32926630876819
+    },
+    {
+      "case": "lift_c4",
+      "elements": [
+        16,
+        16
+      ],
+      "degree": 3,
+      "quadrature": 6,
+      "dofs": 1081,
+      "stokes_d4x": 0.04238310656313562,
+      "t2_d4x": 0.08699899129376823,
+      "t2_d4y": 0.014128497787014225,
+      "stokes_mean_value_rms_R005": 0.0629881872733912,
+      "line_detrended_rms": 0.3984074730389218,
+      "line_peak_cycles_per_r": 8.32926630876819
+    },
+    {
+      "case": "radial24",
+      "elements": [
+        24,
+        16
+      ],
+      "degree": 3,
+      "quadrature": 6,
+      "dofs": 1657,
+      "stokes_d4x": 0.03395058005742115,
+      "t2_d4x": 0.05687609197808666,
+      "t2_d4y": 0.014275400511499914,
+      "stokes_mean_value_rms_R005": 0.06540425915439395,
+      "line_detrended_rms": 0.15342110303355544,
+      "line_peak_cycles_per_r": 11.660972832275467
+    },
+    {
+      "case": "tangent24",
+      "elements": [
+        16,
+        24
+      ],
+      "degree": 3,
+      "quadrature": 6,
+      "dofs": 1561,
+      "stokes_d4x": 0.03578269136725409,
+      "t2_d4x": 0.08563759931157297,
+      "t2_d4y": 0.01597108575444459,
+      "stokes_mean_value_rms_R005": 0.06221909086007752,
+      "line_detrended_rms": 0.37801916443595535,
+      "line_peak_cycles_per_r": 8.32926630876819
+    },
+    {
+      "case": "degree4",
+      "elements": [
+        16,
+        16
+      ],
+      "degree": 4,
+      "quadrature": 7,
+      "dofs": 1217,
+      "stokes_d4x": 0.02175513212148974,
+      "t2_d4x": 0.022591546946418798,
+      "t2_d4y": 0.010178126260119606,
+      "stokes_mean_value_rms_R005": 0.06590967013873528,
+      "line_detrended_rms": 0.3261063789553887,
+      "line_peak_cycles_per_r": 8.32926630876819
+    },
+    {
+      "case": "degree4_c4",
+      "elements": [
+        16,
+        16
+      ],
+      "degree": 4,
+      "quadrature": 7,
+      "dofs": 1217,
+      "stokes_d4x": 0.0014992653959583712,
+      "t2_d4x": 0.006292543418297841,
+      "t2_d4y": 0.0004151397169143139,
+      "stokes_mean_value_rms_R005": 0.017345199478585212,
+      "line_detrended_rms": 0.24095443906608544,
+      "line_peak_cycles_per_r": 8.32926630876819
+    }
+  ],
+  "checks": {
+    "periodic_symbol_max_error": 2.220446049250313e-15,
+    "saved_stokes_reconstruction_max_error": 6.217248937900877e-15,
+    "analytic_harmonic_mean_value_error": 0.0
+  }
+}

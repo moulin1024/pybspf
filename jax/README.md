@@ -12,6 +12,13 @@ of static geometry in the checked constructors, and SciPy in reference tests and
 
 ## Install and run
 
+The experimental [mapped spline Poisson solver](../docs/jax_mapped_spline_poisson.md)
+uses four exact ellipse-to-rectangle maps with conforming scalar B-splines,
+matrix-free GPU assembly and a resident GPU conjugate-gradient solve.
+Its [mapped Navier–Stokes extension](../docs/jax_mapped_navier_stokes.md)
+evolves the compatible divergence-free curl space with exact no-slip boundaries,
+viscous patch coupling and GPU IMEX time stepping.
+
 For a rectangle with a fixed eccentric analytic hole, see the
 [smooth-field immersed Poisson prototype](../docs/jax_immersed_poisson.md).
 `ImmersedPoissonPlan` reuses BSPF rectangular derivatives and the tensor

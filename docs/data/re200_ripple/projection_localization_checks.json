@@ -1,0 +1,15 @@
+{
+  "q2.5": {
+    "mask_partition_max_error": 1.1102230246251565e-16,
+    "saved_state_relative_reconstruction_error": 3.4367769442350435e-15
+  },
+  "q4": {
+    "mask_partition_max_error": 1.1102230246251565e-16,
+    "saved_state_relative_reconstruction_error": 3.027421556944876e-15
+  },
+  "compact_relative_quadrature_changes": {
+    "vertical_bump": -8.323431522794245e-06,
+    "divergence_free_bump": 0.0006359193589167145,
+    "gradient_bump": -0.8510609344840159
+  }
+}

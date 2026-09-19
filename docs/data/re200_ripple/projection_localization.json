@@ -1,0 +1,225 @@
+{
+  "device": "cuda:0",
+  "nx": 73,
+  "ny": 33,
+  "quadrature_factor": 2.5,
+  "setup_seconds": 20.557043524924666,
+  "dofs": 2059,
+  "probe_bounds": [
+    -0.85,
+    -0.45,
+    -0.8,
+    0.8
+  ],
+  "compact": [
+    {
+      "force": "vertical_bump",
+      "force_l2": 1.0,
+      "support": [
+        0.0,
+        0.4,
+        0.35,
+        0.55
+      ],
+      "exact_force_and_curl_zero_in_probe": true,
+      "projected_curl": {
+        "rms": 1.9539081565590124,
+        "maximum": 12.80292807268513,
+        "d4y": 0.027680214173149236,
+        "d4x": 0.0027699407415853073
+      },
+      "projected_velocity_l2": 0.561553794365165,
+      "mass_relative_residual": 6.104483697290333e-16,
+      "homogeneous_wall_error": 7.343162551265625e-09
+    },
+    {
+      "force": "divergence_free_bump",
+      "force_l2": 1.0,
+      "support": [
+        0.0,
+        0.4,
+        0.35,
+        0.55
+      ],
+      "exact_force_and_curl_zero_in_probe": true,
+      "projected_curl": {
+        "rms": 4.346380650078553,
+        "maximum": 35.08643716788333,
+        "d4y": 0.12416976627053929,
+        "d4x": 0.008206805060801814
+      },
+      "projected_velocity_l2": 0.9491861717382496,
+      "mass_relative_residual": 1.3985388581108289e-15,
+      "homogeneous_wall_error": 2.024530038231162e-08,
+      "relative_velocity_projection_error": 0.3147151272838087
+    },
+    {
+      "force": "gradient_bump",
+      "force_l2": 1.0,
+      "support": [
+        0.0,
+        0.4,
+        0.35,
+        0.55
+      ],
+      "exact_force_and_curl_zero_in_probe": true,
+      "projected_curl": {
+        "rms": 0.007920754549356968,
+        "maximum": 0.042644077732631375,
+        "d4y": 0.00018916204563193775,
+        "d4x": 1.4149375812348737e-05
+      },
+      "projected_velocity_l2": 0.0012218409665245202,
+      "mass_relative_residual": 8.649004928330046e-16,
+      "homogeneous_wall_error": 3.022910878208799e-11
+    }
+  ],
+  "actual": [
+    {
+      "state": "stokes",
+      "metrics": {
+        "near_body": {
+          "rms": 0.08137742253342278,
+          "maximum": 0.38780466355487,
+          "d4y": 0.002057969950065278,
+          "d4x": 0.00020462542591311643
+        },
+        "inlet_region": {
+          "rms": 2.017722786977549,
+          "maximum": 5.5218556640804515,
+          "d4y": 0.00247058863923497,
+          "d4x": 0.0014482855990932734
+        },
+        "buffer_region": {
+          "rms": 5.662498526804061e-06,
+          "maximum": 1.8483748110239907e-05,
+          "d4y": 1.2586468029538517e-08,
+          "d4x": 2.580518260794693e-08
+        },
+        "remaining": {
+          "rms": 0.4536593159768602,
+          "maximum": 2.1789750306114386,
+          "d4y": 0.009069508119660067,
+          "d4x": 0.0011644840832766234
+        },
+        "outlet_backflow": {
+          "rms": 0.0,
+          "maximum": 0.0,
+          "d4y": 0.0,
+          "d4x": 0.0
+        },
+        "total_convection": {
+          "rms": 2.095517432392443,
+          "maximum": 7.302053562812461,
+          "d4y": 0.011456955877905618,
+          "d4x": 0.0021977712785710515
+        },
+        "viscous_sponge": {
+          "rms": 3.8276404422728975e-18,
+          "maximum": 2.7603336201921943e-17,
+          "d4y": 3.1694677077225934e-20,
+          "d4x": 1.6364659040972133e-20
+        },
+        "total_acceleration": {
+          "rms": 2.095517432392443,
+          "maximum": 7.302053562812461,
+          "d4y": 0.011456955877905618,
+          "d4x": 0.0021977712785710515
+        }
+      },
+      "d4y_correlations_with_total_convection": {
+        "near_body": {
+          "norm_ratio": 0.17962624382921896,
+          "correlation": 0.5504431951880341
+        },
+        "inlet_region": {
+          "norm_ratio": 0.21564093163694759,
+          "correlation": 0.6212356999468274
+        },
+        "buffer_region": {
+          "norm_ratio": 1.0985874575820902e-06,
+          "correlation": 0.05483605607499942
+        },
+        "remaining": {
+          "norm_ratio": 0.7916158721663867,
+          "correlation": 0.9691091169634054
+        }
+      },
+      "bulk_partition_relative_error": 1.496759314621842e-16
+    },
+    {
+      "state": "t20",
+      "metrics": {
+        "near_body": {
+          "rms": 1.741253020655975,
+          "maximum": 8.867850677696435,
+          "d4y": 0.03268004933918278,
+          "d4x": 0.0052787484555760844
+        },
+        "inlet_region": {
+          "rms": 2.051682139481129,
+          "maximum": 10.110996283179755,
+          "d4y": 0.033088088229266864,
+          "d4x": 0.005329160451545102
+        },
+        "buffer_region": {
+          "rms": 0.2835034235690697,
+          "maximum": 1.3325308736076495,
+          "d4y": 0.0012739445124582787,
+          "d4x": 0.0013262282535082249
+        },
+        "remaining": {
+          "rms": 1.1261621607855443,
+          "maximum": 4.14902972922192,
+          "d4y": 0.017963161010782654,
+          "d4x": 0.003888106505802888
+        },
+        "outlet_backflow": {
+          "rms": 0.0,
+          "maximum": 0.0,
+          "d4y": 0.0,
+          "d4x": 0.0
+        },
+        "total_convection": {
+          "rms": 1.3286283911212842,
+          "maximum": 6.481293996658895,
+          "d4y": 0.023618841155949,
+          "d4x": 0.0047279164800457605
+        },
+        "viscous_sponge": {
+          "rms": 1.3368711584491404,
+          "maximum": 6.477097341368131,
+          "d4y": 0.023442801432154527,
+          "d4x": 0.004331161734159801
+        },
+        "total_acceleration": {
+          "rms": 0.6116313256664483,
+          "maximum": 2.703311765275591,
+          "d4y": 0.008627907573285002,
+          "d4x": 0.0015894886234507786
+        }
+      },
+      "d4y_correlations_with_total_convection": {
+        "near_body": {
+          "norm_ratio": 1.3836432161681858,
+          "correlation": 0.42428559701015106
+        },
+        "inlet_region": {
+          "norm_ratio": 1.4009192072885759,
+          "correlation": 0.15384533577150833
+        },
+        "buffer_region": {
+          "norm_ratio": 0.053937638347569976,
+          "correlation": -0.3171385928396081
+        },
+        "remaining": {
+          "norm_ratio": 0.7605437071267225,
+          "correlation": 0.28205311724239057
+        }
+      },
+      "bulk_partition_relative_error": 1.4305278112300027e-16
+    }
+  ],
+  "mask_partition_max_error": 1.1102230246251565e-16,
+  "saved_coefficient_reconstruction_relative_error": 3.4367769442350435e-15
+}

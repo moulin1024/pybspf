@@ -1,0 +1,91 @@
+{
+  "periodic_velocity_degree": 2,
+  "periodic_modes": [
+    {
+      "fraction_of_nyquist": 0.25,
+      "dimensionless_frequency": 0.785355935291015,
+      "phase_speed_over_U": 0.9999462335049899,
+      "group_speed_over_U": 0.999608198496361,
+      "dimensionless_diffusion": 0.6172203331328135
+    },
+    {
+      "fraction_of_nyquist": 0.5,
+      "dimensionless_frequency": 1.5624999999999998,
+      "phase_speed_over_U": 0.9947183943243457,
+      "group_speed_over_U": 0.9570309078806076,
+      "dimensionless_diffusion": 2.4999999999999996
+    },
+    {
+      "fraction_of_nyquist": 0.75,
+      "dimensionless_frequency": 2.0769671203775655,
+      "phase_speed_over_U": 0.8814922235931445,
+      "group_speed_over_U": -0.09064278347909749,
+      "dimensionless_diffusion": 6.040569280715383
+    },
+    {
+      "fraction_of_nyquist": 0.9,
+      "dimensionless_frequency": 1.3787438237665859,
+      "phase_speed_over_U": 0.4876837944336628,
+      "group_speed_over_U": -3.3021722937558025,
+      "dimensionless_diffusion": 9.012381285929662
+    },
+    {
+      "fraction_of_nyquist": 1.0,
+      "dimensionless_frequency": 6.123233995736762e-16,
+      "phase_speed_over_U": 1.9490859162596867e-16,
+      "group_speed_over_U": -4.999983332283905,
+      "dimensionless_diffusion": 9.999999999999984
+    }
+  ],
+  "group_reversal_fraction_of_nyquist": 0.7426757812499999,
+  "mapped_modes": [
+    {
+      "fraction_of_radial_coefficient_nyquist": 0.125,
+      "physical_force_l2": 11.729059946732313,
+      "projected_force_l2": 11.714991621470638,
+      "projection_norm_ratio": 0.9988005581584912,
+      "relative_projection_error": 0.048963711279752443,
+      "boundary_velocity_max": 0.0
+    },
+    {
+      "fraction_of_radial_coefficient_nyquist": 0.25,
+      "physical_force_l2": 18.099993864419023,
+      "projected_force_l2": 18.02945508981157,
+      "projection_norm_ratio": 0.9961028288111126,
+      "relative_projection_error": 0.08819951493347018,
+      "boundary_velocity_max": 0.0
+    },
+    {
+      "fraction_of_radial_coefficient_nyquist": 0.5,
+      "physical_force_l2": 29.19334551780423,
+      "projected_force_l2": 28.204930457529326,
+      "projection_norm_ratio": 0.9661424532631213,
+      "relative_projection_error": 0.25800922464655657,
+      "boundary_velocity_max": 0.0
+    },
+    {
+      "fraction_of_radial_coefficient_nyquist": 0.75,
+      "physical_force_l2": 42.87819457483087,
+      "projected_force_l2": 32.85939722291613,
+      "projection_norm_ratio": 0.7663428357639925,
+      "relative_projection_error": 0.6424318314601188,
+      "boundary_velocity_max": 0.0
+    },
+    {
+      "fraction_of_radial_coefficient_nyquist": 0.9,
+      "physical_force_l2": 51.20100245096828,
+      "projected_force_l2": 26.1038995056839,
+      "projection_norm_ratio": 0.5098318051620537,
+      "relative_projection_error": 0.8602741019263578,
+      "boundary_velocity_max": 0.0
+    },
+    {
+      "fraction_of_radial_coefficient_nyquist": 1.0,
+      "physical_force_l2": 52.216321339727024,
+      "projected_force_l2": 24.311176660696717,
+      "projection_norm_ratio": 0.46558577925328454,
+      "relative_projection_error": 0.8850027582765558,
+      "boundary_velocity_max": 0.0
+    }
+  ]
+}

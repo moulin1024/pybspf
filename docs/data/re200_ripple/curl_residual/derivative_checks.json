@@ -1,0 +1,65 @@
+{
+  "lines": [
+    {
+      "axis": 0,
+      "production_parity": [
+        5.6795658683095574e-11,
+        2.3714729296103515e-11,
+        1.878761768546304e-10
+      ],
+      "finite_difference": [
+        {
+          "h": 0.0002,
+          "third_relative": 9.222144667055453e-08,
+          "fourth_relative": 9.864427025822745e-06
+        },
+        {
+          "h": 0.0001,
+          "third_relative": 2.9713904522469754e-08,
+          "fourth_relative": 4.37472536720823e-05
+        }
+      ]
+    },
+    {
+      "axis": 1,
+      "production_parity": [
+        4.043656885197459e-15,
+        2.9199270263658667e-15,
+        6.238900228962049e-14
+      ],
+      "finite_difference": [
+        {
+          "h": 0.0002,
+          "third_relative": 2.558071701878172e-10,
+          "fourth_relative": 2.1553591195099724e-08
+        },
+        {
+          "h": 0.0001,
+          "third_relative": 1.6524259397181522e-11,
+          "fourth_relative": 3.028841657433291e-08
+        }
+      ]
+    }
+  ],
+  "length_squared": 0.00025330295910584445,
+  "strength": 1.0,
+  "curl_setup_seconds": 7.055329991970211,
+  "rational_gradient_fd": [
+    {
+      "h": 0.0002,
+      "relative_errors": [
+        1.519154004462373e-12,
+        2.391479055616004e-12
+      ]
+    },
+    {
+      "h": 0.0001,
+      "relative_errors": [
+        3.3281716628974e-12,
+        5.767981086307807e-12
+      ]
+    }
+  ],
+  "augmented_factor_finite": true,
+  "mass_symmetry_relative": 1.0125531727683666e-17
+}

@@ -181,3 +181,113 @@ remedy has not yet been established.
 Regression verification after the assembly-memory correction: 34 passed, 1 skipped
 (`test_gpu_volume`, `test_immersed_flow_gpu`, and `test_hybrid_flow`), including
 manufactured-solution accuracy, wall/flux checks, and GPU/CPU operator parity.
+
+## Return to BSPF: force localization and projection controls
+
+Following the mapped-spline comparison, active correction work is again focused
+on the **BSPF NS solver**. Similar ripples in different bases motivate testing
+the common projection/formulation, rather than another basis replacement.
+This is a working hypothesis about the mechanism, not a claim that the basis
+has no influence. The spline and BSPF runs also have different outlet treatment.
+
+The new `projection_localization.py` uses the original 73×33 corrected BSPF
+space, Re=200, GPU FP64 evaluation and GPU force/mass solves. It does not change
+production equations. Its upstream probe is x=[-.85,-.45], y=[-.8,.8], sampled
+at 61×161 points; note the slightly shorter x extent than the earlier source
+audit. All D4 values in this section use this fixed probe.
+
+### A divergence-free compact force still produces remote curl error
+
+A polynomial bump has support x=[0,.4], y=[.35,.55], disjoint from the probe.
+Three unit-L2 forces are built from it: a vertical force, the curl of the bump,
+and its gradient. The second is divergence-free and zero near all boundaries;
+its continuous incompressible projection is itself. All three forces and their
+exact curl vanish throughout the upstream probe.
+
+| Force | Projected upstream curl RMS, q=2.5 | q=4 |
+| --- | ---: | ---: |
+| Vertical bump | 1.953908 | 1.953892 |
+| Divergence-free bump | 4.346381 | 4.349145 |
+| Gradient bump | .007921 | .001180 |
+
+The divergence-free force has about 31.6% relative velocity projection error
+at q=4. This narrow force is not well resolved by the current space; the test
+establishes a finite-resolution nonlocal curl error, not an error norm for the
+actual channel solution. The large upstream curl response persists under the
+quadrature increase, changing by .064%. For the vertical force the change is
+.00083%. GPU mass backward residuals are below 1.5e-15.
+
+The pure-gradient control should project to zero in the continuous problem.
+Its projected velocity norm falls from .001222 to .000196 as quadrature
+increases. This demonstrates a separate compact-force integration error, much
+smaller than the divergence-free-force response. It should not be described as
+fully quadrature-converged. The independent wall errors of the unit compact
+force projections reach about 2e-8; these diagnostic accelerations do **not**
+meet the production 1e-9 wall criterion and are not a proposed corrected flow.
+
+### Which actual force regions feed the initial bands?
+
+The actual nonlinear force is split using smooth nonnegative masks which sum
+to one: near the body (elliptical radius q<2), the inlet region, the outlet
+buffer, and the remainder. The inlet mask equals one throughout the probe;
+the other masks vanish there. The remainder includes intermediate and
+downstream physical-channel regions, excluding the near-body contribution.
+The transition masks are explicit in the script and are diagnostic choices,
+not physical source boundaries.
+
+At the initial Stokes state, q=4 gives:
+
+| Projected force region | Upstream curl D4y / total D4y | Correlation with total D4y |
+| --- | ---: | ---: |
+| Near body | .180 | .550 |
+| Inlet region | .216 | .621 |
+| Remaining physical/buffer-transition region | .792 | .969 |
+| Outlet buffer | 1.10e-6 | .055 |
+
+These norm ratios are **not additive percentages**: the responses can cancel.
+Nevertheless, the remainder's high correlation and size show that a substantial
+part of the initial upstream ringing is induced by forcing outside the probe.
+The immediate near-body force and the outlet buffer alone do not explain it.
+The initial linear residual is negligible, so this response is introduced by
+the nonlinear projection, before any time integration.
+
+At t=20, near-body and inlet contributions both exceed the total D4 norm and
+partially cancel; neither can be interpreted as an isolated percentage of the
+error. The buffer contribution has norm ratio .054. The viscous+sponge response
+also nearly balances much of the convective response, so a frozen convective
+curl is not the full time derivative at late times.
+
+The saved t=20 state was reconstructed by a GPU solve in the current normalized
+coordinates with relative coefficient error 3.03e-15. The partitioned loads
+sum to the original bulk load within 1.5e-16 relative. Force projection and
+mass solves pass a device-transfer guard. These checks separate the new
+localization from a change of state or an inaccurate linear solve.
+
+![BSPF compact-force and initial nonlinear-source localization](data/re200_ripple/projection_localization.png)
+
+Panels have independent colour ranges. Recorded reports:
+[q=2.5](data/re200_ripple/projection_localization.json),
+[q=4](data/re200_ripple/projection_localization_q4.json),
+[checks](data/re200_ripple/projection_localization_checks.json).
+
+Using the GPU environment above:
+
+```sh
+python examples/pde/re200_diagnostics/projection_localization.py
+python examples/pde/re200_diagnostics/projection_localization.py --quadrature 4 \
+  --out build/immersed_flow/re200_ripple_study/projection_localization_q4
+```
+
+The correction remains unresolved. The next formulation experiment should
+address force-to-vorticity accuracy in BSPF while retaining divergence, wall
+and flux constraints; it must include the viscous and temporal terms
+consistently. Changing only the displayed vorticity or applying an arbitrary
+filter to the nonlinear load would not satisfy that requirement.
+
+## Consistent curl-test formulation control
+
+The [follow-up BSPF prototype](jax_bspf_curl_residual.md) adds the complete
+curl residual, including time, viscosity and sponge. It improves the frozen
+initial projection but either becomes unstable or fails to improve the evolved
+ripple. Smaller-step and denser-quadrature controls do not establish a fix.
+It remains isolated research code; no production change was promoted.

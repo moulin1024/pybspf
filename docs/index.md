@@ -17,3 +17,8 @@
 - [Open parallel kinetic dynamics: JAX validation](jax_parallel_kinetic_example.md)
 
 - [Self-consistent open-domain Landau damping study](jax_landau_open_example.md)
+
+- [Mapped spline Poisson on GPU](jax_mapped_spline_poisson.md)
+- [Mapped divergence-conforming Navier–Stokes on GPU](jax_mapped_navier_stokes.md)
+- [Mapped Re=200 ripple cause audit](jax_mapped_ripple_investigation.md)
+- [BSPF curl-residual formulation control](jax_bspf_curl_residual.md)

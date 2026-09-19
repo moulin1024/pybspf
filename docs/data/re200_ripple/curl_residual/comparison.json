@@ -1,0 +1,142 @@
+{
+  "cases": [
+    {
+      "case": "zero",
+      "initial_residual_rms": 0.6696723221959773,
+      "initial_residual_d4y": 0.010945897261064156,
+      "final_time": 2.0,
+      "final": {
+        "time": 2.0,
+        "kinetic_energy": 3.5254233174304286,
+        "max_speed": 1.445791426355281,
+        "flux_out": 1.333333333331253,
+        "vorticity": {
+          "rms": 1.049875719702966,
+          "d4y": 0.003012311456406368,
+          "maximum": 1.7740708668273442
+        }
+      },
+      "failed": null,
+      "dt": 0.01
+    },
+    {
+      "case": "strength1",
+      "initial_residual_rms": 0.20476238284141093,
+      "initial_residual_d4y": 0.0033436266327052226,
+      "final_time": 0.6,
+      "final": {
+        "time": 0.6,
+        "kinetic_energy": 354218585.2470938,
+        "max_speed": 230071.94369926534,
+        "flux_out": 1.33333379192776,
+        "vorticity": {
+          "rms": 177795.85871509783,
+          "d4y": 4121.817828021975,
+          "maximum": 1569235.9279616666
+        }
+      },
+      "failed": "Non-finite or runaway evolution",
+      "dt": 0.01
+    },
+    {
+      "case": "unweighted_dt0025",
+      "initial_residual_rms": 0.2047623828414108,
+      "initial_residual_d4y": 0.0033436266327052156,
+      "final_time": 0.625,
+      "final": {
+        "time": 0.625,
+        "kinetic_energy": null,
+        "max_speed": null,
+        "flux_out": null,
+        "vorticity": {
+          "rms": null,
+          "d4y": null,
+          "maximum": null
+        }
+      },
+      "failed": "Non-finite or runaway evolution",
+      "dt": 0.0025
+    },
+    {
+      "case": "boundary_compatible",
+      "initial_residual_rms": 0.5852729554535464,
+      "initial_residual_d4y": 0.008591062749032223,
+      "final_time": 2.0,
+      "final": {
+        "time": 2.0,
+        "kinetic_energy": 3.5147588884206735,
+        "max_speed": 1.4390514888703685,
+        "flux_out": 1.3333333333316464,
+        "vorticity": {
+          "rms": 1.073060546593779,
+          "d4y": 0.0033280146412394736,
+          "maximum": 1.8790346335441035
+        }
+      },
+      "failed": null,
+      "dt": 0.01
+    },
+    {
+      "case": "boundary_cell",
+      "initial_residual_rms": 0.3994114915162282,
+      "initial_residual_d4y": 0.004766858072238915,
+      "final_time": 2.4,
+      "final": {
+        "time": 2.4,
+        "kinetic_energy": 2369469194.476568,
+        "max_speed": 450833.0814939051,
+        "flux_out": 1.33333183972749,
+        "vorticity": {
+          "rms": 1265825.3777412432,
+          "d4y": 24377.04197734243,
+          "maximum": 9746680.575962266
+        }
+      },
+      "failed": "Non-finite or runaway evolution",
+      "dt": 0.01
+    },
+    {
+      "case": "boundary_cell_dt0025",
+      "initial_residual_rms": 0.3994114915162284,
+      "initial_residual_d4y": 0.004766858072238916,
+      "final_time": 3.0,
+      "final": {
+        "time": 3.0,
+        "kinetic_energy": 4.533685547373756,
+        "max_speed": 6.5108306426320866,
+        "flux_out": 1.3333333333188384,
+        "vorticity": {
+          "rms": 22.13968438961753,
+          "d4y": 0.4009876208656508,
+          "maximum": 97.38801675315662
+        }
+      },
+      "failed": null,
+      "dt": 0.0025
+    },
+    {
+      "case": "boundary_cell_dt0025_q4",
+      "initial_residual_rms": 0.3994019324537974,
+      "initial_residual_d4y": 0.004765680278878223,
+      "final_time": 3.0,
+      "final": {
+        "time": 3.0,
+        "kinetic_energy": 4.641646999284919,
+        "max_speed": 9.794574599171803,
+        "flux_out": 1.3333333333381499,
+        "vorticity": {
+          "rms": 22.722914347035342,
+          "d4y": 0.34337778177342,
+          "maximum": 109.78318863239149
+        }
+      },
+      "failed": null,
+      "dt": 0.0025
+    }
+  ],
+  "metrics": {
+    "t2_baseline_d4y": 0.003012311456406368,
+    "t2_weighted_d4y": 0.0033280146412394736,
+    "t2_relative_vorticity_difference": 0.10874193494129601
+  }
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "dt": 0.01,
+    "time": 1.0,
+    "form": "original",
+    "final_velocity_norm": 0.6217465770728086
+  },
+  {
+    "dt": 0.01,
+    "time": 1.0,
+    "form": "curl",
+    "final_velocity_norm": 0.6523577746510193
+  },
+  {
+    "dt": 0.005,
+    "time": 0.5,
+    "form": "original",
+    "final_velocity_norm": 0.7145633392455386
+  },
+  {
+    "dt": 0.005,
+    "time": 0.5,
+    "form": "curl",
+    "final_velocity_norm": 0.7414498005008029
+  },
+  {
+    "dt": 0.0025,
+    "time": 0.25,
+    "form": "original",
+    "final_velocity_norm": 0.8056293089325942
+  },
+  {
+    "dt": 0.0025,
+    "time": 0.25,
+    "form": "curl",
+    "final_velocity_norm": 0.8165090083222571
+  }
+]

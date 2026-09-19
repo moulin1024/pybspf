@@ -1,0 +1,10 @@
+{
+  "velocity_relative_physical_grid_l2": 0.0043609941009965045,
+  "velocity_max_sample_difference": 0.03821357682120102,
+  "vorticity_relative_physical_grid_l2": 0.017892595182324632,
+  "vorticity_max_sample_difference": 1.2396215077576542,
+  "coarse_dt": 0.005,
+  "fine_dt": 0.0025,
+  "end_time": 20.0,
+  "integration": "65x97 reference grid per patch, physical determinant weighted trapezoidal quadrature"
+}

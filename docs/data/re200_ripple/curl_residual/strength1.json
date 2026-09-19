@@ -1,0 +1,106 @@
+{
+  "configuration": {
+    "strength": 1.0,
+    "time": 2.0,
+    "dt": 0.01,
+    "out": "build/immersed_flow/re200_ripple_study/curl_residual/strength1"
+  },
+  "setup": {
+    "length_squared": 0.00025330295910584445,
+    "strength": 1.0,
+    "curl_setup_seconds": 8.708084332058206
+  },
+  "old_vs_new_stokes_velocity_l2": 5.675651396823013e-08,
+  "initial_rate": {
+    "rms": 2.1711964887859283,
+    "d4y": 0.0033437954392294775,
+    "maximum": 6.940098637848397
+  },
+  "original_initial_rate": {
+    "rms": 2.290104224594013,
+    "d4y": 0.010945917931691652,
+    "maximum": 7.818157909176238
+  },
+  "initial_local_pde_residual": {
+    "rms": 0.20476238284141093,
+    "d4y": 0.0033436266327052226,
+    "maximum": 0.9640192875351175
+  },
+  "original_initial_local_pde_residual": {
+    "rms": 0.6696723221959798,
+    "d4y": 0.010945897261064165,
+    "maximum": 4.22352343328007
+  },
+  "mass_relative_residual": 1.128435289864328e-15,
+  "history": [
+    {
+      "time": 0.1,
+      "kinetic_energy": 3.3573263372464677,
+      "max_speed": 1.444071137799726,
+      "flux_out": 1.3333333333334159,
+      "vorticity": {
+        "rms": 1.094522922083747,
+        "d4y": 0.0002579725435615518,
+        "maximum": 2.4302376689405687
+      }
+    },
+    {
+      "time": 0.2,
+      "kinetic_energy": 3.361504989673259,
+      "max_speed": 1.4390279278949478,
+      "flux_out": 1.3333333333334136,
+      "vorticity": {
+        "rms": 1.1483820835699752,
+        "d4y": 0.0006033262862861693,
+        "maximum": 2.2928645673514327
+      }
+    },
+    {
+      "time": 0.3,
+      "kinetic_energy": 3.370725994163288,
+      "max_speed": 1.4337432442619513,
+      "flux_out": 1.3333333333328663,
+      "vorticity": {
+        "rms": 1.1915917248572576,
+        "d4y": 0.0012436620914944197,
+        "maximum": 3.7415454633836074
+      }
+    },
+    {
+      "time": 0.4,
+      "kinetic_energy": 3.416076235542824,
+      "max_speed": 2.638971473651123,
+      "flux_out": 1.3333333333348567,
+      "vorticity": {
+        "rms": 1.967601355528314,
+        "d4y": 0.0024557198804434016,
+        "maximum": 18.710905020210575
+      }
+    },
+    {
+      "time": 0.5,
+      "kinetic_energy": 4.144168079271585,
+      "max_speed": 9.894305597430936,
+      "flux_out": 1.3333333333207358,
+      "vorticity": {
+        "rms": 9.560451505168713,
+        "d4y": 0.018781859818533413,
+        "maximum": 65.7555115832578
+      }
+    },
+    {
+      "time": 0.6,
+      "kinetic_energy": 354218585.2470938,
+      "max_speed": 230071.94369926534,
+      "flux_out": 1.33333379192776,
+      "vorticity": {
+        "rms": 177795.85871509783,
+        "d4y": 4121.817828021975,
+        "maximum": 1569235.9279616666
+      }
+    }
+  ],
+  "failed": "Non-finite or runaway evolution",
+  "evolution_seconds": 1.4772275569848716,
+  "warm_ms_per_step": 24.620459283081193
+}

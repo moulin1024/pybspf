@@ -1,0 +1,23 @@
+{
+  "case": "steady strain u=(x,-y), pressure=-(x*x+y*y)/2",
+  "elements": 3,
+  "degree": 3,
+  "boundary": "nitsche",
+  "quadrature": [
+    {
+      "order": 9,
+      "lift_load_norm": 8.936087698720299e-08,
+      "pressure_gradient_load_norm": 1.2558629193230422e-09
+    },
+    {
+      "order": 12,
+      "lift_load_norm": 1.4599789525219154e-10,
+      "pressure_gradient_load_norm": 1.8206586066511287e-12
+    },
+    {
+      "order": 15,
+      "lift_load_norm": 2.345024169228707e-13,
+      "pressure_gradient_load_norm": 9.358492922071694e-15
+    }
+  ]
+}

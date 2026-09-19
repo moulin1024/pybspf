@@ -1,0 +1,234 @@
+{
+  "center_bounds": [
+    -0.8,
+    -0.5,
+    -0.25,
+    0.2
+  ],
+  "cases": [
+    {
+      "case": "baseline",
+      "reconstruction_max_error": 3.219646771412954e-15,
+      "elements": [
+        16,
+        16
+      ],
+      "degree": 3,
+      "tests": [
+        {
+          "radius": 0.025,
+          "mean_value_defect_rms": 0.04360289054027464,
+          "max_defect": 0.3082112565948396,
+          "angular_quadrature_change_rms": 4.951211818048448e-06,
+          "vorticity_rms": 0.34784123895192764
+        },
+        {
+          "radius": 0.05,
+          "mean_value_defect_rms": 0.0780748707324984,
+          "max_defect": 0.411653986891512,
+          "angular_quadrature_change_rms": 1.6002116107662405e-05,
+          "vorticity_rms": 0.34784123895192764
+        },
+        {
+          "radius": 0.075,
+          "mean_value_defect_rms": 0.06948416127352072,
+          "max_defect": 0.36476742412416124,
+          "angular_quadrature_change_rms": 3.551618870101055e-05,
+          "vorticity_rms": 0.34784123895192764
+        }
+      ]
+    },
+    {
+      "case": "quadrature10",
+      "reconstruction_max_error": 3.774758283725532e-15,
+      "elements": [
+        16,
+        16
+      ],
+      "degree": 3,
+      "tests": [
+        {
+          "radius": 0.025,
+          "mean_value_defect_rms": 0.043600141304911175,
+          "max_defect": 0.30820639710805964,
+          "angular_quadrature_change_rms": 4.950820679441057e-06,
+          "vorticity_rms": 0.3477842096583311
+        },
+        {
+          "radius": 0.05,
+          "mean_value_defect_rms": 0.07807486650609034,
+          "max_defect": 0.4117220526732114,
+          "angular_quadrature_change_rms": 1.6001283791574497e-05,
+          "vorticity_rms": 0.3477842096583311
+        },
+        {
+          "radius": 0.075,
+          "mean_value_defect_rms": 0.06950928250672177,
+          "max_defect": 0.36479707908418946,
+          "angular_quadrature_change_rms": 3.55135120712357e-05,
+          "vorticity_rms": 0.3477842096583311
+        }
+      ]
+    },
+    {
+      "case": "lift_c4",
+      "reconstruction_max_error": 4.218847493575595e-15,
+      "elements": [
+        16,
+        16
+      ],
+      "degree": 3,
+      "tests": [
+        {
+          "radius": 0.025,
+          "mean_value_defect_rms": 0.048961257915416535,
+          "max_defect": 0.31072356950390134,
+          "angular_quadrature_change_rms": 5.310129711485862e-06,
+          "vorticity_rms": 0.3470069192769552
+        },
+        {
+          "radius": 0.05,
+          "mean_value_defect_rms": 0.0629881872733912,
+          "max_defect": 0.31344954186630414,
+          "angular_quadrature_change_rms": 1.7975692058662435e-05,
+          "vorticity_rms": 0.3470069192769552
+        },
+        {
+          "radius": 0.075,
+          "mean_value_defect_rms": 0.045990542600405804,
+          "max_defect": 0.27734708132070585,
+          "angular_quadrature_change_rms": 3.548005842406746e-05,
+          "vorticity_rms": 0.3470069192769552
+        }
+      ]
+    },
+    {
+      "case": "radial24",
+      "reconstruction_max_error": 3.1086244689504383e-15,
+      "elements": [
+        24,
+        16
+      ],
+      "degree": 3,
+      "tests": [
+        {
+          "radius": 0.025,
+          "mean_value_defect_rms": 0.039339916908338456,
+          "max_defect": 0.25012255991801935,
+          "angular_quadrature_change_rms": 5.139165444000418e-06,
+          "vorticity_rms": 0.34886508483794915
+        },
+        {
+          "radius": 0.05,
+          "mean_value_defect_rms": 0.06540425915439395,
+          "max_defect": 0.3304806668906103,
+          "angular_quadrature_change_rms": 1.634706125176783e-05,
+          "vorticity_rms": 0.34886508483794915
+        },
+        {
+          "radius": 0.075,
+          "mean_value_defect_rms": 0.05912149955770036,
+          "max_defect": 0.32976784448441676,
+          "angular_quadrature_change_rms": 3.466247120773577e-05,
+          "vorticity_rms": 0.34886508483794915
+        }
+      ]
+    },
+    {
+      "case": "tangent24",
+      "reconstruction_max_error": 2.55351295663786e-15,
+      "elements": [
+        16,
+        24
+      ],
+      "degree": 3,
+      "tests": [
+        {
+          "radius": 0.025,
+          "mean_value_defect_rms": 0.03932726590291335,
+          "max_defect": 0.3160555317680118,
+          "angular_quadrature_change_rms": 4.96723224828228e-06,
+          "vorticity_rms": 0.345579747641065
+        },
+        {
+          "radius": 0.05,
+          "mean_value_defect_rms": 0.06221909086007752,
+          "max_defect": 0.4538498674498097,
+          "angular_quadrature_change_rms": 1.587623251245016e-05,
+          "vorticity_rms": 0.345579747641065
+        },
+        {
+          "radius": 0.075,
+          "mean_value_defect_rms": 0.05531782472455796,
+          "max_defect": 0.40885979708500175,
+          "angular_quadrature_change_rms": 3.486723252507718e-05,
+          "vorticity_rms": 0.345579747641065
+        }
+      ]
+    },
+    {
+      "case": "degree4",
+      "reconstruction_max_error": 6.106226635438361e-15,
+      "elements": [
+        16,
+        16
+      ],
+      "degree": 4,
+      "tests": [
+        {
+          "radius": 0.025,
+          "mean_value_defect_rms": 0.03612728809581585,
+          "max_defect": 0.22989551442633605,
+          "angular_quadrature_change_rms": 2.848998590770124e-06,
+          "vorticity_rms": 0.3494795464117854
+        },
+        {
+          "radius": 0.05,
+          "mean_value_defect_rms": 0.06590967013873528,
+          "max_defect": 0.3445624281452109,
+          "angular_quadrature_change_rms": 9.934068941380045e-06,
+          "vorticity_rms": 0.3494795464117854
+        },
+        {
+          "radius": 0.075,
+          "mean_value_defect_rms": 0.057957318040115474,
+          "max_defect": 0.29088777401516186,
+          "angular_quadrature_change_rms": 2.3434498895599074e-05,
+          "vorticity_rms": 0.3494795464117854
+        }
+      ]
+    },
+    {
+      "case": "degree4_c4",
+      "reconstruction_max_error": 6.217248937900877e-15,
+      "elements": [
+        16,
+        16
+      ],
+      "degree": 4,
+      "tests": [
+        {
+          "radius": 0.025,
+          "mean_value_defect_rms": 0.009906889697548913,
+          "max_defect": 0.051384321204018646,
+          "angular_quadrature_change_rms": 1.5751204462267184e-08,
+          "vorticity_rms": 0.34563755699771226
+        },
+        {
+          "radius": 0.05,
+          "mean_value_defect_rms": 0.017345199478585212,
+          "max_defect": 0.08284007425746018,
+          "angular_quadrature_change_rms": 9.581805993277491e-08,
+          "vorticity_rms": 0.34563755699771226
+        },
+        {
+          "radius": 0.075,
+          "mean_value_defect_rms": 0.013914251368543327,
+          "max_defect": 0.06839593599395433,
+          "angular_quadrature_change_rms": 2.8273847503139467e-07,
+          "vorticity_rms": 0.34563755699771226
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "command": "python -m pytest jax/tests/test_mapped_navier_stokes.py jax/tests/test_mapped_poisson.py -q",
+  "backend": "gpu",
+  "gpu": "NVIDIA A100-SXM4-40GB",
+  "precision": "float64",
+  "passed": 19,
+  "seconds": 209.64,
+  "temporal_dt": [
+    0.02,
+    0.01,
+    0.005
+  ],
+  "temporal_reference_dt": 0.00125,
+  "temporal_end_time": 0.2,
+  "temporal_velocity_l2_errors": [
+    1.0305664127751046e-07,
+    2.5458515175748286e-08,
+    6.0614418616421145e-09
+  ],
+  "temporal_error_ratios": [
+    4.048022461878764,
+    4.200075783429403
+  ]
+}
