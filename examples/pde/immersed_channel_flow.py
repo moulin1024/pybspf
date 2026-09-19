@@ -86,6 +86,14 @@ def independent_checks(plan, state):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--basis-precision", choices=("mpfr", "float64"), default="mpfr",
+                        help="Basis arithmetic: mpfr reference or opt-in GPU float64")
+    ap.add_argument("--rational-basis-construction", choices=("cpu", "gpu"), default="cpu",
+                    help="Arnoldi recurrence construction; GPU is opt-in due to cold JIT cost")
+    ap.add_argument("--rational-preprocessing", action=argparse.BooleanOptionalAction, default=False,
+                    help="Experimental accuracy-gated pole sweep before volume assembly")
+    ap.add_argument("--basis-workers", type=int, default=4)
+    ap.add_argument("--backend", choices=("cpu", "gpu"), default="cpu")
     ap.add_argument("--nx", type=int, default=73)
     ap.add_argument("--ny", type=int, default=33)
     ap.add_argument("--re", type=float, default=20.0)
@@ -101,9 +109,18 @@ def main():
     ap.add_argument("--wall-width", type=float, default=2.0)
     ap.add_argument("--out", type=Path, default=Path("build/immersed_flow"))
     args = ap.parse_args()
+    if args.basis_precision == "float64" and args.backend != "gpu":
+        ap.error("--basis-precision float64 requires --backend gpu")
+    if args.rational_basis_construction == "gpu" and (args.backend != "gpu" or args.wall_method != "rational"):
+        ap.error("--rational-basis-construction gpu requires --backend gpu --wall-method rational")
     jax.config.update("jax_enable_x64", True)
+    device = jax.devices("gpu")[0] if args.backend == "gpu" else None
+    print("BACKEND", args.backend, device, flush=True)
     args.out.mkdir(parents=True, exist_ok=True)
     plan = ImmersedFlowPlan(
+        assembly_device=device,
+        basis_workers=args.basis_workers,
+        basis_precision=args.basis_precision,
         nx=args.nx,
         ny=args.ny,
         reynolds=args.re,
@@ -113,6 +130,8 @@ def main():
         wall_rcond=args.wall_rcond,
         wall_method=args.wall_method,
         wall_width=args.wall_width,
+        rational_options=dict(basis_construction=args.rational_basis_construction),
+        rational_preprocessing=args.rational_preprocessing,
     )
     print(
         "SETUP",
@@ -125,34 +144,49 @@ def main():
         len(plan.points),
         flush=True,
     )
-    step = plan.stepper(args.dt)
-    state = plan.stokes_state.copy()
+    step = plan.stepper(args.dt, device=device)
+    state = step.initial_state if device is not None else plan.stokes_state.copy()
     x, y = (
         np.linspace(plan.bounds[0], plan.bounds[1], 401),
         np.linspace(-plan.bounds[2], plan.bounds[2], 161),
     )
-    frames, times, history = [], [], []
+    snapshots, times, history = [], [], []
     total = round(args.time / args.dt)
     every = max(1, round(0.5 / args.dt))
     start = perf_counter()
     for k in range(total + 1):
         t = k * args.dt
         if k % every == 0 or k == total:
-            diag = dict(t=t, **plan.diagnostics(state))
+            if device is not None:
+                values = jax.device_get(step.diagnostics(state))
+                diag = dict(t=t, **{key: float(value) for key, value in values.items()})
+                output_state = jax.device_get(state)
+            else:
+                diag = dict(t=t, **plan.diagnostics(state))
+                output_state = state
             history.append(diag)
-            fields = plan.grid(state, x, y)
-            frames.append(
-                np.stack([fields[key] for key in ("u", "v", "vorticity", "psi")])
-            )
+            snapshots.append(output_state.copy())
             times.append(t)
             print(json.dumps(diag), flush=True)
-            if not np.all(np.isfinite(state)) or diag["max_speed"] > 20:
+            if not np.all(np.isfinite(output_state)) or diag["max_speed"] > 20:
                 raise RuntimeError("Flow became unstable")
         if k < total:
             state = step.step(state, t)
+    state = jax.device_get(state)
+    evolution_seconds = perf_counter() - start
+    reconstruction_start = perf_counter()
+    frames = [
+        np.stack([fields[key] for key in ("u", "v", "vorticity", "psi")])
+        for fields in plan.grid_many(np.asarray(snapshots), x, y)
+    ]
+    reconstruction_seconds = perf_counter() - reconstruction_start
     elapsed = perf_counter() - start
     checks = independent_checks(plan, state)
     summary = dict(
+        backend=args.backend,
+        basis_workers=args.basis_workers if args.basis_precision == "mpfr" else 0,
+        basis_precision=args.basis_precision,
+        device=None if device is None else str(device),
         nx=plan.nx,
         ny=plan.ny,
         wall_rcond=plan.wall_rcond,
@@ -173,6 +207,8 @@ def main():
         buffer_strength=plan.buffer_strength,
         setup_seconds=plan.setup_seconds,
         advance_and_output_seconds=elapsed,
+        evolution_and_diagnostics_seconds=evolution_seconds,
+        reconstruction_seconds=reconstruction_seconds,
         ndofs=plan.ndofs,
         wall_constraint_rank=plan.constraint_rank,
         retained_dofs=plan.dofs,

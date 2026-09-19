@@ -1,0 +1,133 @@
+{
+  "metric": "RMS of raw fourth differences in y of vorticity on the common output grid",
+  "patch": {
+    "x": [
+      -0.85,
+      -0.45
+    ],
+    "y": [
+      -0.8,
+      0.8
+    ]
+  },
+  "cases": [
+    {
+      "case": "re200_gpu",
+      "label": "73\u00d733, dt=.02, q=2.5",
+      "setup_seconds": 20.337511818856,
+      "evolution_seconds": 6.348862710874528,
+      "reconstruction_seconds": 9.91036118217744,
+      "dofs": 2059,
+      "quadrature_points": 17881,
+      "final_upstream_fourth_difference_rms": 0.006785826411226532,
+      "late_mean_upstream_fourth_difference_rms": 0.00663499442435213,
+      "checks": {
+        "hole_wall_max_speed": 4.4760824133206983e-10,
+        "outer_dirichlet_max_error": 6.63355864488983e-10,
+        "max_relative_flux_error": 9.9333874459262e-12
+      },
+      "final": {
+        "t": 20.0,
+        "acceleration_l2": 2.4754066585043106,
+        "dissipation": 0.15764558043166438,
+        "flux_in": 1.3333333333333333,
+        "flux_out": 1.3333333333307897,
+        "kinetic_energy": 3.5753431968799543,
+        "max_speed": 1.4253319447447474,
+        "min_outlet_u": 0.0010578707566980658,
+        "sponge_perturbation_dissipation": 0.06741806087158587
+      },
+      "final_velocity_relative_l2_vs_dt001": 0.008579395688200637,
+      "final_vorticity_relative_l2_vs_dt001": 0.02787857458002106
+    },
+    {
+      "case": "re200_gpu_dt001",
+      "label": "73\u00d733, dt=.01, q=2.5",
+      "setup_seconds": 20.32337746093981,
+      "evolution_seconds": 10.28823788301088,
+      "reconstruction_seconds": 9.950662070186809,
+      "dofs": 2059,
+      "quadrature_points": 17881,
+      "final_upstream_fourth_difference_rms": 0.006759411852085897,
+      "late_mean_upstream_fourth_difference_rms": 0.006623127135877714,
+      "checks": {
+        "hole_wall_max_speed": 4.372335605660909e-10,
+        "outer_dirichlet_max_error": 6.558515025479288e-10,
+        "max_relative_flux_error": 9.8825947425496e-12
+      },
+      "final": {
+        "t": 20.0,
+        "acceleration_l2": 2.46285573668999,
+        "dissipation": 0.15742341673567134,
+        "flux_in": 1.3333333333333333,
+        "flux_out": 1.3333333333307555,
+        "kinetic_energy": 3.574939454716268,
+        "max_speed": 1.4246692053165089,
+        "min_outlet_u": 0.0010628722407902184,
+        "sponge_perturbation_dissipation": 0.06687182185799811
+      },
+      "final_velocity_relative_l2_vs_dt001": 0.0,
+      "final_vorticity_relative_l2_vs_dt001": 0.0
+    },
+    {
+      "case": "re200_gpu_q4",
+      "label": "73\u00d733, dt=.01, q=4",
+      "setup_seconds": 22.987478133989498,
+      "evolution_seconds": 19.06322903302498,
+      "reconstruction_seconds": 9.921986665111035,
+      "dofs": 2059,
+      "quadrature_points": 44445,
+      "final_upstream_fourth_difference_rms": 0.006760123353542327,
+      "late_mean_upstream_fourth_difference_rms": 0.00662290036487513,
+      "checks": {
+        "hole_wall_max_speed": 4.372588246173771e-10,
+        "outer_dirichlet_max_error": 6.55986846009277e-10,
+        "max_relative_flux_error": 9.884426610540231e-12
+      },
+      "final": {
+        "t": 20.0,
+        "acceleration_l2": 2.462909470085032,
+        "dissipation": 0.15742472160695997,
+        "flux_in": 1.3333333333333333,
+        "flux_out": 1.3333333333307573,
+        "kinetic_energy": 3.5749463127130348,
+        "max_speed": 1.4255394610909464,
+        "min_outlet_u": 0.001062946018458373,
+        "sponge_perturbation_dissipation": 0.06687377241477857
+      },
+      "final_velocity_relative_l2_vs_dt001": 0.00013470505385609354,
+      "final_vorticity_relative_l2_vs_dt001": 0.00033854150161521495
+    },
+    {
+      "case": "re200_gpu_73x65",
+      "label": "73\u00d765, dt=.01, q=2.5",
+      "setup_seconds": 42.2450072390493,
+      "evolution_seconds": 33.87234959611669,
+      "reconstruction_seconds": 10.38352110888809,
+      "dofs": 4330,
+      "quadrature_points": 38010,
+      "final_upstream_fourth_difference_rms": 0.08300365129871937,
+      "late_mean_upstream_fourth_difference_rms": 0.08499834876032822,
+      "checks": {
+        "hole_wall_max_speed": 1.2465926260873495e-07,
+        "outer_dirichlet_max_error": 4.514732785997844e-09,
+        "max_relative_flux_error": 1.3473139270914203e-10
+      },
+      "final": {
+        "t": 20.0,
+        "acceleration_l2": 2.2627175415266167,
+        "dissipation": 0.16007631430350713,
+        "flux_in": 1.3333333333333333,
+        "flux_out": 1.3333333333353674,
+        "kinetic_energy": 3.591947762773935,
+        "max_speed": 1.3877324355876839,
+        "min_outlet_u": 0.0002844959273845199,
+        "sponge_perturbation_dissipation": 0.04925383204978767
+      },
+      "final_velocity_relative_l2_vs_dt001": 0.5002868674095426,
+      "final_vorticity_relative_l2_vs_dt001": 0.7570459424966787
+    }
+  ],
+  "spatial_final_reduction": 0.08143511455610129,
+  "spatial_late_mean_reduction": 0.07792065648890541
+}

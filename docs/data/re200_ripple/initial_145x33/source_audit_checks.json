@@ -1,0 +1,7 @@
+{
+  "initial_mass_solve_relative_residual": 5.380163168945732e-16,
+  "initial_linear_balance_relative_residual": 7.182217047152025e-19,
+  "reconstruction_at_quadrature_max_abs_error": 2.6128629035377217e-14,
+  "reconstruction_at_quadrature_relative_error": 1.6068684269989697e-15,
+  "energy_condition": 12021602037.540684
+}

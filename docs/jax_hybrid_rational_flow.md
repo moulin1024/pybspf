@@ -188,3 +188,101 @@ python -m pytest -q jax/tests/test_hybrid_flow.py jax/tests/test_immersed_flow.p
 `rational_options` 可以设置 degree、corner_poles、laurent、samples、rcond。
 当前实现限定固定矩形加一个椭圆孔洞；移动几何时还需处理时间变化的基函数，
 不能直接使用这里固定 W_j 的时间项公式。
+
+
+## GPU evolution
+
+`examples/pde/immersed_channel_flow.py --backend gpu --wall-method rational`
+uses GPU-resident state, Galerkin matrices, volume convection, outlet backflow,
+Cholesky factorizations, both IMEX midpoint solves, and diagnostic reductions.
+The backend requires a GPU and does not silently fall back to CPU. Geometry,
+MPFR basis construction, rational boundary assembly, and plot reconstruction
+remain host preprocessing/postprocessing. GPU mode also accelerates dense volume
+assembly; `--basis-workers 4` (the example default) parallelizes MPFR point rows
+without changing precision. Use `--basis-workers 1` for serial setup. Snapshots are explicitly downloaded
+at output times; the evolving state stays on the device.
+
+Library use: `step = plan.stepper(dt, device=jax.devices("gpu")[0])`, then
+`state = step.initial_state` and `state = step.step(state, time)`.
+Optional forcing callbacks must be JAX-traceable and return reduced force loads.
+`step.diagnostics(state)` returns device scalars; use `jax.device_get` to log them.
+
+On the Raven CUDA 13.0.1 environment, pip cuBLAS 13.4.1.1 combined with the
+system cuSolver caused even random-matrix GPU QR to fail. A process-local
+preload of the matching system cuBLAS restored reduced and complete QR without
+moving those factorizations to NumPy:
+
+```bash
+LD_PRELOAD=/mpcdf/soft/SLE_15/packages/x86_64/cuda/13.0.1/lib64/libcublas.so.13 \
+JAX_PLATFORM_NAME=gpu OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+PYTHONPATH=jax/src:/tmp/pybspf-gpu-deps \
+python examples/pde/immersed_channel_flow.py --backend gpu \
+  --wall-method rational --out build/immersed_flow/hybrid/channel
+```
+
+The temporary dependency path above contains `gmpy2`; normally install the
+package's `rational-flow` extra instead. The library preload is specific to
+this environment, not a portable requirement.
+
+Regression coverage: `jax/tests/test_immersed_flow_gpu.py` compares five steps
+and diagnostics with the host implementation, checks device placement, and
+runs evolution/diagnostics under JAX's implicit-transfer guard.
+
+Profiling measurements and reproduction: [GPU performance report](jax_gpu_flow_performance.md).
+
+
+### Opt-in GPU double-precision basis evaluation
+
+The reference basis evaluator remains 113-bit MPFR. To evaluate the basis,
+its derivatives, and its sensitive transforms in GPU FP64 instead:
+
+```bash
+python examples/pde/immersed_channel_flow.py --backend gpu \
+  --wall-method rational --basis-precision float64 --out build/immersed_flow/fp64
+```
+
+The corresponding library option is
+`ImmersedFlowPlan(..., assembly_device=jax.devices("gpu")[0], basis_precision="float64")`.
+FP64 evaluation is also used for subsequent field reconstruction and independent
+boundary checks. It bypasses MPFR and the basis worker pool; `--basis-workers`
+has no effect in this mode. Summary files record the selected precision and zero
+active basis workers. The profiling driver accepts the same precision flag.
+
+This option changes cancellation-sensitive arithmetic and can reduce accuracy;
+it does not silently fall back to MPFR. The GPU evaluator uses float64 throughout,
+a compact spline recurrence, and fixed batches to reuse compiled kernels.
+Use `--basis-precision mpfr` (the default) for the original precision.
+
+
+GPU assembly also runs the rational boundary SVD, obstacle-trace SVD, and volume
+energy eigendecomposition on the selected device. This is automatic with
+`--backend gpu` and works with either basis-precision setting. The sampled-wall
+`svd` method also uses a GPU SVD. CPU/GPU rank thresholds are the same, and device
+decomposition errors do not trigger a CPU fallback. Geometry still has host
+stages; GPU time stepping is unchanged.
+
+
+GPU volume setup also performs rational row/coefficient products, tensor
+construction, correction mapping, and scaling on device. Unnormalized operators
+stay there for Gram assembly. Rational recurrences and stream-row construction
+still run on the host; the factored-wall geometry path remains unchanged.
+
+
+### GPU rational basis construction and evaluation
+
+GPU volume setup now evaluates the rational Arnoldi recurrences, their first
+and second derivatives, and stream rows on the GPU. The public host evaluator
+remains available for reference and output reconstruction. Warm rational
+volume evaluation fell from 2.07 s to 0.15 s on the A100; cold complete setup
+remains about 20.3 s because of JIT compilation.
+
+The initial Arnoldi construction can also run on GPU:
+`rational_options={"basis_construction": "gpu"}` with `assembly_device` set.
+For the example use `--backend gpu --wall-method rational
+--basis-precision float64 --rational-basis-construction gpu`.
+This option preserves both modified Gram–Schmidt passes but is slower for the
+current small recurrence tables (22.7 s complete cold setup), so CPU construction
+remains the default. AAA poles and initial boundary matrix assembly remain on
+CPU. GPU Arnoldi preserves velocity/wall/flux accuracy, with some additional
+roundoff sensitivity in vorticity at lightning corners; see
+[jax_gpu_flow_performance.md](jax_gpu_flow_performance.md) for measurements.

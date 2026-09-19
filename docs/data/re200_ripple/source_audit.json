@@ -1,0 +1,104 @@
+[
+  {
+    "t": 0.0,
+    "omega_rms": 1.056264119966301,
+    "bspf_fourth_difference_rms": 3.339663309425907e-11,
+    "rational_fourth_difference_rms": 4.7271017554920556e-06,
+    "total_fourth_difference_rms": 4.727101502497353e-06,
+    "rational_to_bspf_fourth_difference": 141544.26112806716,
+    "discrete_rate_rms": 2.290104224593746,
+    "discrete_rate_fourth_difference_rms": 0.010945917931692115,
+    "local_vorticity_equation": [
+      {
+        "h": 0.002,
+        "rhs_rms": 2.156420104046897,
+        "residual_rms": 0.6696723221376397,
+        "rhs_fourth_difference_rms": 3.4850181771141636e-05,
+        "residual_fourth_difference_rms": 0.010945897261191185
+      },
+      {
+        "h": 0.001,
+        "rhs_rms": 2.156420104253462,
+        "residual_rms": 0.6696723221959445,
+        "rhs_fourth_difference_rms": 3.4850182586754906e-05,
+        "residual_fourth_difference_rms": 0.01094589726106463
+      }
+    ]
+  },
+  {
+    "t": 0.01,
+    "omega_rms": 1.0574202583557168,
+    "bspf_fourth_difference_rms": 0.00010548134069538955,
+    "rational_fourth_difference_rms": 1.5772770852159723e-05,
+    "total_fourth_difference_rms": 0.00010495178888339819,
+    "rational_to_bspf_fourth_difference": 0.1495313839222858
+  },
+  {
+    "t": 0.05,
+    "omega_rms": 1.067109736724724,
+    "bspf_fourth_difference_rms": 0.00046637606346085084,
+    "rational_fourth_difference_rms": 6.442154299605688e-05,
+    "total_fourth_difference_rms": 0.0004624417380436758,
+    "rational_to_bspf_fourth_difference": 0.13813218139456387
+  },
+  {
+    "t": 0.1,
+    "omega_rms": 1.097128482736919,
+    "bspf_fourth_difference_rms": 0.0007614756069301193,
+    "rational_fourth_difference_rms": 0.0001041370334440104,
+    "total_fourth_difference_rms": 0.0007548253318463476,
+    "rational_to_bspf_fourth_difference": 0.13675688688681406
+  },
+  {
+    "t": 0.5,
+    "omega_rms": 1.1527476877814904,
+    "bspf_fourth_difference_rms": 0.0019614321142871634,
+    "rational_fourth_difference_rms": 0.00035579594554986665,
+    "total_fourth_difference_rms": 0.0019300814488674,
+    "rational_to_bspf_fourth_difference": 0.18139600292981456,
+    "discrete_rate_rms": 2.100644331340336,
+    "discrete_rate_fourth_difference_rms": 0.010926315624569933,
+    "local_vorticity_equation": [
+      {
+        "h": 0.002,
+        "rhs_rms": 4.571494719725375,
+        "residual_rms": 4.022608825553949,
+        "rhs_fourth_difference_rms": 0.043798167487094045,
+        "residual_fourth_difference_rms": 0.04426724459245109
+      },
+      {
+        "h": 0.001,
+        "rhs_rms": 4.571497943088069,
+        "residual_rms": 4.022612213627245,
+        "rhs_fourth_difference_rms": 0.04379819479380543,
+        "residual_fourth_difference_rms": 0.044267271624135275
+      }
+    ]
+  },
+  {
+    "t": 20.0,
+    "omega_rms": 1.0397300245351213,
+    "bspf_fourth_difference_rms": 0.0030788139203836687,
+    "rational_fourth_difference_rms": 0.0005971844475796549,
+    "total_fourth_difference_rms": 0.003024646672618297,
+    "rational_to_bspf_fourth_difference": 0.19396574883136697,
+    "discrete_rate_rms": 0.6456605854936333,
+    "discrete_rate_fourth_difference_rms": 0.009701976096591632,
+    "local_vorticity_equation": [
+      {
+        "h": 0.002,
+        "rhs_rms": 6.15550863994098,
+        "residual_rms": 6.115347433020049,
+        "rhs_fourth_difference_rms": 0.0715288969086561,
+        "residual_fourth_difference_rms": 0.07069875812440474
+      },
+      {
+        "h": 0.001,
+        "rhs_rms": 6.155514327413267,
+        "residual_rms": 6.115353093902736,
+        "rhs_fourth_difference_rms": 0.07152894380486086,
+        "residual_fourth_difference_rms": 0.07069880471584977
+      }
+    ]
+  }
+]

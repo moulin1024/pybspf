@@ -65,15 +65,23 @@ def _splines(knots, points, degree, mp, second=False):
 
 
 def mp_trial_values(
-    line, spline, points, *, bits=113, second=False, transform=None, layers=()
+    line, spline, points, *, bits=113, second=False, transform=None, layers=(),
+    values_only=False,
 ):
+    """Evaluate at MPFR precision; values_only skips unused derivative work."""
     import gmpy2 as g
 
+    if values_only and second:
+        raise ValueError("values_only cannot request second derivatives")
     with g.context(precision=bits):
         mp = g.mpfr
         x0, length = mp(float(line.x[0])), mp(float(line.x[-1] - line.x[0]))
         m = len(line.x) - 1
         pi = g.const_pi()
+        frequency = pi / length
+        frequency2 = frequency**2
+        near_node = mp("1e-12")
+        fractions = [mp(j) / m for j in range(m)]
         t = np.array([mp(float(v)) for v in points], dtype=object)
         nodes = np.array([x0 + length * j / m for j in range(m)], dtype=object)
         bn, _ = _splines(spline.t, nodes, spline.k, mp)
@@ -82,43 +90,48 @@ def mp_trial_values(
         if second:
             b2 = spline_values[2]
         f = np.empty((len(t), m), dtype=object)
-        f1 = np.empty_like(f)
+        f1 = None if values_only else np.empty_like(f)
         f2 = np.empty_like(f) if second else None
         for i, ti in enumerate(t):
             position = (ti - x0) / length
             for j in range(m):
-                delta = position - mp(j) / m
+                delta = position - fractions[j]
                 delta -= g.rint(delta)
                 u = pi * delta
-                if abs(delta) < mp("1e-12"):
+                su, cu = g.sin_cos(u)
+                if abs(delta) < near_node:
                     value = 1 - (m * m - 1) * u * u / 6
-                    derivative = -(m * m - 1) * pi * pi * delta / (3 * length)
+                    if not values_only:
+                        derivative = -(m * m - 1) * pi * pi * delta / (3 * length)
                 else:
-                    su, cu = g.sin_cos(u)
                     sm, cm = g.sin_cos(m * u)
                     value = sm / (m * su)
-                    derivative = (cm / su - sm * cu / (m * su * su)) * pi / length
+                    if not values_only:
+                        derivative = (cm / su - sm * cu / (m * su * su)) * frequency
                 if second:
-                    if abs(delta) < mp("1e-12"):
+                    if abs(delta) < near_node:
                         second_derivative = (
                             -(m * m - 1) / mp(3)
                             + (3 * m**4 - 10 * m * m + 7) * u * u / 30
-                        ) * (pi / length) ** 2
+                        ) * frequency2
                     else:
                         second_derivative = (
-                            -(m * m - 1) * (pi / length) ** 2 * value
-                            - 2 * cu / su * pi / length * derivative
+                            -(m * m - 1) * frequency2 * value
+                            - 2 * cu / su * frequency * derivative
                         )
                 if m % 2 == 0:
                     if second:
                         second_derivative = (
-                            second_derivative * g.cos(u)
-                            - 2 * derivative * g.sin(u) * pi / length
-                            - value * g.cos(u) * (pi / length) ** 2
+                            second_derivative * cu
+                            - 2 * derivative * su * frequency
+                            - value * cu * frequency2
                         )
-                    derivative = derivative * g.cos(u) - value * g.sin(u) * pi / length
-                    value *= g.cos(u)
-                f[i, j], f1[i, j] = value, derivative
+                    if not values_only:
+                        derivative = derivative * cu - value * su * frequency
+                    value *= cu
+                f[i, j] = value
+                if not values_only:
+                    f1[i, j] = derivative
                 if second:
                     f2[i, j] = second_derivative
         projector = np.array(
@@ -126,10 +139,12 @@ def mp_trial_values(
         )
         # Perform the cancellation before multiplying by the sensitive jet map.
         values = (b - f @ bn) @ projector
-        gradients = (b1 - f1 @ bn) @ projector
         values[:, :m] += f
-        gradients[:, :m] += f1
-        result = [values, gradients]
+        result = [values]
+        if not values_only:
+            gradients = (b1 - f1 @ bn) @ projector
+            gradients[:, :m] += f1
+            result.append(gradients)
         if second:
             curvature = (b2 - f2 @ bn) @ projector
             curvature[:, :m] += f2
@@ -151,3 +166,56 @@ def mp_trial_values(
             )
             result = [value @ transform for value in result]
         return tuple(np.asarray(value, dtype=float) for value in result)
+
+
+def _mp_chunk(arguments):
+    line, spline, points, options = arguments
+    return mp_trial_values(line, spline, points, **options)
+
+
+def evaluate_mp_chunks(line, spline, points, *, executor=None, **options):
+    """Evaluate independent point rows with an optional spawn-based CPU pool."""
+    points = np.asarray(points)
+    if executor is None or len(points) < 128:
+        return mp_trial_values(line, spline, points, **options)
+    # More chunks than workers balance variable endpoint/spline costs. Each
+    # worker retains the original dot-product order within every point row.
+    chunks = np.array_split(points, min(16, max(1, len(points)//128)))
+    results = list(executor.map(
+        _mp_chunk, ((line, spline, chunk, options) for chunk in chunks)
+    ))
+    return tuple(np.concatenate(items, axis=0) for items in zip(*results))
+
+
+def evaluate_basis(line, spline, points, *, precision="mpfr", device=None,
+                   executor=None, **options):
+    """Select reference MPFR or explicitly requested GPU float64 evaluation."""
+    if precision == "mpfr":
+        return evaluate_mp_chunks(line, spline, points, executor=executor, **options)
+    if precision == "float64":
+        from ._gpu_basis import gpu_trial_values
+        return gpu_trial_values(line, spline, points, device=device, **options)
+    raise ValueError("basis_precision must be mpfr or float64")
+
+
+def with_basis_workers(constructor):
+    """Bound pool lifetime to setup; never fork a process with initialized CUDA."""
+    from functools import wraps
+    from concurrent.futures import ProcessPoolExecutor
+    from multiprocessing import get_context
+
+    @wraps(constructor)
+    def setup(self, *args, **kwargs):
+        workers = kwargs.get("basis_workers", 1)
+        if not isinstance(workers, int) or isinstance(workers, bool) or workers < 1:
+            raise ValueError("basis_workers must be a positive integer")
+        self._basis_executor = None
+        if workers == 1 or kwargs.get("basis_precision", "mpfr") == "float64":
+            return constructor(self, *args, **kwargs)
+        with ProcessPoolExecutor(max_workers=workers, mp_context=get_context("spawn")) as pool:
+            self._basis_executor = pool
+            try:
+                return constructor(self, *args, **kwargs)
+            finally:
+                self._basis_executor = None
+    return setup

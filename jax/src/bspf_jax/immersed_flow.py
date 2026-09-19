@@ -1,6 +1,6 @@
 """Divergence-free BSPF channel flow past a fixed smooth immersed obstacle.
 
-A dense, host-side accuracy prototype: physical-domain Galerkin integration,
+Dense geometry setup with optional GPU volume products: physical-domain Galerkin integration,
 SVD wall constraints, an analytic wall factor, or a rationally corrected BSPF
 space, and the original cavity IMEX integrator. No solid penalization; relaxation acts only
 in the explicitly added buffer.
@@ -15,6 +15,7 @@ import numpy as np
 import scipy.linalg as la
 from scipy.special import roots_legendre
 
+from ._weak_basis import with_basis_workers
 from ._flow_kernels import imex_midpoint, tensor_product
 from .convex_poisson import ArcLengthBoundary
 from .immersed_poisson import EllipticHole
@@ -159,8 +160,16 @@ class ImmersedFlowPlan:
     wall_method='rational' uses a homogeneous Stokes boundary extension to
     construct a fixed corrected space B+R. All time, convection, viscosity and
     sponge operators act on B+R; it is not a post-step Stokes correction.
+    assembly_device moves the boundary SVDs, volume energy eigensystem, Gram,
+    basis-transform, and reduced mass/stiffness/sponge products onto a GPU.
+    Results return to the host plan API. basis_workers controls a bounded
+    spawn-based CPU pool for independent MPFR rows, closed when setup finishes.
+    basis_precision="float64" opts into GPU double-precision basis evaluation,
+    bypassing MPFR and its worker pool. The default "mpfr" preserves the
+    cancellation-sensitive 113-bit evaluation. FP64 accuracy is case-dependent.
     """
 
+    @with_basis_workers
     def __init__(
         self,
         *,
@@ -180,8 +189,20 @@ class ImmersedFlowPlan:
         wall_method="svd",
         wall_width=2.0,
         rational_options=None,
+        rational_preprocessing=False,
+        assembly_device=None,
+        basis_workers=1,
+        basis_precision="mpfr",
     ):
         start = perf_counter()
+        if assembly_device is not None and assembly_device.platform != "gpu":
+            raise ValueError("assembly_device must be a GPU device")
+        if basis_precision not in ("mpfr", "float64"):
+            raise ValueError("basis_precision must be mpfr or float64")
+        if basis_precision == "float64" and assembly_device is None:
+            raise ValueError("float64 basis evaluation requires assembly_device on GPU")
+        self.basis_precision = basis_precision
+        self.assembly_device = assembly_device
         if wall_method not in ("svd", "factor", "rational"):
             raise ValueError("wall_method must be svd, factor or rational")
         if not np.isfinite(wall_width) or wall_width <= 0:
@@ -227,6 +248,8 @@ class ImmersedFlowPlan:
                 clamped=clamped,
                 endpoint_points=min(len(x), 24),
                 chebyshev_modes=min(len(x), 20),
+                basis_executor=self._basis_executor,
+                basis_precision=self.basis_precision, basis_device=self.assembly_device,
             )
 
         self.x = line(np.linspace(*xlim, nx), False)
@@ -250,7 +273,9 @@ class ImmersedFlowPlan:
         @lru_cache(maxsize=10)
         def factors(axis, data):
             values = stream_evaluate_line(
-                self.x if axis == 0 else self.y, np.frombuffer(data, dtype=np.float64)
+                self.x if axis == 0 else self.y, np.frombuffer(data, dtype=np.float64),
+                basis_executor=self._basis_executor,
+                basis_precision=self.basis_precision, basis_device=self.assembly_device,
             )
             return tuple(a @ self.x_rotation if axis == 0 else a for a in values)
 
@@ -259,12 +284,52 @@ class ImmersedFlowPlan:
             from .rational_stokes import RationalStokesExtension
 
             extension = RationalStokesExtension(
-                self.bounds, hole, **(rational_options or {})
+                self.bounds, hole, assembly_device=assembly_device,
+                **(rational_options or {})
             )
             boundary_ops = self.operators(extension.hole_points)
             trace = np.vstack(boundary_ops[1:3]) * self.scale
-            utrace, strace, vhtrace = la.svd(trace, full_matrices=False)
+            if assembly_device is None:
+                utrace, strace, vhtrace = la.svd(trace, full_matrices=False)
+            else:
+                from ._gpu_linalg import gpu_svd
+                utrace, strace, vhtrace = gpu_svd(trace, device=assembly_device)
             trace_keep = strace > 1e-13 * strace[0]
+            if rational_preprocessing is not False:
+                if rational_preprocessing is not True and not isinstance(rational_preprocessing, dict):
+                    raise ValueError("rational_preprocessing must be True, False, or an options dict")
+                from ._rational_preprocess import prepare_extension
+                # All retained trace directions, in the existing scaled BSPF
+                # coefficient norm. Do not divide by tiny trace singular values.
+                directions = self.scale[:, None]*vhtrace[trace_keep].T
+                if assembly_device is not None:
+                    directions = jax.device_put(directions, assembly_device)
+                @lru_cache(maxsize=4)
+                def audit_data(data):
+                    points = np.frombuffer(data, dtype=np.float64).reshape(-1, 2)
+                    ops = self.operators(points, device_output=assembly_device is not None)[1:]
+                    if assembly_device is None:
+                        values = tuple(o @ directions for o in ops)
+                    else:
+                        from ._immersed_assembly import _apply_rational_rows
+                        values = jax.device_get(_apply_rational_rows(ops, directions))
+                    lift = channel_lift(points, half_height, peak)[1:]
+                    return tuple(-np.column_stack((b, v)) for b, v in zip(lift, values))
+                selected = prepare_extension(
+                    extension, lambda points: audit_data(np.asarray(points, dtype=np.float64).tobytes()),
+                    device=assembly_device,
+                    options={} if rational_preprocessing is True else rational_preprocessing,
+                )
+                if selected.info['samples_per_side'] != extension.info['samples_per_side']:
+                    boundary_ops = self.operators(selected.hole_points)
+                    trace = np.vstack(boundary_ops[1:3])*self.scale
+                    if assembly_device is None:
+                        utrace, strace, vhtrace = la.svd(trace, full_matrices=False)
+                    else:
+                        utrace, strace, vhtrace = gpu_svd(trace, device=assembly_device)
+                    trace_keep = strace > 1e-13*strace[0]
+                extension = selected
+                audit_data.cache_clear()
             self.rational_modes = extension.response(utrace[:, trace_keep])
             self.rational_map = (
                 -(strace[trace_keep, None] * vhtrace[trace_keep]) / self.scale
@@ -288,7 +353,11 @@ class ImmersedFlowPlan:
             op = self.operators(boundary)
             constraint = np.vstack((op[1], op[2])) * self.scale
             target = -np.concatenate(channel_lift(boundary, half_height, peak)[1:3])
-            u, s, vh = la.svd(constraint, full_matrices=True)
+            if assembly_device is None:
+                u, s, vh = la.svd(constraint, full_matrices=True)
+            else:
+                from ._gpu_linalg import gpu_svd
+                u, s, vh = gpu_svd(constraint, device=assembly_device, full_matrices=True)
             rank = int(np.sum(s > wall_rcond * s[0]))
             lift = self.scale * (vh[:rank].T @ ((u[:, :rank].T @ target) / s[:rank]))
             z = self.scale[:, None] * vh[rank:].T
@@ -304,23 +373,50 @@ class ImmersedFlowPlan:
         self.points, self.weights = channel_quadrature(
             self.bounds, hole, nx, ny, quadrature_factor, (self.buffer_start,)
         )
-        op = self.operators(self.points)
-        base = self.base_fields(self.points)
-        self.lift_fields = tuple(o @ lift + b for o, b in zip(op, base))
-        raw = tuple(o @ z for o in op[1:])
+        device_volume = assembly_device is not None and not self.factored_wall
+        op, base = self.operators(self.points, with_base=True, device_output=device_volume)
+        diagonal_constraints = hole is None or self.factored_wall or self.rational_wall
+        if device_volume:
+            from ._immersed_assembly import prepare_gpu_volume
+            self.lift_fields, raw = prepare_gpu_volume(
+                op, base, lift, self.scale, None if diagonal_constraints else z,
+                assembly_device,
+            )
+        else:
+            self.lift_fields = tuple(o @ lift + b for o, b in zip(op, base))
+            raw = (tuple(o * self.scale for o in op[1:]) if diagonal_constraints
+                   else tuple(o @ z for o in op[1:]))
         del op
-        mass, stiffness = self._gram(raw)
+        assembly = None
+        if assembly_device is not None:
+            from ._immersed_assembly import GPUVolumeAssembly
+            assembly = GPUVolumeAssembly(raw, self.weights, assembly_device)
+            mass, stiffness = assembly.gram()
+        else:
+            mass, stiffness = self._gram(raw)
         energy = mass + stiffness
-        ev, vec = la.eigh((energy + energy.T) / 2)
+        if assembly_device is None:
+            ev, vec = la.eigh((energy + energy.T) / 2)
+        else:
+            from ._gpu_linalg import gpu_eigh
+            ev, vec = gpu_eigh(energy, device=assembly_device)
         keep = ev > volume_rcond * ev[-1]
         self.energy_condition = float(ev[-1] / ev[keep][0])
         self.discarded_volume_modes = int((~keep).sum())
         normalize = vec[:, keep] / np.sqrt(ev[keep])
-        self.transform = z @ normalize
+        self.transform = (self.scale[:, None] * normalize if diagonal_constraints
+                          else z @ normalize)
         self.dofs = int(keep.sum())
-        self.operators_fluid = tuple(o @ normalize for o in raw)
-        self.mass = normalize.T @ mass @ normalize
-        self.stiffness = normalize.T @ stiffness @ normalize
+        self.sigma = self.sponge_profile(self.points[:, 0])
+        if assembly is not None:
+            self.operators_fluid, self.mass, self.stiffness, self.sponge = (
+                assembly.transform_and_reduce(normalize, mass, stiffness, self.sigma)
+            )
+        else:
+            self.operators_fluid = tuple(o @ normalize for o in raw)
+            self.mass = normalize.T @ mass @ normalize
+            self.stiffness = normalize.T @ stiffness @ normalize
+        del raw, assembly
         self.mass = (self.mass + self.mass.T) / 2
         self.stiffness = (self.stiffness + self.stiffness.T) / 2
         self.mass_factor = la.cho_factor(self.mass)
@@ -339,9 +435,9 @@ class ImmersedFlowPlan:
                 la.norm(self.diffusion_lift)
             )
             self.diffusion_lift = np.zeros_like(self.diffusion_lift)
-        self.sigma = self.sponge_profile(self.points[:, 0])
         sw = self.weights * self.sigma
-        self.sponge = uu.T @ (sw[:, None] * uu) + vv.T @ (sw[:, None] * vv)
+        if assembly_device is None:
+            self.sponge = uu.T @ (sw[:, None] * uu) + vv.T @ (sw[:, None] * vv)
         reference_u = channel_lift(self.points, half_height, peak)[1]
         self.sponge_lift = uu.T @ (sw * (ul - reference_u)) + vv.T @ (sw * vl)
         self.linear = self.nu * self.stiffness + self.sponge
@@ -350,11 +446,11 @@ class ImmersedFlowPlan:
             -half_height, half_height, max(24, int(2 * ny))
         )
         self.out_points = np.column_stack((np.full_like(out_y, xlim[1]), out_y))
-        oo = self.operators(self.out_points)
+        oo, out_base = self.operators(self.out_points, with_base=True)
         self.out_ops = (oo[1] @ self.transform, oo[2] @ self.transform)
         self.out_lift = tuple(
             o @ lift + b
-            for o, b in zip(oo[1:3], self.base_fields(self.out_points)[1:3])
+            for o, b in zip(oo[1:3], out_base[1:3])
         )
         self.stokes_state = la.solve(self.linear, -self.linear_lift, assume_a="pos")
         self.setup_seconds = perf_counter() - start
@@ -375,8 +471,13 @@ class ImmersedFlowPlan:
             raise ValueError("Evaluation must stay inside the computational rectangle")
         return self._factors(axis, coordinates.tobytes())
 
-    def operators(self, points):
-        """psi,u,v,u_x,u_y,v_x; exact v_y=-u_x, using original BSPF derivatives."""
+    def operators(self, points, *, with_base=False, device_output=False):
+        """psi,u,v,u_x,u_y,v_x; exact v_y=-u_x, using BSPF derivatives.
+
+        with_base also returns lift fields, sharing rational basis evaluation.
+        device_output retains tensor/correction assembly on the selected GPU;
+        this is used for volume setup without a factored wall.
+        """
         points = np.asarray(points, dtype=float)
         if points.ndim != 2 or points.shape[1] != 2:
             raise ValueError("points must have shape (count,2)")
@@ -384,6 +485,20 @@ class ImmersedFlowPlan:
         for axis in range(2):
             p, idx = np.unique(np.asarray(points)[:, axis], return_inverse=True)
             factors.append([o[idx] for o in self._line_values(axis, p)])
+        if device_output:
+            if self.assembly_device is None or self.factored_wall:
+                raise ValueError("Device operators require GPU assembly without a factored wall")
+            from ._immersed_assembly import gpu_tensor_operators
+            correction = mapping = None
+            if self.rational is not None:
+                coefficients = (np.column_stack((self.rational_modes, self.rational_lift))
+                                if with_base else self.rational_modes)
+                correction = self.rational.evaluate(
+                    points, coefficients, device=self.assembly_device, return_device=True
+                )
+                mapping = self.rational_map
+            base = channel_lift(points, self.bounds[2], self.peak) if with_base else None
+            return gpu_tensor_operators(factors, correction, mapping, base, self.assembly_device)
         (x, dx, xx), (y, dy, yy) = factors
 
         def pair(a, b):
@@ -398,15 +513,25 @@ class ImmersedFlowPlan:
             -pair(xx, y),
         )
         if self.rational is not None:
-            correction = self.rational.evaluate(points, self.rational_modes)
-            return tuple(o + r @ self.rational_map for o, r in zip(result, correction))
-        if not self.factored_wall:
-            return result
-        jet = self.wall_factor(points)
-        result = _stream_product(result, tuple(a[:, None] for a in jet))
-        q, qx, qy, qxx, qxy, qyy = jet
-        circulation = (1 - q, -qy, qx, -qxy, -qyy, qxx)
-        return tuple(np.column_stack((o, c)) for o, c in zip(result, circulation))
+            coefficients = (np.column_stack((self.rational_modes, self.rational_lift))
+                            if with_base else self.rational_modes)
+            correction = self.rational.evaluate(points, coefficients)
+            if with_base:
+                base = tuple(a + b[:, -1] for a, b in zip(
+                    channel_lift(points, self.bounds[2], self.peak), correction))
+                correction = tuple(a[:, :-1] for a in correction)
+            result = tuple(o + r @ self.rational_map for o, r in zip(result, correction))
+        elif self.factored_wall:
+            jet = self.wall_factor(points)
+            result = _stream_product(result, tuple(a[:, None] for a in jet))
+            q, qx, qy, qxx, qxy, qyy = jet
+            circulation = (1 - q, -qy, qx, -qxy, -qyy, qxx)
+            result = tuple(np.column_stack((o, c)) for o, c in zip(result, circulation))
+        if with_base:
+            if self.rational is None:
+                base = self.base_fields(points)
+            return result, base
+        return result
 
     def wall_factor(self, points):
         return elliptic_wall_factor(points, self.bounds, self.hole, self.wall_width)
@@ -462,9 +587,13 @@ class ImmersedFlowPlan:
         u, v = self.operators_fluid[:2]
         return u.T @ (self.weights * force[:, 0]) + v.T @ (self.weights * force[:, 1])
 
-    def stepper(self, dt):
+    def stepper(self, dt, *, device=None):
         if not np.isfinite(dt) or dt <= 0:
             raise ValueError("dt must be positive")
+        if device is not None:
+            from .immersed_flow_gpu import GPUImmersedFlowStepper
+
+            return GPUImmersedFlowStepper(self, dt, device)
         factor = la.cho_factor(self.mass + dt / 2 * self.linear)
         return ImmersedFlowStepper(self, dt, factor)
 
@@ -472,6 +601,39 @@ class ImmersedFlowPlan:
         return self.lift_coefficients + self.transform @ state
 
     def grid(self, state, x, y):
+        return self._grid(state, x, y)
+
+    def grid_many(self, states, x, y, *, batch_size=64):
+        """Yield snapshots, sharing rational basis evaluation across each batch.
+
+        The spatial grid is fixed; only coefficients vary with time. This uses
+        the existing multiple-RHS rational evaluator and bounds temporary
+        storage by batch_size, without caching a large dense evaluation matrix.
+        States must be explicitly downloaded before calling this host renderer.
+        """
+        states = np.asarray(states)
+        if states.ndim != 2 or states.shape[1] != self.dofs:
+            raise ValueError("Expected (snapshots, dofs) states")
+        if not isinstance(batch_size, int) or batch_size <= 0:
+            raise ValueError("batch_size must be a positive integer")
+        if not self.rational_wall:
+            for state in states:
+                yield self.grid(state, x, y)
+            return
+        xx, yy = np.meshgrid(x, y)
+        points = np.column_stack((xx.ravel(), yy.ravel()))
+        physical = self.hole.level(points) >= 1 - 1e-13
+        for start in range(0, len(states), batch_size):
+            batch = states[start:start + batch_size]
+            coefficients = self.lift_coefficients[:, None] + self.transform @ batch.T
+            rational_coeff = self.rational_lift[:, None] + self.rational_modes @ (
+                self.rational_map @ coefficients
+            )
+            correction = self.rational.evaluate(points[physical], rational_coeff)
+            for k, state in enumerate(batch):
+                yield self._grid(state, x, y, tuple(a[:, k] for a in correction))
+
+    def _grid(self, state, x, y, rational_correction=None):
         bx, by = self._line_values(0, x), self._line_values(1, y)
         coefficients = self.coefficients(state)
         c = (coefficients[:-1] if self.factored_wall else coefficients).reshape(
@@ -511,7 +673,8 @@ class ImmersedFlowPlan:
             rational_coeff = self.rational_lift + self.rational_modes @ (
                 self.rational_map @ coefficients
             )
-            correction = self.rational.evaluate(points[physical], rational_coeff)
+            correction = (self.rational.evaluate(points[physical], rational_coeff)
+                          if rational_correction is None else rational_correction)
             for field, addition in zip((psi, u, v, xy, uy, vx), correction):
                 field.flat[np.flatnonzero(physical)] += addition
                 field.flat[np.flatnonzero(~physical)] = np.nan

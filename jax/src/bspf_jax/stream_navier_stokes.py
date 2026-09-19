@@ -8,8 +8,8 @@ from typing import NamedTuple
 import numpy as np
 import jax
 import jax.numpy as jnp
-from .pressure import _make_line
-from ._weak_basis import mp_trial_values
+from .pressure import _line_projector
+from ._weak_basis import evaluate_basis
 from ._flow_kernels import (
     tensor_product,
     curl_from_gradient,
@@ -59,6 +59,9 @@ def _stream_line(
     endpoint_points=16,
     chebyshev_modes=12,
     endpoint_regularization=1e-12,
+    basis_executor=None,
+    basis_precision="mpfr",
+    basis_device=None,
 ):
     import scipy.linalg as la
     from scipy.interpolate import BSpline
@@ -98,7 +101,7 @@ def _stream_line(
         raise ValueError("Require 9 <= chebyshev_modes <= endpoint_points")
     if not np.isfinite(endpoint_regularization) or endpoint_regularization < 0:
         raise ValueError("endpoint_regularization must be finite and nonnegative")
-    original = _make_line(
+    projector, *_ = _line_projector(
         x,
         9,
         32,
@@ -108,7 +111,7 @@ def _stream_line(
         chebyshev_modes,
         endpoint_regularization,
     )
-    host = SimpleNamespace(x=x, P=np.asarray(original.projector))
+    host = SimpleNamespace(x=x, P=np.asarray(projector))
     breaks = np.linspace(x[0], x[-1], 20)
     knots = np.r_[np.repeat(x[0], 14), breaks[1:-1], np.repeat(x[-1], 14)]
     spline = BSpline(knots, np.eye(32), 13)
@@ -124,41 +127,32 @@ def _stream_line(
         [(a + b) / 2 + (b - a) / 2 * q for a, b in zip(breaks[:-1], breaks[1:])]
     )
     weights = np.concatenate([(b - a) / 2 * w for a, b in zip(breaks[:-1], breaks[1:])])
-    bn, gn, hn = mp_trial_values(host, spline, x, second=True)
-    b, g, h = mp_trial_values(host, spline, points, second=True)
+    # The first QR needs only values. Derivatives and nodal traces are
+    # evaluated below after the sensitive normalization is available.
+    (b,) = evaluate_basis(
+        host, spline, points, values_only=True, executor=basis_executor,
+        precision=basis_precision, device=basis_device,
+    )
     if layers:
-
-        def enrich(t):
-            value = []
-            first = []
-            second = []
-            for delta in layers:
-                for endpoint, sign in ((x[0], -1), (x[-1], 1)):
-                    v = np.exp(sign * (t - endpoint) / delta)
-                    value.append(v)
-                    first.append(sign * v / delta)
-                    second.append(v / delta**2)
-            return np.array(value).T, np.array(first).T, np.array(second).T
-
-        be, ge, he = enrich(x)
-        bn = np.column_stack((bn, be))
-        gn = np.column_stack((gn, ge))
-        hn = np.column_stack((hn, he))
-        be, ge, he = enrich(points)
-        b = np.column_stack((b, be))
-        g = np.column_stack((g, ge))
-        h = np.column_stack((h, he))
+        enrichment = [
+            np.exp(sign * (points - endpoint) / delta)
+            for delta in layers
+            for endpoint, sign in ((x[0], -1), (x[-1], 1))
+        ]
+        b = np.column_stack((b, np.array(enrichment).T))
     # Orthonormalize the entire enriched space BEFORE imposing the walls.
     # This keeps the boundary null-space calculation well conditioned, even
     # when an exponential is nearly represented by the original BSPF basis.
     root_w = np.sqrt(weights)
     _, rv = la.qr(root_w[:, None] * b, mode="economic")
     transform = la.solve_triangular(rv, np.eye(rv.shape[0]))
-    bc, gc, hc = mp_trial_values(
-        host, spline, points, second=True, transform=transform, layers=layers
+    bc, gc, hc = evaluate_basis(
+        host, spline, points, second=True, transform=transform, layers=layers,
+        executor=basis_executor, precision=basis_precision, device=basis_device,
     )
-    bnc, gnc, hnc = mp_trial_values(
-        host, spline, x, second=True, transform=transform, layers=layers
+    bnc, gnc, hnc = evaluate_basis(
+        host, spline, x, second=True, transform=transform, layers=layers,
+        executor=basis_executor, precision=basis_precision, device=basis_device,
     )
     qv, rv = la.qr(root_w[:, None] * bc, mode="economic")
     correction = la.solve_triangular(rv, np.eye(rv.shape[0]))
@@ -503,7 +497,8 @@ def stream_kh_initial(
     return stream_ns_load(p, jnp.stack((u, v), axis=-1)) / p.denominator
 
 
-def stream_evaluate_line(line, points):
+def stream_evaluate_line(line, points, *, basis_executor=None,
+                         basis_precision="mpfr", basis_device=None):
     """Evaluate the enriched basis and two derivatives at arbitrary host points."""
     from scipy.interpolate import BSpline
 
@@ -512,10 +507,11 @@ def stream_evaluate_line(line, points):
     knots = np.r_[
         np.repeat(x[0], 14), np.linspace(x[0], x[-1], 20)[1:-1], np.repeat(x[-1], 14)
     ]
-    arrays = mp_trial_values(
+    arrays = evaluate_basis(
         host,
         BSpline(knots, np.eye(32), 13),
         points,
+        executor=basis_executor, precision=basis_precision, device=basis_device,
         second=True,
         transform=np.asarray(line.transform),
         layers=np.asarray(line.layers),

@@ -6,6 +6,7 @@ This intentionally uses the benchmark's QR fit and endpoint-exclusive FFT,
 not the general calculus plan's KKT fit and FFT convention.
 """
 
+from functools import partial
 from math import factorial
 from typing import NamedTuple
 
@@ -83,7 +84,13 @@ def _differentiate(line, values, axis):
     return jnp.moveaxis(out.reshape(shape), 0, axis)
 
 
-def _make_line(x, q, n_basis, degree, points, method, modes, alpha):
+@partial(jax.jit, static_argnums=(1, 2, 3, 4, 5, 6))
+def _line_projector(x, q, n_basis, degree, points, method, modes, alpha):
+    """Compile spline/jet setup together instead of hundreds of tiny kernels.
+
+    Returns the same constrained least-squares projector used by pressure and
+    streamfunction plans. Streamfunction setup needs no pressure eigensystem.
+    """
     x = jnp.asarray(x, dtype=jnp.float64)
     n = x.size
     h = x[1] - x[0]
@@ -128,6 +135,15 @@ def _make_line(x, q, n_basis, degree, points, method, modes, alpha):
             jnp.linalg.pinv(right, rtol=1e-14)[:, ::-1] / units
         )
     P = F0 + J @ jets
+    return P, weights, knots, B
+
+
+def _make_line(x, q, n_basis, degree, points, method, modes, alpha):
+    x = jnp.asarray(x, dtype=jnp.float64)
+    n, h = x.size, x[1] - x[0]
+    P, weights, knots, B = _line_projector(
+        x, q, n_basis, degree, points, method, modes, alpha
+    )
     multiplier = 2j * jnp.pi * jnp.fft.fftfreq(n - 1, d=h)
     if (n - 1) % 2 == 0:
         multiplier = multiplier.at[(n - 1) // 2].set(0)

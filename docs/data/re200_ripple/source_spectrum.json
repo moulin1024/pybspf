@@ -1,0 +1,9 @@
+{
+  "initial_rate_fourth_difference_ratio": 314.0849521933983,
+  "dominant_y_frequency_cycles_per_unit": 0.6211180124223596,
+  "power_fraction_6_to_10_cycles_per_unit": 0.21018486793903302,
+  "first_step_residual_correlation": 0.9474288687577032,
+  "fourth_difference_dominant_y_frequency_cycles_per_unit": 7.006369426751586,
+  "fourth_difference_power_fraction_6_to_10_cycles_per_unit": 0.9261209815924482,
+  "first_step_fourth_difference_residual_correlation": 0.9863025912159923
+}

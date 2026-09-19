@@ -1,0 +1,55 @@
+[
+  {
+    "case": "compressed baseline",
+    "hole": 4.5011386342572033e-07,
+    "outer": 5.1117723983953046e-08,
+    "coefficient_norm": 79.08714488564266
+  },
+  {
+    "case": "weighted compressed baseline",
+    "hole": 4.6804127068417784e-07,
+    "outer": 5.10537895539268e-08,
+    "coefficient_norm": 79.08714415769396
+  },
+  {
+    "case": "direct baseline",
+    "hole": 2.1477614090241247e-08,
+    "outer": 5.0911674297496144e-08,
+    "coefficient_norm": 79.08712364770349,
+    "extension": {
+      "svd_backend": "gpu",
+      "basis_construction": "cpu",
+      "degree": 96,
+      "corner_poles": 32,
+      "min_pole_distance": 0.0,
+      "actual_min_pole_distance": 1.626468217868655e-08,
+      "laurent": 64,
+      "aaa_poles": 17,
+      "samples_per_side": 800,
+      "rank": 1091,
+      "retained_condition": 4379693756829.72,
+      "rcond": 1e-13,
+      "trace_rank": 289
+    }
+  },
+  {
+    "case": "higher degree 160",
+    "hole": 4.523156827698255e-09,
+    "outer": 1.1261350482912298e-10,
+    "coefficient_norm": 31.492414518785075,
+    "extension": {
+      "svd_backend": "gpu",
+      "basis_construction": "cpu",
+      "degree": 160,
+      "corner_poles": 32,
+      "min_pole_distance": 0.0,
+      "actual_min_pole_distance": 1.626468217868655e-08,
+      "laurent": 128,
+      "aaa_poles": 17,
+      "samples_per_side": 1600,
+      "rank": 1547,
+      "retained_condition": 2656211661943.6074,
+      "rcond": 1e-13
+    }
+  }
+]
