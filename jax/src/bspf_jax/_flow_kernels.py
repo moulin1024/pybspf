@@ -40,12 +40,23 @@ def tensor_elliptic_solve(load, denominator, left=None, right=None):
 
 
 def rk4_stages(state, dt, rhs):
-    """Original NS RK4 stages; rhs returns (derivative, stage diagnostics)."""
+    """Shared flow RK4 for array/PyTree states and per-stage diagnostics.
+
+    Tree mapping preserves NumPy leaves for host callers and JAX leaves for
+    compiled callers; coupled fields need not share a shape or be packed.
+    """
+    from jax.tree_util import tree_map
+
+    def add(y, derivative, h):
+        return tree_map(lambda v, k: v+h*k, y, derivative)
+
     a, da = rhs(state)
-    b, db = rhs(state + dt / 2 * a)
-    c, dc = rhs(state + dt / 2 * b)
-    d, dd = rhs(state + dt * c)
-    return state + dt / 6 * (a + 2 * b + 2 * c + d), (da, db, dc, dd)
+    b, db = rhs(add(state, a, dt/2))
+    c, dc = rhs(add(state, b, dt/2))
+    d, dd = rhs(add(state, c, dt))
+    result = tree_map(lambda y, ka, kb, kc, kd: y+dt/6*(ka+2*kb+2*kc+kd),
+                      state, a, b, c, d)
+    return result, (da, db, dc, dd)
 
 
 def imex_midpoint(state, time, dt, mass, diffusion, explicit, solve):

@@ -87,3 +87,50 @@ def tensor_pcg(matrix, rhs, preconditioner, *, rtol=2e-12, maxiter=500):
         elliptic_max_relative_residual=float(relative.max()),
     )
     return (x[:, 0] if vector else x), diagnostics
+
+
+def tensor_pcg_device(apply, rhs, preconditioner, *, rtol=2e-12, atol=0., maxiter=500):
+    """Device counterpart of tensor_pcg for one matrix-free tensor RHS.
+
+    Call inside jit with pure array callables. Like the host solver, refresh
+    the true residual every 40 iterations and before accepting convergence.
+    Returns (solution, (iterations, relative_residual, converged)) instead of
+    raising inside compiled code; callers must check converged. No host copies
+    or dense multidimensional matrix are required.
+    """
+    import jax
+    import jax.numpy as jnp
+
+    if not np.isfinite(rtol) or rtol <= 0 or not np.isfinite(atol) or atol < 0 or maxiter < 1:
+        raise ValueError('Invalid PCG controls')
+    norm = jnp.linalg.norm(rhs)
+    target = jnp.maximum(rtol*norm, atol)
+    z = preconditioner(rhs)
+    initial = (jnp.zeros_like(rhs), rhs, z, jnp.sum(rhs*z), jnp.int32(0),
+               jnp.all(jnp.isfinite(rhs)) & jnp.all(jnp.isfinite(z)))
+
+    def cond(state):
+        _, r, _, _, count, valid = state
+        return valid & (jnp.linalg.norm(r) > target) & (count < maxiter)
+
+    def body(state):
+        x, r, p, rho, count, valid = state
+        ap = apply(p)
+        pap = jnp.sum(p*ap)
+        valid = valid & (pap > 0) & (rho > 0) & jnp.isfinite(pap)
+        alpha = jnp.where(valid, rho/pap, 0.)
+        x, r = x+alpha*p, r-alpha*ap
+        refresh = ((count+1) % 40 == 0) | (jnp.linalg.norm(r) <= target)
+        r = jax.lax.cond(refresh, lambda _: rhs-apply(x), lambda _: r, None)
+        z = preconditioner(r)
+        rho_new = jnp.sum(r*z)
+        p = jax.lax.cond(refresh, lambda _: z,
+                         lambda _: z+(rho_new/rho)*p, None)
+        valid = valid & jnp.isfinite(rho_new) & jnp.all(jnp.isfinite(r))
+        return x, r, p, rho_new, count+1, valid
+
+    x, _, _, _, count, valid = jax.lax.while_loop(cond, body, initial)
+    residual = jnp.linalg.norm(apply(x)-rhs)
+    relative = residual/jnp.maximum(norm, 1e-300)
+    converged = valid & jnp.isfinite(residual) & (residual <= 1.05*target)
+    return x, (count, relative, converged)

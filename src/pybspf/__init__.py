@@ -5,11 +5,13 @@
 from .basis import BSplineValues, make_bspline_basis_values
 from .bspf_split import bspf_kkt_1d_decompose_precompute, split2d_kkt_directional
 from .grid import Grid1D
+from .galerkin import ClosedBSPFLine
 from .ops.differentiation import DerivativeResult
 from .operators import BSPF1D, BSPF2D, PiecewiseBSPF1D, bspf1d, bspf2d
 from .time_integration import integrate_rk4
 
 __all__ = [
+    "ClosedBSPFLine",
     "BSPF1D",
     "BSPF2D",
     "BSplineValues",

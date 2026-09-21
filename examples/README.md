@@ -185,3 +185,10 @@ and reusable SVD solves. See [the solver guide](../docs/jax_convex_poisson_solve
 `pde/convex_poisson_tensor.py` 对照保持原曲边积分的无矩阵算子、单层迭代、
 两层粗空间修正和参考 SVD。实验后端同时提供投影粗空间与代数谱粗空间，
 默认拒绝未收敛结果。详见 [两层求解器说明](../docs/jax_convex_poisson_tensor.md)。
+
+## 内孤立波斜坡算例
+
+[`pde/isw_slope`](pde/isw_slope/README.md) 用 `pybspf.ClosedBSPFLine` 和
+`bspf_jax.mapped_boussinesq.MappedBoussinesq` 构造二维无滑移 Boussinesq 算例。
+保留冻结初场、变水深映射、float64 RK4/CG、检查点和 NetCDF 导出。
+安装与单线程运行命令见算例说明。
