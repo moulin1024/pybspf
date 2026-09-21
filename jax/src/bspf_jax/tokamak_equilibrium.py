@@ -12,7 +12,7 @@ import scipy.linalg as la
 from scipy.special import ellipk, ellipe
 from scipy.ndimage import label
 from .stream_navier_stokes import _stream_line
-from ._flow_kernels import tensor_elliptic_solve
+from .rectangle_poisson import tensor_elliptic_solve
 
 
 def coil_field(r, z, coil_r, coil_z, current=1.0):

@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 import numpy as np
 import scipy.linalg as la
-from ._flow_kernels import tensor_elliptic_solve
+from .rectangle_poisson import tensor_elliptic_solve
 
 
 @dataclass

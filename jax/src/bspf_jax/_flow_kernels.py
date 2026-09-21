@@ -5,6 +5,10 @@ solvers. Geometry-specific loads and boundary conditions stay with their plans.
 """
 
 
+# Compatibility import for existing callers; ownership is PDE-independent.
+from .rectangle_poisson import tensor_elliptic_solve as tensor_elliptic_solve
+
+
 def tensor_product(left, right, coefficients=None, *, paired=False):
     if paired:
         if coefficients is None:
@@ -20,23 +24,6 @@ def curl_from_gradient(dx, dy, *, radius=None):
     if radius is None:
         return dy, -dx
     return -dy / radius, dx / radius
-
-
-def tensor_elliptic_solve(load, denominator, left=None, right=None):
-    """Generalized symmetric tensor Poisson inverse in mass-normalized modes.
-
-    Rotations have columns of generalized eigenvectors. Identity rotations
-    recover the original stream NS diagonal inertia solve exactly.
-    """
-    transformed = load if left is None else left.T @ load
-    if right is not None:
-        transformed = transformed @ right
-    result = transformed / denominator
-    if left is not None:
-        result = left @ result
-    if right is not None:
-        result = result @ right.T
-    return result
 
 
 def rk4_stages(state, dt, rhs):

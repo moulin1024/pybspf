@@ -14,6 +14,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from .rectangle_poisson import tensor_elliptic_solve
+
 
 class WeakNSLine(NamedTuple):
     x: jax.Array
@@ -324,11 +326,12 @@ def weak_ns_helmholtz(plan, load, *, alpha=1.0, beta=1.0):
     load has shape (nx-2, ny-2), and is an integrated weak load.
     """
     x, y = plan.x, plan.y
-    rhs = x.diffusion_vectors.T @ load @ y.diffusion_vectors
     denominator = alpha + beta * (
         x.diffusion_eigenvalues[:, None] + y.diffusion_eigenvalues[None, :]
     )
-    return x.diffusion_vectors @ (rhs / denominator) @ y.diffusion_vectors.T
+    return tensor_elliptic_solve(
+        load, denominator, x.diffusion_vectors, y.diffusion_vectors
+    )
 
 
 def weak_kh_initial_velocity(

@@ -17,6 +17,10 @@ from .operators import (endpoint_jets, Split, decompose, derivatives, differenti
                         gradient, divergence, curl, hessian, laplacian, tensor_decompose,
                         noise_diagnostics)
 from .calculus import interpolate, interpolate_grid, integrate, integrate_box, antiderivative
+from .rectangle_poisson import (
+    RectanglePoissonPlan, plan_rectangle_poisson, solve_rectangle_poisson,
+    BoxPoissonPlan, plan_box_poisson, solve_box_poisson,
+)
 from .pressure import (
     PressurePoisson2DPlan, PressurePoisson2DResult, plan_pressure_poisson2d, compress_pressure_plan,
     pressure_gradient, pressure_divergence, pressure_schur, pressure_remove_mean,
@@ -54,6 +58,8 @@ from .immersed_poisson import EllipticHole, ImmersedPoissonPlan, ImmersedPoisson
 from .immersed_flow import ImmersedFlowPlan, ImmersedFlowStepper
 
 __all__ = [
+    "BoxPoissonPlan", "plan_box_poisson", "solve_box_poisson",
+    "RectanglePoissonPlan", "plan_rectangle_poisson", "solve_rectangle_poisson",
     "ImmersedFlowPlan", "ImmersedFlowStepper",
     "EllipticHole", "ImmersedPoissonPlan", "ImmersedPoissonSolution",
     "ConvexPoissonPlan", "ConvexPoissonSolution",

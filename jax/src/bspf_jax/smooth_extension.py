@@ -13,7 +13,8 @@ import numpy as np
 import scipy.linalg as la
 
 from .stream_navier_stokes import _stream_line, stream_evaluate_line
-from ._flow_kernels import tensor_product, tensor_elliptic_solve
+from ._flow_kernels import tensor_product
+from .rectangle_poisson import tensor_elliptic_solve
 
 
 @lru_cache(maxsize=8)

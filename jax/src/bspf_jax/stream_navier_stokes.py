@@ -10,10 +10,10 @@ import jax
 import jax.numpy as jnp
 from .pressure import _line_projector
 from ._weak_basis import evaluate_basis
+from .rectangle_poisson import tensor_elliptic_solve
 from ._flow_kernels import (
     tensor_product,
     curl_from_gradient,
-    tensor_elliptic_solve,
     rk4_stages,
 )
 
