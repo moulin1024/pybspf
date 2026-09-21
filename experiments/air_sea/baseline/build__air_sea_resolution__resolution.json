@@ -1,0 +1,3673 @@
+{
+  "config": {
+    "length": 1000000.0,
+    "ocean_depth": 1000.0,
+    "mixed_layer_depth": 50.0,
+    "atmosphere_depth": 1000.0,
+    "rho_ocean": 1025.0,
+    "rho_air": 1.2,
+    "cp_ocean": 3990.0,
+    "cp_air": 1004.0,
+    "latent_heat": 2500000.0,
+    "reference_temperature": 290.0,
+    "pressure": 101325.0,
+    "f0": 0.0001,
+    "beta": 2e-11,
+    "ocean_viscosity": 2000.0,
+    "air_viscosity": 20000.0,
+    "ocean_diffusivity": 1000.0,
+    "air_diffusivity": 20000.0,
+    "bottom_drag": 1.1574074074074074e-07,
+    "drag_coefficient": 0.0013,
+    "heat_coefficient": 0.0012,
+    "moisture_coefficient": 0.0012,
+    "wind_speed": 8.0,
+    "wind_restore_rate": 4.6296296296296294e-05,
+    "temperature_restore_rate": 1.1574074074074073e-05,
+    "humidity_restore_rate": 5.787037037037037e-06,
+    "radiation": 100.0
+  },
+  "snapshots_hours": [
+    6,
+    12,
+    24
+  ],
+  "grids": [
+    33,
+    49,
+    65,
+    81
+  ],
+  "quadrature_order": 32,
+  "fingerprint": "375a5b3655b3608e838bdcd3e1e926cbf5a05ef909811813db129b76b0b56112",
+  "runs": {
+    "n33_H150": {
+      "n": 33,
+      "macro_step": 150,
+      "fast_step": 30.0,
+      "budgets": [
+        {
+          "hour": 6,
+          "heat_residual": 1.6298145055770874e-08,
+          "water_residual": -1.559863349598345e-14
+        },
+        {
+          "hour": 12,
+          "heat_residual": 1.0523945093154907e-07,
+          "water_residual": -7.327471962526033e-15
+        },
+        {
+          "hour": 24,
+          "heat_residual": 1.8440186977386475e-07,
+          "water_residual": -2.3092638912203256e-14
+        }
+      ],
+      "runtime_seconds": 88.69583029183559
+    },
+    "n49_H150": {
+      "n": 49,
+      "macro_step": 150,
+      "fast_step": 30.0,
+      "budgets": [
+        {
+          "hour": 6,
+          "heat_residual": 3.632158041000366e-08,
+          "water_residual": 5.662137425588298e-15
+        },
+        {
+          "hour": 12,
+          "heat_residual": 3.4458935260772705e-08,
+          "water_residual": -5.88418203051333e-15
+        },
+        {
+          "hour": 24,
+          "heat_residual": 6.798654794692993e-08,
+          "water_residual": -1.1546319456101628e-14
+        }
+      ],
+      "runtime_seconds": 108.30394225008786
+    },
+    "n65_H150": {
+      "n": 65,
+      "macro_step": 150,
+      "fast_step": 30.0,
+      "budgets": [
+        {
+          "hour": 6,
+          "heat_residual": -4.423782229423523e-08,
+          "water_residual": 1.609823385706477e-15
+        },
+        {
+          "hour": 12,
+          "heat_residual": -1.1548399925231934e-07,
+          "water_residual": -3.9968028886505635e-15
+        },
+        {
+          "hour": 24,
+          "heat_residual": -1.8067657947540283e-07,
+          "water_residual": 2.4424906541753444e-15
+        }
+      ],
+      "runtime_seconds": 119.01666725007817
+    },
+    "n81_H150": {
+      "n": 81,
+      "macro_step": 150,
+      "fast_step": 30.0,
+      "budgets": [
+        {
+          "hour": 6,
+          "heat_residual": 1.494772732257843e-07,
+          "water_residual": 3.314015728506092e-14
+        },
+        {
+          "hour": 12,
+          "heat_residual": 2.7008354663848877e-07,
+          "water_residual": 5.10702591327572e-14
+        },
+        {
+          "hour": 24,
+          "heat_residual": 3.725290298461914e-07,
+          "water_residual": 3.597122599785507e-14
+        }
+      ],
+      "runtime_seconds": 137.69136275001802
+    },
+    "n33_H600": {
+      "n": 33,
+      "macro_step": 600,
+      "fast_step": 120.0,
+      "budgets": [
+        {
+          "hour": 6,
+          "heat_residual": 8.754432201385498e-08,
+          "water_residual": 1.1102230246251565e-14
+        },
+        {
+          "hour": 12,
+          "heat_residual": 1.6903504729270935e-07,
+          "water_residual": 2.0650148258027912e-14
+        },
+        {
+          "hour": 24,
+          "heat_residual": 2.980232238769531e-07,
+          "water_residual": 2.220446049250313e-14
+        }
+      ],
+      "runtime_seconds": 23.280172042082995
+    },
+    "n33_H300": {
+      "n": 33,
+      "macro_step": 300,
+      "fast_step": 60.0,
+      "budgets": [
+        {
+          "hour": 6,
+          "heat_residual": 1.0337680578231812e-07,
+          "water_residual": 1.84297022087776e-14
+        },
+        {
+          "hour": 12,
+          "heat_residual": 1.73225998878479e-07,
+          "water_residual": 2.0761170560490427e-14
+        },
+        {
+          "hour": 24,
+          "heat_residual": 3.3248215913772583e-07,
+          "water_residual": 3.530509218307998e-14
+        }
+      ],
+      "runtime_seconds": 45.74990012519993
+    },
+    "n81_H600": {
+      "n": 81,
+      "macro_step": 600,
+      "fast_step": 120.0,
+      "budgets": [
+        {
+          "hour": 6,
+          "heat_residual": 1.0104849934577942e-07,
+          "water_residual": 1.2378986724570495e-14
+        },
+        {
+          "hour": 12,
+          "heat_residual": 1.825392246246338e-07,
+          "water_residual": 1.6653345369377348e-14
+        },
+        {
+          "hour": 24,
+          "heat_residual": 3.9581209421157837e-07,
+          "water_residual": 4.884981308350689e-14
+        }
+      ],
+      "runtime_seconds": 37.272134124999866
+    },
+    "n81_H300": {
+      "n": 81,
+      "macro_step": 300,
+      "fast_step": 60.0,
+      "budgets": [
+        {
+          "hour": 6,
+          "heat_residual": 1.1827796697616577e-07,
+          "water_residual": 1.865174681370263e-14
+        },
+        {
+          "hour": 12,
+          "heat_residual": 1.9837170839309692e-07,
+          "water_residual": 2.3425705819590803e-14
+        },
+        {
+          "hour": 24,
+          "heat_residual": 3.166496753692627e-07,
+          "water_residual": 1.6209256159527285e-14
+        }
+      ],
+      "runtime_seconds": 68.40644004102796
+    }
+  },
+  "spatial": {
+    "6": {
+      "33_49": {
+        "ocean_velocity": {
+          "rms": 4.9728072062166864e-05,
+          "reference_rms": 0.0008959098698490621,
+          "relative_rms": 0.05550566383485068,
+          "linf": 0.0001553547494508349,
+          "reference_peak": 0.0016819148998233292,
+          "relative_linf": 0.09236778238135211,
+          "mean_difference": [
+            4.538122202604514e-19,
+            -5.863886427717965e-22
+          ]
+        },
+        "air_velocity": {
+          "rms": 0.00013387963306168765,
+          "reference_rms": 5.023651645377399,
+          "relative_rms": 2.66498639858676e-05,
+          "linf": 0.00033516223290207394,
+          "reference_peak": 6.982046657491728,
+          "relative_linf": 4.8003436433992496e-05,
+          "mean_difference": [
+            1.2720107959551313e-07,
+            -2.3299575209984795e-23
+          ]
+        },
+        "ocean_streamfunction": {
+          "rms": 0.8330206596255934,
+          "reference_rms": 122.63495416066402,
+          "relative_rms": 0.00679268537528259,
+          "linf": 2.4298956224737935,
+          "reference_peak": 203.02967002088954,
+          "relative_linf": 0.011968179932636366,
+          "mean_difference": -3.2970275815058514e-12
+        },
+        "air_streamfunction": {
+          "rms": 1.196094720580105,
+          "reference_rms": 799400.1103181747,
+          "relative_rms": 1.496240374678006e-06,
+          "linf": 3.069860339863226,
+          "reference_peak": 1138766.8590459516,
+          "relative_linf": 2.695775975106201e-06,
+          "mean_difference": 0.06360053961508282
+        },
+        "sst": {
+          "rms": 6.223990047337761e-05,
+          "reference_rms": 2.848650156603763,
+          "relative_rms": 2.1848909852651647e-05,
+          "linf": 0.00016925747644336298,
+          "reference_peak": 4.500046750038109,
+          "relative_linf": 3.761238179179574e-05,
+          "mean_difference": 9.012951906271044e-09
+        },
+        "air_temperature": {
+          "rms": 0.00025851456159778076,
+          "reference_rms": 2.8400631213833205,
+          "relative_rms": 9.102423099380449e-05,
+          "linf": 0.0006789238581745849,
+          "reference_peak": 4.558589860582913,
+          "relative_linf": 0.0001489328671669028,
+          "mean_difference": -2.2849575710300686e-07
+        },
+        "humidity": {
+          "rms": 5.188678463791974e-07,
+          "reference_rms": 0.008493786115212718,
+          "relative_rms": 6.108793408982644e-05,
+          "linf": 1.6530869628387374e-06,
+          "reference_peak": 0.011203444844459362,
+          "relative_linf": 0.00014755166699073524,
+          "mean_difference": -4.844361956829778e-10
+        },
+        "sst_gradient": {
+          "rms": 7.084240040112939e-09,
+          "reference_rms": 9.153321803841326e-06,
+          "relative_rms": 0.0007739529093295872,
+          "linf": 1.916364555949325e-08,
+          "reference_peak": 1.2942249665665369e-05,
+          "relative_linf": 0.0014807043639663892,
+          "mean_difference": [
+            -1.2169067536401446e-14,
+            -2.3517634168237413e-12
+          ]
+        },
+        "air_temperature_gradient": {
+          "rms": 3.152197532113649e-08,
+          "reference_rms": 9.277242823738675e-06,
+          "relative_rms": 0.003397774093018007,
+          "linf": 8.475756750380308e-08,
+          "reference_peak": 1.4930582653386892e-05,
+          "relative_linf": 0.0056767756136145466,
+          "mean_difference": [
+            1.3229052637291398e-24,
+            -2.6735393563195094e-13
+          ]
+        },
+        "humidity_gradient": {
+          "rms": 6.304869996294618e-11,
+          "reference_rms": 5.589323943807069e-09,
+          "relative_rms": 0.011280201433449513,
+          "linf": 2.057827643068498e-10,
+          "reference_peak": 1.1189400110210549e-08,
+          "relative_linf": 0.018390866559420727,
+          "mean_difference": [
+            1.030614521761223e-26,
+            -3.1528602153009523e-14
+          ]
+        },
+        "stress": {
+          "rms": 1.434437827802226e-06,
+          "reference_rms": 0.047586263395020104,
+          "relative_rms": 3.0143947548366233e-05,
+          "linf": 3.206573252475528e-06,
+          "reference_peak": 0.07604800650681369,
+          "relative_linf": 4.216511911049539e-05,
+          "mean_difference": [
+            -1.4119117595153428e-08,
+            9.79153186454102e-24
+          ]
+        },
+        "sensible_heat": {
+          "rms": 0.001230644250764972,
+          "reference_rms": 12.742847344536255,
+          "relative_rms": 9.657529573189424e-05,
+          "linf": 0.0023890757130651252,
+          "reference_peak": 21.03733444101373,
+          "relative_linf": 0.00011356361328778697,
+          "mean_difference": -1.5975461578847825e-05
+        },
+        "evaporation": {
+          "rms": 2.247479745522972e-09,
+          "reference_rms": 2.4413409343885165e-05,
+          "relative_rms": 9.205923326255532e-05,
+          "linf": 4.847780871297517e-09,
+          "reference_peak": 4.44148145161749e-05,
+          "relative_linf": 0.00010914783556130944,
+          "mean_difference": -3.292957343145146e-11
+        },
+        "total_heat": {
+          "rms": 0.0068097287018235204,
+          "reference_rms": 73.58451787966688,
+          "relative_rms": 9.25429546601026e-05,
+          "linf": 0.014332499540763877,
+          "reference_peak": 131.9130687288876,
+          "relative_linf": 0.00010865109635361858,
+          "mean_difference": -9.829939515748195e-05
+        }
+      },
+      "49_65": {
+        "ocean_velocity": {
+          "rms": 2.2366747346163977e-05,
+          "reference_rms": 0.0008956033284047686,
+          "relative_rms": 0.02497394397361519,
+          "linf": 6.09616709280004e-05,
+          "reference_peak": 0.001640537594408444,
+          "relative_linf": 0.03715956960436641,
+          "mean_difference": [
+            1.9918140839908807e-19,
+            -8.769685961364524e-22
+          ]
+        },
+        "air_velocity": {
+          "rms": 2.2853821638335276e-05,
+          "reference_rms": 5.023651757212662,
+          "relative_rms": 4.5492448009603984e-06,
+          "linf": 6.0536957459020147e-05,
+          "reference_peak": 6.982055444989887,
+          "relative_linf": 8.670363324378877e-06,
+          "mean_difference": [
+            2.070749804091094e-08,
+            8.273415976474423e-24
+          ]
+        },
+        "ocean_streamfunction": {
+          "rms": 0.24910149376283675,
+          "reference_rms": 122.68656600388746,
+          "relative_rms": 0.0020303893235950844,
+          "linf": 0.9753281705182673,
+          "reference_peak": 203.0503042933716,
+          "relative_linf": 0.004803381969371942,
+          "mean_difference": 4.338293017773292e-12
+        },
+        "air_streamfunction": {
+          "rms": 0.13972125386223141,
+          "reference_rms": 799400.1236344121,
+          "relative_rms": 1.7478262728682019e-07,
+          "linf": 0.39161750860512257,
+          "reference_peak": 1138767.2241554442,
+          "relative_linf": 3.4389601342413236e-07,
+          "mean_difference": 0.010353749039886383
+        },
+        "sst": {
+          "rms": 3.4228156241414126e-05,
+          "reference_rms": 2.84865015672608,
+          "relative_rms": 1.2015570308132236e-05,
+          "linf": 0.00011908108410807472,
+          "reference_peak": 4.500075794596171,
+          "relative_linf": 2.6462017428922185e-05,
+          "mean_difference": 1.5335141670693357e-09
+        },
+        "air_temperature": {
+          "rms": 6.572551579846714e-05,
+          "reference_rms": 2.840063116943951,
+          "relative_rms": 2.3142272932719556e-05,
+          "linf": 0.00017922573823625498,
+          "reference_peak": 4.558615602207851,
+          "relative_linf": 3.931582609190639e-05,
+          "mean_difference": -3.530728183282377e-08
+        },
+        "humidity": {
+          "rms": 1.3011330053145068e-07,
+          "reference_rms": 0.008493786195533004,
+          "relative_rms": 1.53186455999892e-05,
+          "linf": 4.268969353328489e-07,
+          "reference_peak": 0.011203492892815236,
+          "relative_linf": 3.810391450389695e-05,
+          "mean_difference": -8.407550763558556e-11
+        },
+        "sst_gradient": {
+          "rms": 5.742474874598702e-09,
+          "reference_rms": 9.153322816861174e-06,
+          "relative_rms": 0.0006273650552366175,
+          "linf": 5.536532341659627e-08,
+          "reference_peak": 1.2942121009608633e-05,
+          "relative_linf": 0.004277917303932743,
+          "mean_difference": [
+            -5.8657918128617474e-15,
+            -1.4400688958378009e-11
+          ]
+        },
+        "air_temperature_gradient": {
+          "rms": 1.1472541296571248e-08,
+          "reference_rms": 9.277249593692476e-06,
+          "relative_rms": 0.0012366317388260559,
+          "linf": 3.1588934901630406e-08,
+          "reference_peak": 1.4941244283906698e-05,
+          "relative_linf": 0.0021142104567325117,
+          "mean_difference": [
+            -1.641287876405678e-23,
+            4.194715630640802e-14
+          ]
+        },
+        "humidity_gradient": {
+          "rms": 2.2670590450569896e-11,
+          "reference_rms": 5.5893673191890914e-09,
+          "relative_rms": 0.004056020861741998,
+          "linf": 7.520766620910058e-11,
+          "reference_peak": 1.120484167174331e-08,
+          "relative_linf": 0.006712068622866973,
+          "mean_difference": [
+            3.1052949477264844e-28,
+            -3.5336305271431056e-15
+          ]
+        },
+        "stress": {
+          "rms": 3.5107016673474555e-07,
+          "reference_rms": 0.047586257461591945,
+          "relative_rms": 7.377553635481904e-06,
+          "linf": 1.3435058069590745e-06,
+          "reference_peak": 0.07604815784150284,
+          "relative_linf": 1.766651349739683e-05,
+          "mean_difference": [
+            -1.1457570924205987e-09,
+            2.3844442396719247e-24
+          ]
+        },
+        "sensible_heat": {
+          "rms": 0.00036154934750308595,
+          "reference_rms": 12.742846845411103,
+          "relative_rms": 2.837272957049511e-05,
+          "linf": 0.0011311085461223058,
+          "reference_peak": 21.03651467888198,
+          "relative_linf": 5.376881880807931e-05,
+          "mean_difference": -2.6038452571025974e-06
+        },
+        "evaporation": {
+          "rms": 5.672509153504338e-10,
+          "reference_rms": 2.4413408450789374e-05,
+          "relative_rms": 2.323521996094292e-05,
+          "linf": 1.5091563839402097e-09,
+          "reference_peak": 4.441383572060859e-05,
+          "relative_linf": 3.397942013911538e-05,
+          "mean_difference": -6.368376658962885e-12
+        },
+        "total_heat": {
+          "rms": 0.001758861664306473,
+          "reference_rms": 73.58451516743011,
+          "relative_rms": 2.3902605871689945e-05,
+          "linf": 0.004903999505970091,
+          "reference_peak": 131.90978373465498,
+          "relative_linf": 3.717692021870646e-05,
+          "mean_difference": -1.852478690453626e-05
+        }
+      },
+      "65_81": {
+        "ocean_velocity": {
+          "rms": 8.525771156691193e-06,
+          "reference_rms": 0.0008954356725219664,
+          "relative_rms": 0.009521366434596721,
+          "linf": 2.5483680035956616e-05,
+          "reference_peak": 0.0016337509232393962,
+          "relative_linf": 0.01559826511707651,
+          "mean_difference": [
+            -3.8234353814729926e-19,
+            2.7230301241350025e-22
+          ]
+        },
+        "air_velocity": {
+          "rms": 6.235780959558305e-06,
+          "reference_rms": 5.02365177853818,
+          "relative_rms": 1.241284474811437e-06,
+          "linf": 1.6964801351959994e-05,
+          "reference_peak": 6.982055978874868,
+          "relative_linf": 2.429771603563369e-06,
+          "mean_difference": [
+            3.0013637656731627e-09,
+            -9.224370878808977e-24
+          ]
+        },
+        "ocean_streamfunction": {
+          "rms": 0.07489285406629606,
+          "reference_rms": 122.6791130040638,
+          "relative_rms": 0.0006104776292588226,
+          "linf": 0.2761729472307337,
+          "reference_peak": 203.0392892118758,
+          "relative_linf": 0.0013601946121006236,
+          "mean_difference": -5.022269957664926e-12
+        },
+        "air_streamfunction": {
+          "rms": 0.028966848068632953,
+          "reference_rms": 799400.126390123,
+          "relative_rms": 3.6235731159362563e-08,
+          "linf": 0.08290319656953216,
+          "reference_peak": 1138767.3022813334,
+          "relative_linf": 7.280082278745553e-08,
+          "mean_difference": 0.0015006820069563942
+        },
+        "sst": {
+          "rms": 1.1571550097365822e-05,
+          "reference_rms": 2.8486501567431324,
+          "relative_rms": 4.062116953875305e-06,
+          "linf": 4.1528581334659975e-05,
+          "reference_peak": 4.500075821762209,
+          "relative_linf": 9.228418137718749e-06,
+          "mean_difference": 1.3521579031298592e-10
+        },
+        "air_temperature": {
+          "rms": 2.3995771859015816e-05,
+          "reference_rms": 2.8400631163815184,
+          "relative_rms": 8.449027671465439e-06,
+          "linf": 6.660682203118995e-05,
+          "reference_peak": 4.558622964449114,
+          "relative_linf": 1.4611171520573218e-05,
+          "mean_difference": -2.8722942510226487e-09
+        },
+        "humidity": {
+          "rms": 4.723259971131772e-08,
+          "reference_rms": 0.008493786202659103,
+          "relative_rms": 5.560841606365236e-06,
+          "linf": 1.5700690201778111e-07,
+          "reference_peak": 0.01120350694305332,
+          "relative_linf": 1.4014085305238506e-05,
+          "mean_difference": -7.690068822180999e-12
+        },
+        "sst_gradient": {
+          "rms": 2.6162063303529377e-09,
+          "reference_rms": 9.153323181988829e-06,
+          "relative_rms": 0.00028582038220838717,
+          "linf": 8.948742890488638e-09,
+          "reference_peak": 1.2942230614671801e-05,
+          "relative_linf": 0.0006914374466750735,
+          "mean_difference": [
+            -2.160868268947892e-15,
+            9.476881690652238e-14
+          ]
+        },
+        "air_temperature_gradient": {
+          "rms": 5.431396371861915e-09,
+          "reference_rms": 9.277251153713045e-06,
+          "relative_rms": 0.0005854531996461151,
+          "linf": 1.52053294439918e-08,
+          "reference_peak": 1.4936945082969966e-05,
+          "relative_linf": 0.0010179678213671566,
+          "mean_difference": [
+            6.37885324134385e-23,
+            -3.4681247805874276e-15
+          ]
+        },
+        "humidity_gradient": {
+          "rms": 1.0678204591144417e-11,
+          "reference_rms": 5.589377229855208e-09,
+          "relative_rms": 0.001910446218249083,
+          "linf": 3.556643450408769e-11,
+          "reference_peak": 1.1223568026092504e-08,
+          "relative_linf": 0.0031689062178268967,
+          "mean_difference": [
+            1.963070995109492e-26,
+            -6.687039718244217e-16
+          ]
+        },
+        "stress": {
+          "rms": 1.2829198566106312e-07,
+          "reference_rms": 0.04758625916285165,
+          "relative_rms": 2.6959880418844657e-06,
+          "linf": 5.240597242938108e-07,
+          "reference_peak": 0.07604815864374567,
+          "relative_linf": 6.891155994306384e-06,
+          "mean_difference": [
+            2.963865716280313e-10,
+            -1.8590593811837335e-24
+          ]
+        },
+        "sensible_heat": {
+          "rms": 0.00013532432936912134,
+          "reference_rms": 12.742847048533301,
+          "relative_rms": 1.061963067230703e-05,
+          "linf": 0.00030962780845200655,
+          "reference_peak": 21.036430505830793,
+          "relative_linf": 1.4718647651092002e-05,
+          "mean_difference": -4.645646074400929e-07
+        },
+        "evaporation": {
+          "rms": 2.1511634486798774e-10,
+          "reference_rms": 2.4413408861427074e-05,
+          "relative_rms": 8.811401393759037e-06,
+          "linf": 5.180906285073546e-10,
+          "reference_peak": 4.4413692798839506e-05,
+          "relative_linf": 1.1665110371567479e-05,
+          "mean_difference": -1.0823465281881743e-12
+        },
+        "total_heat": {
+          "rms": 0.0006714229560841002,
+          "reference_rms": 73.58451639435594,
+          "relative_rms": 9.124514082362027e-06,
+          "linf": 0.0015863089854732948,
+          "reference_peak": 131.90935403827265,
+          "relative_linf": 1.2025750539366885e-05,
+          "mean_difference": -3.17043092789273e-06
+        }
+      }
+    },
+    "12": {
+      "33_49": {
+        "ocean_velocity": {
+          "rms": 5.5080423885062977e-05,
+          "reference_rms": 0.001648155867931767,
+          "relative_rms": 0.033419426497678366,
+          "linf": 0.00013256592499549802,
+          "reference_peak": 0.00301082799075404,
+          "relative_linf": 0.044029723850912465,
+          "mean_difference": [
+            8.2446203507196505e-19,
+            5.307030095794776e-22
+          ]
+        },
+        "air_velocity": {
+          "rms": 0.00012871211715468947,
+          "reference_rms": 4.862541150644676,
+          "relative_rms": 2.647013427076598e-05,
+          "linf": 0.0003231898605265679,
+          "reference_peak": 6.737494739119503,
+          "relative_linf": 4.79688479235539e-05,
+          "mean_difference": [
+            2.0160896689791144e-07,
+            -7.672788679505886e-23
+          ]
+        },
+        "ocean_streamfunction": {
+          "rms": 0.8866255298476841,
+          "reference_rms": 225.90332898147827,
+          "relative_rms": 0.003924800638596956,
+          "linf": 2.4999290729450365,
+          "reference_peak": 376.7196394777783,
+          "relative_linf": 0.006636046574079664,
+          "mean_difference": -5.767169389075087e-12
+        },
+        "air_streamfunction": {
+          "rms": 1.1522348365054087,
+          "reference_rms": 773710.7466398567,
+          "relative_rms": 1.4892320437701579e-06,
+          "linf": 3.009913350455463,
+          "reference_peak": 1103613.1637905338,
+          "relative_linf": 2.727326430320421e-06,
+          "mean_difference": 0.10080448355625743
+        },
+        "sst": {
+          "rms": 0.00011025377769316864,
+          "reference_rms": 2.8470249801325216,
+          "relative_rms": 3.872596077047298e-05,
+          "linf": 0.0003050529688266579,
+          "reference_peak": 4.499048233307121,
+          "relative_linf": 6.780388940227525e-05,
+          "mean_difference": 1.9813067979023344e-08
+        },
+        "air_temperature": {
+          "rms": 0.00025072599863558415,
+          "reference_rms": 2.830536786395016,
+          "relative_rms": 8.85789578290236e-05,
+          "linf": 0.0006633818230170618,
+          "reference_peak": 4.5123356798771965,
+          "relative_linf": 0.00014701517574931743,
+          "mean_difference": -4.361730419001835e-07
+        },
+        "humidity": {
+          "rms": 4.99974585065236e-07,
+          "reference_rms": 0.008796260191134435,
+          "relative_rms": 5.683944928881821e-05,
+          "linf": 1.5924255363751472e-06,
+          "reference_peak": 0.011673471992908841,
+          "relative_linf": 0.00013641404522514645,
+          "mean_difference": -1.0099757699533468e-09
+        },
+        "sst_gradient": {
+          "rms": 1.2166800850143757e-08,
+          "reference_rms": 9.147902536303977e-06,
+          "relative_rms": 0.00133000989044856,
+          "linf": 3.304015945049742e-08,
+          "reference_peak": 1.2932981680612675e-05,
+          "relative_linf": 0.00255472096585636,
+          "mean_difference": [
+            -3.8411332431926145e-14,
+            -1.2285103487665785e-11
+          ]
+        },
+        "air_temperature_gradient": {
+          "rms": 3.055649748457488e-08,
+          "reference_rms": 9.420440037901999e-06,
+          "relative_rms": 0.0032436380213275084,
+          "linf": 8.296824017017673e-08,
+          "reference_peak": 1.7081789337627275e-05,
+          "relative_linf": 0.004857116460710394,
+          "mean_difference": [
+            2.784906377652754e-23,
+            -4.992276180746354e-13
+          ]
+        },
+        "humidity_gradient": {
+          "rms": 6.071632702170504e-11,
+          "reference_rms": 6.546348583188337e-09,
+          "relative_rms": 0.009274838675354152,
+          "linf": 1.9858447530906953e-10,
+          "reference_peak": 1.481948902716973e-08,
+          "relative_linf": 0.013400224187553905,
+          "mean_difference": [
+            7.662777421404944e-27,
+            -3.0412608759785995e-14
+          ]
+        },
+        "stress": {
+          "rms": 1.352259190299075e-06,
+          "reference_rms": 0.04446949484532839,
+          "relative_rms": 3.04086924081876e-05,
+          "linf": 3.1233924135339555e-06,
+          "reference_peak": 0.07081382648555937,
+          "relative_linf": 4.410709840924766e-05,
+          "mean_difference": [
+            -1.2788604422530538e-08,
+            3.440099152293141e-24
+          ]
+        },
+        "sensible_heat": {
+          "rms": 0.001356597730472602,
+          "reference_rms": 11.402899991005182,
+          "relative_rms": 0.00011896953683209635,
+          "linf": 0.0028445466556448196,
+          "reference_peak": 20.15242959204869,
+          "relative_linf": 0.00014115154912969696,
+          "mean_difference": -1.6622871183722968e-05
+        },
+        "evaporation": {
+          "rms": 2.23228819543551e-09,
+          "reference_rms": 2.1111652903669143e-05,
+          "relative_rms": 0.00010573725352634729,
+          "linf": 5.08604422139064e-09,
+          "reference_peak": 3.930114608222738e-05,
+          "relative_linf": 0.00012941210952854712,
+          "mean_difference": -3.58030056033828e-11
+        },
+        "total_heat": {
+          "rms": 0.006876107785407427,
+          "reference_rms": 63.97481665014316,
+          "relative_rms": 0.0001074814770163478,
+          "linf": 0.015498696041305493,
+          "reference_peak": 118.34443027981857,
+          "relative_linf": 0.0001309626148409327,
+          "mean_difference": -0.00010613038519216857
+        }
+      },
+      "49_65": {
+        "ocean_velocity": {
+          "rms": 1.4128413643057043e-05,
+          "reference_rms": 0.0016477543832439671,
+          "relative_rms": 0.00857434444522135,
+          "linf": 3.6652055828190026e-05,
+          "reference_peak": 0.003009690845868528,
+          "relative_linf": 0.012178013525376915,
+          "mean_difference": [
+            3.757611840588396e-19,
+            -9.282526996336695e-22
+          ]
+        },
+        "air_velocity": {
+          "rms": 2.1871882505990863e-05,
+          "reference_rms": 4.862541169376448,
+          "relative_rms": 4.498035439522175e-06,
+          "linf": 5.828273660284365e-05,
+          "reference_peak": 6.7374974618692205,
+          "relative_linf": 8.6505021979888e-06,
+          "mean_difference": [
+            8.051738853342242e-09,
+            4.3893595726402994e-24
+          ]
+        },
+        "ocean_streamfunction": {
+          "rms": 0.17345431185818055,
+          "reference_rms": 225.86539135906406,
+          "relative_rms": 0.0007679543590741432,
+          "linf": 0.6241219711201325,
+          "reference_peak": 376.664880722629,
+          "relative_linf": 0.0016569688417002368,
+          "mean_difference": 7.793547060251725e-12
+        },
+        "air_streamfunction": {
+          "rms": 0.13254775854736028,
+          "reference_rms": 773710.7477801276,
+          "relative_rms": 1.7131435607900794e-07,
+          "linf": 0.3555124325212091,
+          "reference_peak": 1103613.5079434554,
+          "relative_linf": 3.2213490498471147e-07,
+          "mean_difference": 0.004025869436144008
+        },
+        "sst": {
+          "rms": 5.730248321929805e-05,
+          "reference_rms": 2.8470249805324874,
+          "relative_rms": 2.0127144514404857e-05,
+          "linf": 0.00019022993927819698,
+          "reference_peak": 4.499047787933193,
+          "relative_linf": 4.2282266880651706e-05,
+          "mean_difference": 3.4420424496622818e-09
+        },
+        "air_temperature": {
+          "rms": 6.344797142843561e-05,
+          "reference_rms": 2.8305367760350255,
+          "relative_rms": 2.241552625834899e-05,
+          "linf": 0.00017501292199995078,
+          "reference_peak": 4.512361592172624,
+          "relative_linf": 3.878521665983888e-05,
+          "mean_difference": -6.404034893071917e-08
+        },
+        "humidity": {
+          "rms": 1.2465038838900687e-07,
+          "reference_rms": 0.008796260362154876,
+          "relative_rms": 1.4170838885727397e-05,
+          "linf": 4.09908236406048e-07,
+          "reference_peak": 0.011673519015999877,
+          "relative_linf": 3.511436747087339e-05,
+          "mean_difference": -1.806331124929991e-10
+        },
+        "sst_gradient": {
+          "rms": 8.704204894012338e-09,
+          "reference_rms": 9.147905562454461e-06,
+          "relative_rms": 0.0009514970213222147,
+          "linf": 7.147707532962887e-08,
+          "reference_peak": 1.293259578040925e-05,
+          "relative_linf": 0.005526893173132717,
+          "mean_difference": [
+            -7.358786633273537e-15,
+            -7.260033991494525e-12
+          ]
+        },
+        "air_temperature_gradient": {
+          "rms": 1.1073227696220115e-08,
+          "reference_rms": 9.420446055893513e-06,
+          "relative_rms": 0.0011754462188435979,
+          "linf": 3.083012223128333e-08,
+          "reference_peak": 1.7074497660942007e-05,
+          "relative_linf": 0.0018056239687687784,
+          "mean_difference": [
+            1.025748019562945e-24,
+            1.4911977932678093e-14
+          ]
+        },
+        "humidity_gradient": {
+          "rms": 2.1716306518332356e-11,
+          "reference_rms": 6.546380070634937e-09,
+          "relative_rms": 0.0033172999862542477,
+          "linf": 7.225410978141321e-11,
+          "reference_peak": 1.4873638230808812e-08,
+          "relative_linf": 0.004857863870303649,
+          "mean_difference": [
+            6.006650454432436e-27,
+            -2.9077682074801063e-15
+          ]
+        },
+        "stress": {
+          "rms": 2.49989497734725e-07,
+          "reference_rms": 0.04446950117360235,
+          "relative_rms": 5.621594376757298e-06,
+          "linf": 8.354192064682225e-07,
+          "reference_peak": 0.07081387575996329,
+          "relative_linf": 1.1797394190088258e-05,
+          "mean_difference": [
+            4.5783779887207013e-10,
+            1.1681067729265922e-24
+          ]
+        },
+        "sensible_heat": {
+          "rms": 0.0004640321846650079,
+          "reference_rms": 11.40290062409151,
+          "relative_rms": 4.069422333512428e-05,
+          "linf": 0.001672334420536714,
+          "reference_peak": 20.15193525724473,
+          "relative_linf": 8.29862938317798e-05,
+          "mean_difference": -1.784410826342748e-06
+        },
+        "evaporation": {
+          "rms": 5.888290589996742e-10,
+          "reference_rms": 2.1111654126852705e-05,
+          "relative_rms": 2.7891185383277022e-05,
+          "linf": 1.9407955460158622e-09,
+          "reference_peak": 3.9300482099595725e-05,
+          "relative_linf": 4.938350479002971e-05,
+          "mean_difference": -5.6551404031610876e-12
+        },
+        "total_heat": {
+          "rms": 0.0019027703467268337,
+          "reference_rms": 63.97482033348872,
+          "relative_rms": 2.97424883228753e-05,
+          "linf": 0.00647301672070455,
+          "reference_peak": 118.3423052906473,
+          "relative_linf": 5.469740263050392e-05,
+          "mean_difference": -1.5922261834262606e-05
+        }
+      },
+      "65_81": {
+        "ocean_velocity": {
+          "rms": 2.179715773500391e-06,
+          "reference_rms": 0.0016477296714255448,
+          "relative_rms": 0.001322860060907075,
+          "linf": 9.854180865692866e-06,
+          "reference_peak": 0.003009643279246993,
+          "relative_linf": 0.003274202272954542,
+          "mean_difference": [
+            -6.95944119609845e-19,
+            -1.0018149042585426e-21
+          ]
+        },
+        "air_velocity": {
+          "rms": 5.972289277690854e-06,
+          "reference_rms": 4.862541146940281,
+          "relative_rms": 1.22822390540569e-06,
+          "linf": 1.6336057322096692e-05,
+          "reference_peak": 6.737495982252538,
+          "relative_linf": 2.424648172722929e-06,
+          "mean_difference": [
+            -3.6635940714132996e-09,
+            6.193476707391979e-23
+          ]
+        },
+        "ocean_streamfunction": {
+          "rms": 0.030517704886871132,
+          "reference_rms": 225.84544042942557,
+          "relative_rms": 0.00013512650434228097,
+          "linf": 0.09443550380186139,
+          "reference_peak": 376.6454643867737,
+          "relative_linf": 0.00025072784018683006,
+          "mean_difference": -9.45456409661555e-12
+        },
+        "air_streamfunction": {
+          "rms": 0.027639866689132136,
+          "reference_rms": 773710.7449741904,
+          "relative_rms": 3.572377257091622e-08,
+          "linf": 0.0786715226713568,
+          "reference_peak": 1103613.5803184893,
+          "relative_linf": 7.128538835907869e-08,
+          "mean_difference": -0.001831797207188234
+        },
+        "sst": {
+          "rms": 1.5031091995339336e-05,
+          "reference_rms": 2.8470249805142753,
+          "relative_rms": 5.27957854188697e-06,
+          "linf": 5.454118519310214e-05,
+          "reference_peak": 4.499047779830619,
+          "relative_linf": 1.2122828621116692e-05,
+          "mean_difference": 5.07887876694574e-10
+        },
+        "air_temperature": {
+          "rms": 2.314790397573287e-05,
+          "reference_rms": 2.8305367748986594,
+          "relative_rms": 8.17792023795968e-06,
+          "linf": 6.50261961823162e-05,
+          "reference_peak": 4.5123689235373945,
+          "relative_linf": 1.4410655973434908e-05,
+          "mean_difference": -1.046016456322615e-08
+        },
+        "humidity": {
+          "rms": 4.5211122865522326e-08,
+          "reference_rms": 0.00879626038836509,
+          "relative_rms": 5.139811791533999e-06,
+          "linf": 1.5073442184189434e-07,
+          "reference_peak": 0.011673532761714536,
+          "relative_linf": 1.2912494008348114e-05,
+          "mean_difference": -2.7144864024243978e-11
+        },
+        "sst_gradient": {
+          "rms": 3.3695439345936618e-09,
+          "reference_rms": 9.147906181738248e-06,
+          "relative_rms": 0.000368340456018253,
+          "linf": 1.2149064377283889e-08,
+          "reference_peak": 1.2932998222115042e-05,
+          "relative_linf": 0.000939384987814299,
+          "mean_difference": [
+            5.19313319729046e-16,
+            -2.9448175614845085e-14
+          ]
+        },
+        "air_temperature_gradient": {
+          "rms": 5.239230549586895e-09,
+          "reference_rms": 9.420447458780816e-06,
+          "relative_rms": 0.0005561551691160274,
+          "linf": 1.4841236894056725e-08,
+          "reference_peak": 1.707320742667171e-05,
+          "relative_linf": 0.0008692705783490801,
+          "mean_difference": [
+            7.849797658225344e-25,
+            -4.1205021567878856e-15
+          ]
+        },
+        "humidity_gradient": {
+          "rms": 1.0220615042497862e-11,
+          "reference_rms": 6.546387525027458e-09,
+          "relative_rms": 0.0015612603139400908,
+          "linf": 3.415515356645067e-11,
+          "reference_peak": 1.4855892455814723e-08,
+          "relative_linf": 0.002299098062808206,
+          "mean_difference": [
+            -3.767822921368241e-26,
+            -4.844292718157296e-16
+          ]
+        },
+        "stress": {
+          "rms": 5.807575146420578e-08,
+          "reference_rms": 0.044469503829934205,
+          "relative_rms": 1.305968055913245e-06,
+          "linf": 1.9535840332671575e-07,
+          "reference_peak": 0.07081385266416323,
+          "relative_linf": 2.758759705579199e-06,
+          "mean_difference": [
+            3.3579180995663773e-10,
+            9.534886257008089e-24
+          ]
+        },
+        "sensible_heat": {
+          "rms": 0.00014140687942459452,
+          "reference_rms": 11.402900869468167,
+          "relative_rms": 1.240095665509278e-05,
+          "linf": 0.00033015557387017225,
+          "reference_peak": 20.151862308549013,
+          "relative_linf": 1.6383377814670285e-05,
+          "mean_difference": -4.5880522990525055e-07
+        },
+        "evaporation": {
+          "rms": 2.0949086875457595e-10,
+          "reference_rms": 2.1111654572272475e-05,
+          "relative_rms": 9.92299623117726e-06,
+          "linf": 5.255252357686414e-10,
+          "reference_peak": 3.9300351592819244e-05,
+          "relative_linf": 1.337202377254718e-05,
+          "mean_difference": -1.093394247383062e-12
+        },
+        "total_heat": {
+          "rms": 0.0006635301510310092,
+          "reference_rms": 63.97482168573553,
+          "relative_rms": 1.0371738967721993e-05,
+          "linf": 0.0016377785156933555,
+          "reference_peak": 118.34188306570317,
+          "relative_linf": 1.383938190998756e-05,
+          "mean_difference": -3.1922908483481426e-06
+        }
+      }
+    },
+    "24": {
+      "33_49": {
+        "ocean_velocity": {
+          "rms": 4.241787839466256e-05,
+          "reference_rms": 0.003048323333918993,
+          "relative_rms": 0.013915150641231087,
+          "linf": 9.492571797530222e-05,
+          "reference_peak": 0.005597386200932452,
+          "relative_linf": 0.016958936647874828,
+          "mean_difference": [
+            1.5040231181035838e-18,
+            3.2940522898388324e-21
+          ]
+        },
+        "air_velocity": {
+          "rms": 0.00012503851181597028,
+          "reference_rms": 4.809875338551688,
+          "relative_rms": 2.5996206349418797e-05,
+          "linf": 0.0003160398350483278,
+          "reference_peak": 6.662763246054794,
+          "relative_linf": 4.7433748337893244e-05,
+          "mean_difference": [
+            1.7896890900865467e-07,
+            -7.066563115567651e-23
+          ]
+        },
+        "ocean_streamfunction": {
+          "rms": 0.7421212375092043,
+          "reference_rms": 417.8260279983346,
+          "relative_rms": 0.001776148893989348,
+          "linf": 2.5749644096185875,
+          "reference_peak": 703.5146061677532,
+          "relative_linf": 0.0036601434953073123,
+          "mean_difference": -9.721831875297783e-12
+        },
+        "air_streamfunction": {
+          "rms": 1.1179292772631564,
+          "reference_rms": 765325.7743566813,
+          "relative_rms": 1.4607234131149798e-06,
+          "linf": 2.8373627248220146,
+          "reference_peak": 1091815.878106126,
+          "relative_linf": 2.598755689231897e-06,
+          "mean_difference": 0.08948445443478756
+        },
+        "sst": {
+          "rms": 0.00017770284333148208,
+          "reference_rms": 2.843978019296863,
+          "relative_rms": 6.24839018184173e-05,
+          "linf": 0.0004801940579568509,
+          "reference_peak": 4.495389071805221,
+          "relative_linf": 0.00010681924307032641,
+          "mean_difference": 4.24496519679765e-08
+        },
+        "air_temperature": {
+          "rms": 0.0002414223606556549,
+          "reference_rms": 2.815723615955091,
+          "relative_rms": 8.574078765673336e-05,
+          "linf": 0.0006554497389856806,
+          "reference_peak": 4.345288132405983,
+          "relative_linf": 0.0001508414906016275,
+          "mean_difference": -7.311848158073018e-07
+        },
+        "humidity": {
+          "rms": 4.6983543553308547e-07,
+          "reference_rms": 0.009201155618226809,
+          "relative_rms": 5.10626550650199e-05,
+          "linf": 1.5076902138855958e-06,
+          "reference_peak": 0.012148020421271496,
+          "relative_linf": 0.00012410995055997696,
+          "mean_difference": -1.9400462013324533e-09
+        },
+        "sst_gradient": {
+          "rms": 1.8551967816308186e-08,
+          "reference_rms": 9.137561854069139e-06,
+          "relative_rms": 0.00203029737172686,
+          "linf": 5.918064263191607e-08,
+          "reference_peak": 1.2916401735683199e-05,
+          "relative_linf": 0.0045818211482554026,
+          "mean_difference": [
+            -3.582998854669474e-14,
+            -1.6676218074507485e-11
+          ]
+        },
+        "air_temperature_gradient": {
+          "rms": 2.9415114627877332e-08,
+          "reference_rms": 9.461159140790806e-06,
+          "relative_rms": 0.003109039198067932,
+          "linf": 8.196004606025469e-08,
+          "reference_peak": 1.8262589365684378e-05,
+          "relative_linf": 0.004487865571475784,
+          "mean_difference": [
+            2.2421792881628843e-23,
+            -7.136499527621726e-13
+          ]
+        },
+        "humidity_gradient": {
+          "rms": 5.70419478615333e-11,
+          "reference_rms": 7.61620036941137e-09,
+          "relative_rms": 0.007489554514693246,
+          "linf": 1.8844922049190688e-10,
+          "reference_peak": 1.7946770624973593e-08,
+          "relative_linf": 0.010500452946652855,
+          "mean_difference": [
+            -4.0264115072596e-27,
+            -2.6542125761443763e-14
+          ]
+        },
+        "stress": {
+          "rms": 1.2410544687276276e-06,
+          "reference_rms": 0.04347979059727242,
+          "relative_rms": 2.8543248522578708e-05,
+          "linf": 2.5772000891399373e-06,
+          "reference_peak": 0.06924643947243543,
+          "relative_linf": 3.7217799337767105e-05,
+          "mean_difference": [
+            -8.343497234400933e-09,
+            -1.3820563283480966e-23
+          ]
+        },
+        "sensible_heat": {
+          "rms": 0.0016259388025629533,
+          "reference_rms": 10.225890402644014,
+          "relative_rms": 0.00015900217375129988,
+          "linf": 0.004244026077751428,
+          "reference_peak": 18.053325394325253,
+          "relative_linf": 0.00023508278863047934,
+          "mean_difference": -1.5888409830364796e-05
+        },
+        "evaporation": {
+          "rms": 2.267087057883146e-09,
+          "reference_rms": 1.772123758502825e-05,
+          "relative_rms": 0.00012793051540590427,
+          "linf": 5.516084602273137e-09,
+          "reference_peak": 3.2979552271101406e-05,
+          "relative_linf": 0.00016725771644591578,
+          "mean_difference": -3.504528915239257e-11
+        },
+        "total_heat": {
+          "rms": 0.007197542669989464,
+          "reference_rms": 54.3466107254009,
+          "relative_rms": 0.0001324377467871318,
+          "linf": 0.017313936510213068,
+          "reference_peak": 100.46019767831649,
+          "relative_linf": 0.00017234623174497435,
+          "mean_difference": -0.00010350163271133426
+        }
+      },
+      "49_65": {
+        "ocean_velocity": {
+          "rms": 4.350797288333575e-06,
+          "reference_rms": 0.0030483278604735184,
+          "relative_rms": 0.0014272734061019719,
+          "linf": 1.8581360786365234e-05,
+          "reference_peak": 0.005597413174933306,
+          "relative_linf": 0.0033196335888830706,
+          "mean_difference": [
+            6.951486407367698e-19,
+            -6.432436809176321e-22
+          ]
+        },
+        "air_velocity": {
+          "rms": 2.128545562372696e-05,
+          "reference_rms": 4.809875260994379,
+          "relative_rms": 4.42536541359837e-06,
+          "linf": 5.71408345528228e-05,
+          "reference_peak": 6.662772374227078,
+          "relative_linf": 8.576134879506744e-06,
+          "mean_difference": [
+            -5.8837859255905085e-09,
+            -3.7100327720160125e-23
+          ]
+        },
+        "ocean_streamfunction": {
+          "rms": 0.06192387106067159,
+          "reference_rms": 417.78859776050496,
+          "relative_rms": 0.0001482181931067662,
+          "linf": 0.21100937574016143,
+          "reference_peak": 703.4514215733421,
+          "relative_linf": 0.000299962967262497,
+          "mean_difference": 1.378012462142835e-11
+        },
+        "air_streamfunction": {
+          "rms": 0.129021806251713,
+          "reference_rms": 765325.7631270965,
+          "relative_rms": 1.68584166988622e-07,
+          "linf": 0.347821160685271,
+          "reference_peak": 1091816.2051826075,
+          "relative_linf": 3.185711652146595e-07,
+          "mean_difference": -0.0029418929939718664
+        },
+        "sst": {
+          "rms": 8.502584457534715e-05,
+          "reference_rms": 2.8439780204153764,
+          "relative_rms": 2.9896800877149087e-05,
+          "linf": 0.0002663569906644625,
+          "reference_peak": 4.495352937909445,
+          "relative_linf": 5.925163037105854e-05,
+          "mean_difference": 5.280871864807762e-09
+        },
+        "air_temperature": {
+          "rms": 6.105367480910437e-05,
+          "reference_rms": 2.8157236026033527,
+          "relative_rms": 2.1683120726997337e-05,
+          "linf": 0.00017368973379916497,
+          "reference_peak": 4.345313342393524,
+          "relative_linf": 3.9971739691271986e-05,
+          "mean_difference": -4.5025482675769876e-08
+        },
+        "humidity": {
+          "rms": 1.1691626607858069e-07,
+          "reference_rms": 0.009201155850474587,
+          "relative_rms": 1.2706693374023248e-05,
+          "linf": 3.8890327607246644e-07,
+          "reference_peak": 0.012148064337439353,
+          "relative_linf": 3.2013600296295596e-05,
+          "mean_difference": -2.4434630931221213e-10
+        },
+        "sst_gradient": {
+          "rms": 1.1634469634407015e-08,
+          "reference_rms": 9.137568623815123e-06,
+          "relative_rms": 0.0012732566083371731,
+          "linf": 8.248361124043724e-08,
+          "reference_peak": 1.291598502253266e-05,
+          "relative_linf": 0.006386164980567874,
+          "mean_difference": [
+            1.1261133484435782e-14,
+            2.8879027872291883e-12
+          ]
+        },
+        "air_temperature_gradient": {
+          "rms": 1.0651618908391058e-08,
+          "reference_rms": 9.461165174232966e-06,
+          "relative_rms": 0.0011258252775673166,
+          "linf": 3.0532336524742006e-08,
+          "reference_peak": 1.8271337948058676e-05,
+          "relative_linf": 0.0016710509439176596,
+          "mean_difference": [
+            8.76111836358612e-24,
+            -1.148252548886614e-13
+          ]
+        },
+        "humidity_gradient": {
+          "rms": 2.0365665077571096e-11,
+          "reference_rms": 7.616223949153274e-09,
+          "relative_rms": 0.00267398453794616,
+          "linf": 6.853082530068796e-11,
+          "reference_peak": 1.79727995778162e-08,
+          "relative_linf": 0.003813030073805277,
+          "mean_difference": [
+            -4.907596822987899e-28,
+            -2.542461243902016e-15
+          ]
+        },
+        "stress": {
+          "rms": 1.978776100139843e-07,
+          "reference_rms": 0.04347979477791158,
+          "relative_rms": 4.551024470669978e-06,
+          "linf": 4.0360999381580366e-07,
+          "reference_peak": 0.06924639729553352,
+          "relative_linf": 5.828606390788175e-06,
+          "mean_difference": [
+            2.8542459984207654e-10,
+            4.615500272794977e-24
+          ]
+        },
+        "sensible_heat": {
+          "rms": 0.0006333638524100464,
+          "reference_rms": 10.225890601015182,
+          "relative_rms": 6.193728029392068e-05,
+          "linf": 0.0024378419376240856,
+          "reference_peak": 18.053276831958183,
+          "relative_linf": 0.0001350359804658056,
+          "mean_difference": 9.285784650106869e-07
+        },
+        "evaporation": {
+          "rms": 6.638541146141294e-10,
+          "reference_rms": 1.7721237751949694e-05,
+          "relative_rms": 3.7460933818863304e-05,
+          "linf": 2.592708063325032e-09,
+          "reference_peak": 3.297933927477723e-05,
+          "relative_linf": 7.861613120029814e-05,
+          "mean_difference": -1.2853392897711632e-12
+        },
+        "total_heat": {
+          "rms": 0.002255374116241324,
+          "reference_rms": 54.34661134260303,
+          "relative_rms": 4.149981131341129e-05,
+          "linf": 0.008919612095937168,
+          "reference_peak": 100.4596459336031,
+          "relative_linf": 8.878801047967476e-05,
+          "mean_difference": -2.2847697594092607e-06
+        }
+      },
+      "65_81": {
+        "ocean_velocity": {
+          "rms": 4.039236310035235e-06,
+          "reference_rms": 0.00304836334164629,
+          "relative_rms": 0.0013250508083638799,
+          "linf": 1.2075493769801541e-05,
+          "reference_peak": 0.005597615707840459,
+          "relative_linf": 0.0021572566607042454,
+          "mean_difference": [
+            -1.2723094026876169e-18,
+            1.4096378624483852e-21
+          ]
+        },
+        "air_velocity": {
+          "rms": 5.839484082256908e-06,
+          "reference_rms": 4.809875257789037,
+          "relative_rms": 1.2140614401175036e-06,
+          "linf": 1.6028907946890743e-05,
+          "reference_peak": 6.66277429730766,
+          "relative_linf": 2.405740796798087e-06,
+          "mean_difference": [
+            -1.7325946882623673e-10,
+            3.735106815420522e-22
+          ]
+        },
+        "ocean_streamfunction": {
+          "rms": 0.03481131091738922,
+          "reference_rms": 417.7925682003724,
+          "relative_rms": 8.332199652889419e-05,
+          "linf": 0.12566122715691108,
+          "reference_peak": 703.4572473771901,
+          "relative_linf": 0.00017863377998511427,
+          "mean_difference": -1.7971136583289744e-11
+        },
+        "air_streamfunction": {
+          "rms": 0.02675103052704536,
+          "reference_rms": 765325.7626469671,
+          "relative_rms": 3.4953782863030574e-08,
+          "linf": 0.07258509821258485,
+          "reference_peak": 1091816.2763546123,
+          "relative_linf": 6.648105526960458e-08,
+          "mean_difference": -8.662962742665397e-05
+        },
+        "sst": {
+          "rms": 1.5894849796437745e-05,
+          "reference_rms": 2.8439780203432776,
+          "relative_rms": 5.588949591994098e-06,
+          "linf": 6.0299808410491096e-05,
+          "reference_peak": 4.495352928480713,
+          "relative_linf": 1.3413809631821393e-05,
+          "mean_difference": 9.47353324933158e-10
+        },
+        "air_temperature": {
+          "rms": 2.225671350559176e-05,
+          "reference_rms": 2.8157236004294317,
+          "relative_rms": 7.904438312836297e-06,
+          "linf": 6.443276106438134e-05,
+          "reference_peak": 4.345320466832391,
+          "relative_linf": 1.4828080358213696e-05,
+          "mean_difference": -1.359650258173785e-08
+        },
+        "humidity": {
+          "rms": 4.2371668202821196e-08,
+          "reference_rms": 0.009201155892148366,
+          "relative_rms": 4.605037530010579e-06,
+          "linf": 1.4289757995292196e-07,
+          "reference_peak": 0.01214807704947022,
+          "relative_linf": 1.1762979389330903e-05,
+          "mean_difference": -4.382510297921745e-11
+        },
+        "sst_gradient": {
+          "rms": 3.524998225292749e-09,
+          "reference_rms": 9.137569346067312e-06,
+          "relative_rms": 0.00038576979192063383,
+          "linf": 1.2436441203954505e-08,
+          "reference_peak": 1.2916732599665537e-05,
+          "relative_linf": 0.0009628163398130988,
+          "mean_difference": [
+            4.296895902953744e-15,
+            -7.573099787596521e-14
+          ]
+        },
+        "air_temperature_gradient": {
+          "rms": 5.037272159537424e-09,
+          "reference_rms": 9.461166434367525e-06,
+          "relative_rms": 0.0005324155530379022,
+          "linf": 1.4703998977703396e-08,
+          "reference_peak": 1.826211944380889e-05,
+          "relative_linf": 0.0008051638816045667,
+          "mean_difference": [
+            -4.0703337272377644e-23,
+            -7.71073902888423e-15
+          ]
+        },
+        "humidity_gradient": {
+          "rms": 9.57808433276726e-12,
+          "reference_rms": 7.616229168540363e-09,
+          "relative_rms": 0.0012575887779651572,
+          "linf": 3.239157983052377e-11,
+          "reference_peak": 1.794989068721966e-08,
+          "relative_linf": 0.0018045558268266562,
+          "mean_difference": [
+            4.083198042885437e-28,
+            -4.2587029373179314e-16
+          ]
+        },
+        "stress": {
+          "rms": 7.280859970821198e-08,
+          "reference_rms": 0.04347979406979202,
+          "relative_rms": 1.674538743015722e-06,
+          "linf": 2.8622577834625365e-07,
+          "reference_peak": 0.06924635606026837,
+          "relative_linf": 4.133441738033664e-06,
+          "mean_difference": [
+            -1.0891548466783889e-10,
+            -1.3252968231224723e-23
+          ]
+        },
+        "sensible_heat": {
+          "rms": 0.00014206384084851636,
+          "reference_rms": 10.22589051035869,
+          "relative_rms": 1.3892564242166253e-05,
+          "linf": 0.0003594729074976044,
+          "reference_peak": 18.053212036796612,
+          "relative_linf": 1.9911853179640038e-05,
+          "mean_difference": -1.6229816944378152e-07
+        },
+        "evaporation": {
+          "rms": 2.019244356388592e-10,
+          "reference_rms": 1.7721237567883495e-05,
+          "relative_rms": 1.1394488385213589e-05,
+          "linf": 5.291889925089879e-10,
+          "reference_peak": 3.297922373277242e-05,
+          "relative_linf": 1.60461324619693e-05,
+          "mean_difference": -5.059655769088677e-13
+        },
+        "total_heat": {
+          "rms": 0.0006452746299151852,
+          "reference_rms": 54.346610793321034,
+          "relative_rms": 1.1873318694502411e-05,
+          "linf": 0.0016731269192717946,
+          "reference_peak": 100.45928298221982,
+          "relative_linf": 1.665477663789338e-05,
+          "mean_difference": -1.4272121117279423e-06
+        }
+      }
+    }
+  },
+  "temporal": {
+    "6": {
+      "33": {
+        "600_300": {
+          "ocean_velocity": {
+            "rms": 3.681894698580903e-14,
+            "reference_rms": 0.0008955734593285067,
+            "relative_rms": 4.111214619224598e-11,
+            "linf": 1.6937105215984422e-13,
+            "reference_peak": 0.0017476027115956969,
+            "relative_linf": 9.691622188271573e-11,
+            "mean_difference": [
+              5.546522152716463e-23,
+              -5.2012655312894e-23
+            ]
+          },
+          "air_velocity": {
+            "rms": 8.22817774468888e-12,
+            "reference_rms": 5.023651173279491,
+            "relative_rms": 1.6378879545725785e-12,
+            "linf": 1.447286734901566e-11,
+            "reference_peak": 6.981965738418174,
+            "relative_linf": 2.072892920310236e-12,
+            "mean_difference": [
+              1.249813171499741e-16,
+              -1.6890559455232018e-23
+            ]
+          },
+          "ocean_streamfunction": {
+            "rms": 1.4407892829795344e-09,
+            "reference_rms": 122.27741768329268,
+            "relative_rms": 1.1782954778381748e-11,
+            "linf": 3.400273840270529e-09,
+            "reference_peak": 203.47378526571816,
+            "relative_linf": 1.6711115074750697e-11,
+            "mean_difference": -1.5051524568539375e-15
+          },
+          "air_streamfunction": {
+            "rms": 1.2530803031954812e-06,
+            "reference_rms": 799400.06360618,
+            "relative_rms": 1.5675258987880242e-12,
+            "linf": 1.5737023204565048e-06,
+            "reference_peak": 1138763.9449561404,
+            "relative_linf": 1.3819390115280794e-12,
+            "mean_difference": 8.704633128266207e-11
+          },
+          "sst": {
+            "rms": 5.918325607333559e-14,
+            "reference_rms": 2.8486501568975573,
+            "relative_rms": 2.0775894832165565e-14,
+            "linf": 6.821210263296962e-13,
+            "reference_peak": 4.500006250694582,
+            "relative_linf": 1.5158223974120255e-13,
+            "mean_difference": 7.13824329884763e-15
+          },
+          "air_temperature": {
+            "rms": 1.261240870434327e-12,
+            "reference_rms": 2.840063129436514,
+            "relative_rms": 4.4408902652969017e-13,
+            "linf": 3.922195901395753e-12,
+            "reference_peak": 4.558457605612716,
+            "relative_linf": 8.604217129422132e-13,
+            "mean_difference": -3.062171149624108e-13
+          },
+          "humidity": {
+            "rms": 9.535044264712923e-16,
+            "reference_rms": 0.008493785638522608,
+            "relative_rms": 1.1225906410291075e-13,
+            "linf": 3.1068897454744615e-15,
+            "reference_peak": 0.011203199150252448,
+            "relative_linf": 2.773216564131552e-13,
+            "mean_difference": -4.789027804223066e-16
+          },
+          "sst_gradient": {
+            "rms": 1.0607996709942833e-17,
+            "reference_rms": 9.153319858925294e-06,
+            "relative_rms": 1.158923415049142e-12,
+            "linf": 1.4837403827660834e-16,
+            "reference_peak": 1.2941896268166192e-05,
+            "relative_linf": 1.1464628923164153e-11,
+            "mean_difference": [
+              -2.1038031741507617e-22,
+              4.338285696537207e-20
+            ]
+          },
+          "air_temperature_gradient": {
+            "rms": 1.7535333515992433e-17,
+            "reference_rms": 9.277190454585965e-06,
+            "relative_rms": 1.890155602801519e-12,
+            "linf": 3.4506233356371214e-17,
+            "reference_peak": 1.4961267372625186e-05,
+            "relative_linf": 2.3063710110219468e-12,
+            "mean_difference": [
+              -2.126174525961482e-23,
+              2.874809921173681e-21
+            ]
+          },
+          "humidity_gradient": {
+            "rms": 2.132059824952069e-20,
+            "reference_rms": 5.588977386367327e-09,
+            "relative_rms": 3.814758367340337e-12,
+            "linf": 6.656738130072895e-20,
+            "reference_peak": 1.1353669476130417e-08,
+            "relative_linf": 5.863071973398383e-12,
+            "mean_difference": [
+              -5.9346058742675306e-27,
+              5.33871839689063e-22
+            ]
+          },
+          "stress": {
+            "rms": 1.681204872913035e-13,
+            "reference_rms": 0.04758631201680537,
+            "relative_rms": 3.5329589574399215e-12,
+            "linf": 3.1662172886153275e-13,
+            "reference_peak": 0.0760463306347675,
+            "relative_linf": 4.163537230773065e-12,
+            "mean_difference": [
+              -1.7530242916644253e-17,
+              9.133986036253197e-25
+            ]
+          },
+          "sensible_heat": {
+            "rms": 2.7714462546517947e-11,
+            "reference_rms": 12.742851852073844,
+            "relative_rms": 2.174902672356466e-12,
+            "linf": 8.078870905592339e-11,
+            "reference_peak": 21.038836536936902,
+            "relative_linf": 3.839979882636877e-12,
+            "mean_difference": 1.835854075103532e-11
+          },
+          "evaporation": {
+            "rms": 4.5782056084097394e-17,
+            "reference_rms": 2.4413417815691843e-05,
+            "relative_rms": 1.8752825364202287e-12,
+            "linf": 1.1797474889357895e-16,
+            "reference_peak": 4.441720477250516e-05,
+            "relative_linf": 2.656059729508393e-12,
+            "mean_difference": 3.383906587087708e-17
+          },
+          "total_heat": {
+            "rms": 1.4024260707371222e-10,
+            "reference_rms": 73.58454342742516,
+            "relative_rms": 1.9058704524276956e-12,
+            "linf": 3.757207878152258e-10,
+            "reference_peak": 131.92051475780485,
+            "relative_linf": 2.8480846099260457e-12,
+            "mean_difference": 1.0295620467489563e-10
+          }
+        },
+        "300_150": {
+          "ocean_velocity": {
+            "rms": 2.2864784103744635e-15,
+            "reference_rms": 0.0008955734593290659,
+            "relative_rms": 2.5530886233357316e-12,
+            "linf": 1.0517196327012437e-14,
+            "reference_peak": 0.0017476027115998457,
+            "relative_linf": 6.018070501495419e-12,
+            "mean_difference": [
+              4.099049665789138e-23,
+              1.0153327182001403e-22
+            ]
+          },
+          "air_velocity": {
+            "rms": 5.119099655083877e-13,
+            "reference_rms": 5.023651173279007,
+            "relative_rms": 1.0189998227409904e-13,
+            "linf": 9.032774578281003e-13,
+            "reference_peak": 6.981965738417277,
+            "relative_linf": 1.2937294333284164e-13,
+            "mean_difference": [
+              5.2284378785684035e-18,
+              1.527678377459486e-23
+            ]
+          },
+          "ocean_streamfunction": {
+            "rms": 8.95312270306707e-11,
+            "reference_rms": 122.27741768336344,
+            "relative_rms": 7.321975613069554e-13,
+            "linf": 2.1123014448676258e-10,
+            "reference_peak": 203.47378526582756,
+            "relative_linf": 1.0381196978804998e-12,
+            "mean_difference": 7.446432142047553e-16
+          },
+          "air_streamfunction": {
+            "rms": 7.794132350186859e-08,
+            "reference_rms": 799400.0636061025,
+            "relative_rms": 9.749977145395062e-14,
+            "linf": 9.895302355289459e-08,
+            "reference_peak": 1138763.9449560435,
+            "relative_linf": 8.689511464706077e-14,
+            "mean_difference": 4.960594634307704e-12
+          },
+          "sst": {
+            "rms": 1.2354292790310807e-14,
+            "reference_rms": 2.8486501568975555,
+            "relative_rms": 4.336893654840993e-15,
+            "linf": 5.684341886080802e-14,
+            "reference_peak": 4.500006250694582,
+            "relative_linf": 1.263185331176688e-14,
+            "mean_difference": 4.582814714438317e-16
+          },
+          "air_temperature": {
+            "rms": 8.196057751682629e-14,
+            "reference_rms": 2.840063129436511,
+            "relative_rms": 2.8858716789541175e-14,
+            "linf": 2.8421709430404007e-13,
+            "reference_peak": 4.558457605612546,
+            "relative_linf": 6.23493994885685e-14,
+            "mean_difference": -1.7986471592916517e-14
+          },
+          "humidity": {
+            "rms": 5.181301896097703e-17,
+            "reference_rms": 0.008493785638522613,
+            "relative_rms": 6.100109087517454e-15,
+            "linf": 1.7694179454963432e-16,
+            "reference_peak": 0.011203199150252348,
+            "relative_linf": 1.5793863179308813e-14,
+            "mean_difference": -3.604332945830338e-18
+          },
+          "sst_gradient": {
+            "rms": 6.550652504408237e-19,
+            "reference_rms": 9.15331985892529e-06,
+            "relative_rms": 7.156586468483101e-14,
+            "linf": 9.154952152129946e-18,
+            "reference_peak": 1.294189626816618e-05,
+            "relative_linf": 7.07388775372032e-13,
+            "mean_difference": [
+              -2.3699785616992098e-23,
+              -1.8844791846680564e-21
+            ]
+          },
+          "air_temperature_gradient": {
+            "rms": 1.0931358676281788e-18,
+            "reference_rms": 9.277190454585914e-06,
+            "relative_rms": 1.1783048682457718e-13,
+            "linf": 2.169148679770696e-18,
+            "reference_peak": 1.4961267372625653e-05,
+            "relative_linf": 1.4498428680845222e-13,
+            "mean_difference": [
+              -1.9221746384958195e-23,
+              6.443085605787818e-21
+            ]
+          },
+          "humidity_gradient": {
+            "rms": 1.326432900979418e-21,
+            "reference_rms": 5.5889773863675e-09,
+            "relative_rms": 2.373301606506445e-13,
+            "linf": 4.1396295709776674e-21,
+            "reference_peak": 1.1353669476131681e-08,
+            "relative_linf": 3.646071941481323e-13,
+            "mean_difference": [
+              -8.124658121013003e-27,
+              3.320158693201668e-23
+            ]
+          },
+          "stress": {
+            "rms": 1.0460279088029082e-14,
+            "reference_rms": 0.04758631201679517,
+            "relative_rms": 2.1981697350988702e-13,
+            "linf": 1.977584765543922e-14,
+            "reference_peak": 0.07604633063474797,
+            "relative_linf": 2.6004999176650625e-13,
+            "mean_difference": [
+              -1.1019721272069286e-18,
+              -2.0612958954584123e-24
+            ]
+          },
+          "sensible_heat": {
+            "rms": 1.731528050110005e-12,
+            "reference_rms": 12.742851852072375,
+            "relative_rms": 1.3588230250266984e-13,
+            "linf": 5.986322548778844e-12,
+            "reference_peak": 21.03883653693304,
+            "relative_linf": 2.845367679087214e-13,
+            "mean_difference": 1.1351290293554144e-12
+          },
+          "evaporation": {
+            "rms": 2.6822301329836953e-18,
+            "reference_rms": 2.441341781568938e-05,
+            "relative_rms": 1.098670474258606e-13,
+            "linf": 7.670730370334944e-18,
+            "reference_peak": 4.4417204772498944e-05,
+            "relative_linf": 1.7269727821963938e-13,
+            "mean_difference": 1.9358445374398628e-18
+          },
+          "total_heat": {
+            "rms": 8.31425594999709e-12,
+            "reference_rms": 73.58454342741759,
+            "relative_rms": 1.1298916270640608e-13,
+            "linf": 2.4982682589325123e-11,
+            "reference_peak": 131.92051475778499,
+            "relative_linf": 1.8937678218732713e-13,
+            "mean_difference": 5.974746627601398e-12
+          }
+        }
+      },
+      "81": {
+        "600_300": {
+          "ocean_velocity": {
+            "rms": 2.070202535408069e-12,
+            "reference_rms": 0.0008954356725145074,
+            "relative_rms": 2.3119500361144355e-09,
+            "linf": 1.425194142389034e-11,
+            "reference_peak": 0.0016337509232178273,
+            "relative_linf": 8.723448122569253e-09,
+            "mean_difference": [
+              2.6802559463231044e-22,
+              -1.3014103094975753e-22
+            ]
+          },
+          "air_velocity": {
+            "rms": 8.131028023865346e-12,
+            "reference_rms": 5.023651778538665,
+            "relative_rms": 1.6185492908966292e-12,
+            "linf": 1.4353851496889636e-11,
+            "reference_peak": 6.982055978875729,
+            "relative_linf": 2.0558201682022226e-12,
+            "mean_difference": [
+              1.3593672266616005e-14,
+              -3.124273333423146e-23
+            ]
+          },
+          "ocean_streamfunction": {
+            "rms": 4.259711782974421e-08,
+            "reference_rms": 122.67911300213022,
+            "relative_rms": 3.472238817785106e-10,
+            "linf": 1.1484463335875716e-07,
+            "reference_peak": 203.03928920974977,
+            "relative_linf": 5.656276369255652e-10,
+            "mean_difference": -1.4833346046275554e-15
+          },
+          "air_streamfunction": {
+            "rms": 1.242668860059709e-06,
+            "reference_rms": 799400.1263902009,
+            "relative_rms": 1.5545017057617288e-12,
+            "linf": 1.5706755220890045e-06,
+            "reference_peak": 1138767.3022814314,
+            "relative_linf": 1.3792769769050083e-12,
+            "mean_difference": 6.976535732088056e-09
+          },
+          "sst": {
+            "rms": 1.4019374244483344e-13,
+            "reference_rms": 2.8486501567431266,
+            "relative_rms": 4.9214096056329194e-14,
+            "linf": 2.2168933355715126e-12,
+            "reference_peak": 4.500075821762209,
+            "relative_linf": 4.926346629207211e-13,
+            "mean_difference": 6.598189951505887e-15
+          },
+          "air_temperature": {
+            "rms": 1.2554652426507319e-12,
+            "reference_rms": 2.8400631163815264,
+            "relative_rms": 4.4205540201173335e-13,
+            "linf": 3.922195901395753e-12,
+            "reference_peak": 4.558622964449228,
+            "relative_linf": 8.603905021282303e-13,
+            "mean_difference": -2.9552895514098956e-13
+          },
+          "humidity": {
+            "rms": 9.31512033883018e-16,
+            "reference_rms": 0.008493786202659065,
+            "relative_rms": 1.0966982352244737e-13,
+            "linf": 2.876171523169546e-15,
+            "reference_peak": 0.011203506943053396,
+            "relative_linf": 2.5672064450791303e-13,
+            "mean_difference": -4.540456032410204e-16
+          },
+          "sst_gradient": {
+            "rms": 2.90053139002421e-17,
+            "reference_rms": 9.153323181988812e-06,
+            "relative_rms": 3.1688287765602408e-12,
+            "linf": 6.018352016190668e-16,
+            "reference_peak": 1.2942230614671964e-05,
+            "relative_linf": 4.6501659531301826e-11,
+            "mean_difference": [
+              6.883809933020809e-21,
+              -3.429076793601285e-20
+            ]
+          },
+          "air_temperature_gradient": {
+            "rms": 1.8082859227905423e-17,
+            "reference_rms": 9.277251153713111e-06,
+            "relative_rms": 1.9491613332757483e-12,
+            "linf": 3.967019392733077e-17,
+            "reference_peak": 1.4936945082969815e-05,
+            "relative_linf": 2.6558438627829114e-12,
+            "mean_difference": [
+              -5.882348655054991e-23,
+              1.029589496720722e-20
+            ]
+          },
+          "humidity_gradient": {
+            "rms": 2.3066860815251706e-20,
+            "reference_rms": 5.589377229855051e-09,
+            "relative_rms": 4.126910721295134e-12,
+            "linf": 8.717172506161401e-20,
+            "reference_peak": 1.1223568026093048e-08,
+            "relative_linf": 7.766846056347974e-12,
+            "mean_difference": [
+              1.7310029206630367e-26,
+              4.0397953086462285e-22
+            ]
+          },
+          "stress": {
+            "rms": 1.7497956391670682e-13,
+            "reference_rms": 0.04758625916286215,
+            "relative_rms": 3.677102739213981e-12,
+            "linf": 6.073613834938304e-13,
+            "reference_peak": 0.07604815864376514,
+            "relative_linf": 7.986536351773e-12,
+            "mean_difference": [
+              -3.63996427208194e-16,
+              -4.224228839709651e-25
+            ]
+          },
+          "sensible_heat": {
+            "rms": 2.8115244406284773e-11,
+            "reference_rms": 12.742847048534815,
+            "relative_rms": 2.2063550083587868e-12,
+            "linf": 1.1091572105215164e-10,
+            "reference_peak": 21.03643050583461,
+            "relative_linf": 5.272554249229133e-12,
+            "mean_difference": 1.8464403203999504e-11
+          },
+          "evaporation": {
+            "rms": 4.6705339532780186e-17,
+            "reference_rms": 2.44134088614298e-05,
+            "relative_rms": 1.9131019268091194e-12,
+            "linf": 1.8622527565154146e-16,
+            "reference_peak": 4.441369279884576e-05,
+            "relative_linf": 4.192969868436185e-12,
+            "mean_difference": 3.400812727154652e-17
+          },
+          "total_heat": {
+            "rms": 1.4296325030945857e-10,
+            "reference_rms": 73.58451639436421,
+            "relative_rms": 1.9428441921568166e-12,
+            "linf": 5.757243570769788e-10,
+            "reference_peak": 131.90935403829025,
+            "relative_linf": 4.364545344599741e-12,
+            "mean_difference": 1.0348473068544383e-10
+          }
+        },
+        "300_150": {
+          "ocean_velocity": {
+            "rms": 1.25342097080509e-13,
+            "reference_rms": 0.0008954356725219664,
+            "relative_rms": 1.3997889622543955e-10,
+            "linf": 8.623797205858331e-13,
+            "reference_peak": 0.0016337509232393962,
+            "relative_linf": 5.278526293811724e-10,
+            "mean_difference": [
+              -5.988091396825085e-22,
+              -5.062700316834592e-23
+            ]
+          },
+          "air_velocity": {
+            "rms": 5.120289679756801e-13,
+            "reference_rms": 5.02365177853818,
+            "relative_rms": 1.0192365843571151e-13,
+            "linf": 9.103828818923577e-13,
+            "reference_peak": 6.982055978874868,
+            "relative_linf": 1.30388940542276e-13,
+            "mean_difference": [
+              8.842723198755988e-16,
+              -5.85718575033612e-24
+            ]
+          },
+          "ocean_streamfunction": {
+            "rms": 2.5846723079457537e-09,
+            "reference_rms": 122.6791130040638,
+            "relative_rms": 2.1068560447287677e-11,
+            "linf": 6.960870990724288e-09,
+            "reference_peak": 203.0392892118758,
+            "relative_linf": 3.428336957710915e-11,
+            "mean_difference": 6.505913930442063e-16
+          },
+          "air_streamfunction": {
+            "rms": 7.832861415970518e-08,
+            "reference_rms": 799400.126390123,
+            "relative_rms": 9.798424039963095e-14,
+            "linf": 1.0058283805847168e-07,
+            "reference_peak": 1138767.3022813334,
+            "relative_linf": 8.832606789549584e-14,
+            "mean_difference": 4.274764261382444e-10
+          },
+          "sst": {
+            "rms": 2.0631930083173732e-14,
+            "reference_rms": 2.8486501567431324,
+            "relative_rms": 7.242704069622315e-15,
+            "linf": 1.7053025658242404e-13,
+            "reference_peak": 4.500075821762209,
+            "relative_linf": 3.789497407082469e-14,
+            "mean_difference": 4.717751152375109e-16
+          },
+          "air_temperature": {
+            "rms": 8.174006360975089e-14,
+            "reference_rms": 2.8400631163815184,
+            "relative_rms": 2.878107290583551e-14,
+            "linf": 2.8421709430404007e-13,
+            "reference_peak": 4.558622964449114,
+            "relative_linf": 6.234713783538056e-14,
+            "mean_difference": -2.0102141079959948e-14
+          },
+          "humidity": {
+            "rms": 6.208712935149264e-17,
+            "reference_rms": 0.008493786202659103,
+            "relative_rms": 7.309711814038287e-15,
+            "linf": 1.97758476261356e-16,
+            "reference_peak": 0.01120350694305332,
+            "relative_linf": 1.7651479779193173e-14,
+            "mean_difference": -3.647715469732033e-17
+          },
+          "sst_gradient": {
+            "rms": 1.7617445170628147e-18,
+            "reference_rms": 9.153323181988829e-06,
+            "relative_rms": 1.9247048116135936e-13,
+            "linf": 3.6787991859316324e-17,
+            "reference_peak": 1.2942230614671801e-05,
+            "relative_linf": 2.8424769233838305e-12,
+            "mean_difference": [
+              4.229852174069609e-22,
+              1.5049011753947042e-20
+            ]
+          },
+          "air_temperature_gradient": {
+            "rms": 1.1233986774741267e-18,
+            "reference_rms": 9.277251153713045e-06,
+            "relative_rms": 1.2109176078783935e-13,
+            "linf": 2.4666952327187844e-18,
+            "reference_peak": 1.4936945082969966e-05,
+            "relative_linf": 1.651405437334796e-13,
+            "mean_difference": [
+              8.549369552055361e-23,
+              -6.816218755745303e-21
+            ]
+          },
+          "humidity_gradient": {
+            "rms": 1.4277140894670057e-21,
+            "reference_rms": 5.589377229855208e-09,
+            "relative_rms": 2.5543348225648215e-13,
+            "linf": 5.400274446956581e-21,
+            "reference_peak": 1.1223568026092504e-08,
+            "relative_linf": 4.811548728890889e-13,
+            "mean_difference": [
+              3.006990858024937e-27,
+              2.177970888932141e-23
+            ]
+          },
+          "stress": {
+            "rms": 1.098432281541387e-14,
+            "reference_rms": 0.04758625916285165,
+            "relative_rms": 2.3082971867620167e-13,
+            "linf": 3.75949272054177e-14,
+            "reference_peak": 0.07604815864374567,
+            "relative_linf": 4.943568375078542e-13,
+            "mean_difference": [
+              -2.0982194917646675e-17,
+              2.7702920108954864e-24
+            ]
+          },
+          "sensible_heat": {
+            "rms": 1.7847685419266129e-12,
+            "reference_rms": 12.742847048533301,
+            "relative_rms": 1.400604225357974e-13,
+            "linf": 7.538858426414663e-12,
+            "reference_peak": 21.036430505830793,
+            "relative_linf": 3.5837156043774024e-13,
+            "mean_difference": 1.1742247586414494e-12
+          },
+          "evaporation": {
+            "rms": 2.9723804647457595e-18,
+            "reference_rms": 2.4413408861427074e-05,
+            "relative_rms": 1.2175196350568187e-13,
+            "linf": 1.1844908734404136e-17,
+            "reference_peak": 4.4413692798839506e-05,
+            "relative_linf": 2.666949759852807e-13,
+            "mean_difference": 2.190302201543299e-18
+          },
+          "total_heat": {
+            "rms": 9.083949232736654e-12,
+            "reference_rms": 73.58451639435594,
+            "relative_rms": 1.234491939045129e-13,
+            "linf": 3.673505943879718e-11,
+            "reference_peak": 131.90935403827265,
+            "relative_linf": 2.7848714525687647e-13,
+            "mean_difference": 6.649984900423763e-12
+          }
+        }
+      }
+    },
+    "12": {
+      "33": {
+        "600_300": {
+          "ocean_velocity": {
+            "rms": 3.702147468767089e-14,
+            "reference_rms": 0.0016492010316301968,
+            "relative_rms": 2.2448127291720176e-11,
+            "linf": 1.6867375920800597e-13,
+            "reference_peak": 0.0031051266990447875,
+            "relative_linf": 5.4321055324375046e-11,
+            "mean_difference": [
+              -8.97305824905587e-22,
+              4.464490515510594e-22
+            ]
+          },
+          "air_velocity": {
+            "rms": 4.0256622902049284e-12,
+            "reference_rms": 4.862540596135961,
+            "relative_rms": 8.278927878574296e-13,
+            "linf": 6.767919559635501e-12,
+            "reference_peak": 6.737426312505893,
+            "relative_linf": 1.004525948888377e-12,
+            "mean_difference": [
+              6.881445095302967e-16,
+              -2.7815303111047304e-23
+            ]
+          },
+          "ocean_streamfunction": {
+            "rms": 1.3754665020003185e-09,
+            "reference_rms": 225.69478276106113,
+            "relative_rms": 6.09436551954548e-12,
+            "linf": 3.389644120943558e-09,
+            "reference_peak": 377.64336176830665,
+            "relative_linf": 8.975781025440576e-12,
+            "mean_difference": -1.0836226144908869e-15
+          },
+          "air_streamfunction": {
+            "rms": 6.24101857412498e-07,
+            "reference_rms": 773710.7035808982,
+            "relative_rms": 8.066346433156753e-13,
+            "linf": 8.01868736743927e-07,
+            "reference_peak": 1103610.3969584624,
+            "relative_linf": 7.26586790912688e-13,
+            "mean_difference": 1.5900444002150158e-10
+          },
+          "sst": {
+            "rms": 4.6188777392627346e-14,
+            "reference_rms": 2.8470249803161454,
+            "relative_rms": 1.6223523752678262e-14,
+            "linf": 4.547473508864641e-13,
+            "reference_peak": 4.4989846149756545,
+            "relative_linf": 1.0107777416547687e-13,
+            "mean_difference": 3.1431141952723522e-15
+          },
+          "air_temperature": {
+            "rms": 1.3334051931852737e-12,
+            "reference_rms": 2.830536827613023,
+            "relative_rms": 4.710785530777663e-13,
+            "linf": 3.808509063674137e-12,
+            "reference_peak": 4.5122005641439955,
+            "relative_linf": 8.44046936640691e-13,
+            "mean_difference": -1.712173463932411e-13
+          },
+          "humidity": {
+            "rms": 8.308131169485871e-16,
+            "reference_rms": 0.008796259234293531,
+            "relative_rms": 9.445073125056819e-14,
+            "linf": 2.671474153004283e-15,
+            "reference_peak": 0.011673231742067634,
+            "relative_linf": 2.2885471753095643e-13,
+            "mean_difference": -2.3795159734106875e-16
+          },
+          "sst_gradient": {
+            "rms": 7.608978128564184e-18,
+            "reference_rms": 9.14789759680106e-06,
+            "relative_rms": 8.317734264127505e-13,
+            "linf": 9.68817950390935e-17,
+            "reference_peak": 1.2932087585922717e-05,
+            "relative_linf": 7.491582035413572e-12,
+            "mean_difference": [
+              -1.3938475336303122e-23,
+              2.6030537383244832e-20
+            ]
+          },
+          "air_temperature_gradient": {
+            "rms": 1.4887000217664687e-17,
+            "reference_rms": 9.420393680531354e-06,
+            "relative_rms": 1.5802949136224412e-12,
+            "linf": 2.927807159634718e-17,
+            "reference_peak": 1.705140173036573e-05,
+            "relative_linf": 1.7170477864120561e-12,
+            "mean_difference": [
+              1.5904000227926073e-23,
+              2.740815600823347e-21
+            ]
+          },
+          "humidity_gradient": {
+            "rms": 9.76200760585777e-21,
+            "reference_rms": 6.546091340540238e-09,
+            "relative_rms": 1.4912727455239156e-12,
+            "linf": 2.069505946229078e-20,
+            "reference_peak": 1.493371563177262e-08,
+            "relative_linf": 1.3857943978965597e-12,
+            "mean_difference": [
+              -7.66072369456665e-27,
+              2.4848007608371527e-22
+            ]
+          },
+          "stress": {
+            "rms": 7.868598291849281e-14,
+            "reference_rms": 0.044469517163986456,
+            "relative_rms": 1.769436412550404e-12,
+            "linf": 1.4434287123505464e-13,
+            "reference_peak": 0.07081246037828547,
+            "relative_linf": 2.0383823759824783e-12,
+            "mean_difference": [
+              -4.487723060042594e-18,
+              -7.229547745498738e-24
+            ]
+          },
+          "sensible_heat": {
+            "rms": 1.794676590716663e-11,
+            "reference_rms": 11.402901675080335,
+            "relative_rms": 1.573877107647707e-12,
+            "linf": 5.771738642579294e-11,
+            "reference_peak": 20.154314172595612,
+            "relative_linf": 2.863773281071151e-12,
+            "mean_difference": 8.808046326145927e-12
+          },
+          "evaporation": {
+            "rms": 2.1357034316104617e-17,
+            "reference_rms": 2.1111655378402225e-05,
+            "relative_rms": 1.011622913187254e-12,
+            "linf": 6.516732682995685e-17,
+            "reference_peak": 3.930389036978884e-05,
+            "relative_linf": 1.6580375687198662e-12,
+            "mean_difference": 1.561266719575464e-17
+          },
+          "total_heat": {
+            "rms": 6.89406512031881e-11,
+            "reference_rms": 63.97482440759061,
+            "relative_rms": 1.0776215775749481e-12,
+            "linf": 2.2023982637620065e-10,
+            "reference_peak": 118.35321171165236,
+            "relative_linf": 1.8608690308529848e-12,
+            "mean_difference": 4.7839719448970765e-11
+          }
+        },
+        "300_150": {
+          "ocean_velocity": {
+            "rms": 2.2998194006326835e-15,
+            "reference_rms": 0.0016492010316306483,
+            "relative_rms": 1.3945051916192025e-12,
+            "linf": 1.0478602879288353e-14,
+            "reference_peak": 0.0031051266990473544,
+            "relative_linf": 3.3746136292935048e-12,
+            "mean_difference": [
+              6.466934252351186e-22,
+              -8.347470854018665e-24
+            ]
+          },
+          "air_velocity": {
+            "rms": 2.487775275561847e-13,
+            "reference_rms": 4.862540596135721,
+            "relative_rms": 5.116204639070553e-14,
+            "linf": 4.218847500979674e-13,
+            "reference_peak": 6.737426312505478,
+            "relative_linf": 6.261808746091936e-14,
+            "mean_difference": [
+              8.756186706531938e-18,
+              7.889421173642406e-23
+            ]
+          },
+          "ocean_streamfunction": {
+            "rms": 8.566226951879796e-11,
+            "reference_rms": 225.69478276112537,
+            "relative_rms": 3.795491790763397e-13,
+            "linf": 2.106617102981545e-10,
+            "reference_peak": 377.64336176840504,
+            "relative_linf": 5.578324197509545e-13,
+            "mean_difference": -4.765891815849102e-16
+          },
+          "air_streamfunction": {
+            "rms": 3.854433879707757e-08,
+            "reference_rms": 773710.7035808598,
+            "relative_rms": 4.9817507524050085e-14,
+            "linf": 5.029141902923584e-08,
+            "reference_peak": 1103610.396958413,
+            "relative_linf": 4.556990326281871e-14,
+            "mean_difference": 1.2804303044714343e-11
+          },
+          "sst": {
+            "rms": 1.499848007202991e-14,
+            "reference_rms": 2.847024980316141,
+            "relative_rms": 5.268123804928624e-15,
+            "linf": 5.684341886080802e-14,
+            "reference_peak": 4.4989846149756545,
+            "relative_linf": 1.2634721770684609e-14,
+            "mean_difference": 2.2993710383727106e-16
+          },
+          "air_temperature": {
+            "rms": 8.620559567292854e-14,
+            "reference_rms": 2.8305368276130207,
+            "relative_rms": 3.0455564058364626e-14,
+            "linf": 2.8421709430404007e-13,
+            "reference_peak": 4.512200564143882,
+            "relative_linf": 6.298857736124718e-14,
+            "mean_difference": -1.269378256977998e-14
+          },
+          "humidity": {
+            "rms": 5.019583445781741e-17,
+            "reference_rms": 0.00879625923429353,
+            "relative_rms": 5.706497855602238e-15,
+            "linf": 1.6479873021779667e-16,
+            "reference_peak": 0.011673231742067481,
+            "relative_linf": 1.4117661146390354e-14,
+            "mean_difference": 1.738227869796217e-18
+          },
+          "sst_gradient": {
+            "rms": 4.701289416031295e-19,
+            "reference_rms": 9.147897596801047e-06,
+            "relative_rms": 5.139202058487516e-14,
+            "linf": 5.978835853476898e-18,
+            "reference_peak": 1.2932087585922692e-05,
+            "relative_linf": 4.623256542110957e-13,
+            "mean_difference": [
+              -5.240113227699425e-24,
+              -8.655779770176177e-21
+            ]
+          },
+          "air_temperature_gradient": {
+            "rms": 9.291726223066148e-19,
+            "reference_rms": 9.420393680531262e-06,
+            "relative_rms": 9.863416050508563e-14,
+            "linf": 1.8402843448165816e-18,
+            "reference_peak": 1.705140173036561e-05,
+            "relative_linf": 1.0792569279154053e-13,
+            "mean_difference": [
+              -5.283698406827367e-24,
+              1.5801681912605831e-21
+            ]
+          },
+          "humidity_gradient": {
+            "rms": 6.154854332738941e-22,
+            "reference_rms": 6.546091340540304e-09,
+            "relative_rms": 9.402334939357765e-14,
+            "linf": 1.2993174965216707e-21,
+            "reference_peak": 1.4933715631773114e-08,
+            "relative_linf": 8.700564069649422e-14,
+            "mean_difference": [
+              -8.429938048761662e-28,
+              1.0246778311418507e-23
+            ]
+          },
+          "stress": {
+            "rms": 4.864654942749414e-15,
+            "reference_rms": 0.04446951716398166,
+            "relative_rms": 1.0939302364833341e-13,
+            "linf": 9.020562093882433e-15,
+            "reference_peak": 0.07081246037827672,
+            "relative_linf": 1.2738664983104708e-13,
+            "mean_difference": [
+              -8.712385977678905e-19,
+              4.022200723601786e-24
+            ]
+          },
+          "sensible_heat": {
+            "rms": 1.1413550238514697e-12,
+            "reference_rms": 11.40290167507951,
+            "relative_rms": 1.0009338468171184e-13,
+            "linf": 4.575895218295045e-12,
+            "reference_peak": 20.15431417259215,
+            "relative_linf": 2.2704296356150903e-13,
+            "mean_difference": 5.57347035484839e-13
+          },
+          "evaporation": {
+            "rms": 1.2335979212992363e-18,
+            "reference_rms": 2.1111655378401137e-05,
+            "relative_rms": 5.843207930351605e-14,
+            "linf": 4.458781434346637e-18,
+            "reference_peak": 3.93038903697852e-05,
+            "relative_linf": 1.1344376834956567e-13,
+            "mean_difference": 8.645353487315632e-19
+          },
+          "total_heat": {
+            "rms": 4.08656971979738e-12,
+            "reference_rms": 63.97482440758714,
+            "relative_rms": 6.387777938649145e-14,
+            "linf": 1.5504042494285386e-11,
+            "reference_peak": 118.35321171163972,
+            "relative_linf": 1.3099807153573515e-13,
+            "mean_difference": 2.718672303578627e-12
+          }
+        }
+      },
+      "81": {
+        "600_300": {
+          "ocean_velocity": {
+            "rms": 2.867497904443724e-13,
+            "reference_rms": 0.001647729671424443,
+            "relative_rms": 1.740272056862826e-10,
+            "linf": 1.7579141143391928e-12,
+            "reference_peak": 0.0030096432792474106,
+            "relative_linf": 5.840938447624848e-10,
+            "mean_difference": [
+              1.1897862910701487e-21,
+              -2.0594188276017925e-22
+            ]
+          },
+          "air_velocity": {
+            "rms": 3.979046283094541e-12,
+            "reference_rms": 4.8625411469405195,
+            "relative_rms": 8.183059356933425e-13,
+            "linf": 6.712852505572262e-12,
+            "reference_peak": 6.737495982252951,
+            "relative_linf": 9.963423389423012e-13,
+            "mean_difference": [
+              5.397218927253745e-15,
+              2.872882757176729e-23
+            ]
+          },
+          "ocean_streamfunction": {
+            "rms": 7.091337691683898e-09,
+            "reference_rms": 225.8454404291025,
+            "relative_rms": 3.1399073978250247e-11,
+            "linf": 1.7871883528641774e-08,
+            "reference_peak": 376.6454643864372,
+            "relative_linf": 4.745014932744623e-11,
+            "mean_difference": -1.1581754769085222e-15
+          },
+          "air_streamfunction": {
+            "rms": 6.184963098996014e-07,
+            "reference_rms": 773710.7449742287,
+            "relative_rms": 7.993895831448001e-13,
+            "linf": 7.986091077327728e-07,
+            "reference_peak": 1103613.5803185394,
+            "relative_linf": 7.236310987603721e-13,
+            "mean_difference": 2.838911013963534e-09
+          },
+          "sst": {
+            "rms": 6.221803321293949e-14,
+            "reference_rms": 2.8470249805142624,
+            "relative_rms": 2.1853701192920673e-14,
+            "linf": 7.389644451905042e-13,
+            "reference_peak": 4.499047779830619,
+            "relative_linf": 1.6424907699431565e-13,
+            "mean_difference": 2.671531303832269e-15
+          },
+          "air_temperature": {
+            "rms": 1.3297289663550692e-12,
+            "reference_rms": 2.830536774898661,
+            "relative_rms": 4.697797881119831e-13,
+            "linf": 3.808509063674137e-12,
+            "reference_peak": 4.512368923537508,
+            "relative_linf": 8.440154447053557e-13,
+            "mean_difference": -1.6386518593821041e-13
+          },
+          "humidity": {
+            "rms": 8.226568897227402e-16,
+            "reference_rms": 0.00879626038836506,
+            "relative_rms": 9.352348082042686e-14,
+            "linf": 2.463307335887066e-15,
+            "reference_peak": 0.01167353276171466,
+            "relative_linf": 2.1101644088119598e-13,
+            "mean_difference": -2.2033961354072118e-16
+          },
+          "sst_gradient": {
+            "rms": 1.4039226538271647e-17,
+            "reference_rms": 9.147906181738209e-06,
+            "relative_rms": 1.5346928859303222e-12,
+            "linf": 3.521092299496161e-16,
+            "reference_peak": 1.2932998222115226e-05,
+            "relative_linf": 2.722564589450842e-11,
+            "mean_difference": [
+              1.643746799611939e-21,
+              -2.429898929957139e-20
+            ]
+          },
+          "air_temperature_gradient": {
+            "rms": 1.4951492747999075e-17,
+            "reference_rms": 9.420447458780906e-06,
+            "relative_rms": 1.5871319078439975e-12,
+            "linf": 4.313124434496479e-17,
+            "reference_peak": 1.707320742667195e-05,
+            "relative_linf": 2.5262531677313716e-12,
+            "mean_difference": [
+              -1.5119003819757806e-23,
+              -2.1195590919054887e-21
+            ]
+          },
+          "humidity_gradient": {
+            "rms": 9.861974217531321e-21,
+            "reference_rms": 6.54638752502741e-09,
+            "relative_rms": 1.5064757745898994e-12,
+            "linf": 3.141596647824595e-20,
+            "reference_peak": 1.4855892455814357e-08,
+            "relative_linf": 2.1147141830547007e-12,
+            "mean_difference": [
+              3.710582822770054e-26,
+              1.7378287922123247e-22
+            ]
+          },
+          "stress": {
+            "rms": 7.854941612877669e-14,
+            "reference_rms": 0.044469503829939014,
+            "relative_rms": 1.7663659218948477e-12,
+            "linf": 1.7158496861330765e-13,
+            "reference_peak": 0.0708138526641719,
+            "relative_linf": 2.4230424155430916e-12,
+            "mean_difference": [
+              6.336749518951935e-17,
+              -6.606083242694876e-25
+            ]
+          },
+          "sensible_heat": {
+            "rms": 1.782986563573262e-11,
+            "reference_rms": 11.402900869468978,
+            "relative_rms": 1.5636254177629224e-12,
+            "linf": 5.867306640539027e-11,
+            "reference_peak": 20.151862308552996,
+            "relative_linf": 2.9115456183167663e-12,
+            "mean_difference": 8.71012790418103e-12
+          },
+          "evaporation": {
+            "rms": 2.1052181310182322e-17,
+            "reference_rms": 2.1111654572273746e-05,
+            "relative_rms": 9.971829179997321e-13,
+            "linf": 6.768132061740761e-17,
+            "reference_peak": 3.930035159282246e-05,
+            "relative_linf": 1.7221556010142273e-12,
+            "mean_difference": 1.5396160507883287e-17
+          },
+          "total_heat": {
+            "rms": 6.807964213078828e-11,
+            "reference_rms": 63.97482168573944,
+            "relative_rms": 1.064163061918527e-12,
+            "linf": 2.2737367544323206e-10,
+            "reference_peak": 118.34188306571603,
+            "relative_linf": 1.9213288613716748e-12,
+            "mean_difference": 4.720051912719793e-11
+          }
+        },
+        "300_150": {
+          "ocean_velocity": {
+            "rms": 1.7451032422657165e-14,
+            "reference_rms": 0.0016477296714255448,
+            "relative_rms": 1.0590955983428569e-11,
+            "linf": 1.068258169875673e-13,
+            "reference_peak": 0.003009643279246993,
+            "relative_linf": 3.549451116821224e-11,
+            "mean_difference": [
+              -1.0938293572164527e-21,
+              -2.465100396008274e-22
+            ]
+          },
+          "air_velocity": {
+            "rms": 2.4771281541951284e-13,
+            "reference_rms": 4.862541146940281,
+            "relative_rms": 5.0943078512638265e-14,
+            "linf": 4.2454928584371313e-13,
+            "reference_peak": 6.737495982252538,
+            "relative_linf": 6.301291859201587e-14,
+            "mean_difference": [
+              6.855175240889236e-16,
+              3.107312300302071e-23
+            ]
+          },
+          "ocean_streamfunction": {
+            "rms": 4.321958376315383e-10,
+            "reference_rms": 225.84544042942557,
+            "relative_rms": 1.9136797130362928e-12,
+            "linf": 1.0906759939643962e-09,
+            "reference_peak": 376.6454643867737,
+            "relative_linf": 2.8957629842699795e-12,
+            "mean_difference": 1.1422391794329032e-15
+          },
+          "air_streamfunction": {
+            "rms": 3.8507557405842374e-08,
+            "reference_rms": 773710.7449741904,
+            "relative_rms": 4.976996591552689e-14,
+            "linf": 5.075708031654358e-08,
+            "reference_peak": 1103613.5803184893,
+            "relative_linf": 4.599171414862049e-14,
+            "mean_difference": 1.681440315707257e-10
+          },
+          "sst": {
+            "rms": 2.6228583122828923e-14,
+            "reference_rms": 2.8470249805142753,
+            "relative_rms": 9.212628376056993e-15,
+            "linf": 5.684341886080802e-14,
+            "reference_peak": 4.499047779830619,
+            "relative_linf": 1.2634544384178127e-14,
+            "mean_difference": 1.4418410461988812e-16
+          },
+          "air_temperature": {
+            "rms": 8.55256457322754e-14,
+            "reference_rms": 2.8305367748986594,
+            "relative_rms": 3.021534519202191e-14,
+            "linf": 2.8421709430404007e-13,
+            "reference_peak": 4.5123689235373945,
+            "relative_linf": 6.298622721681917e-14,
+            "mean_difference": -1.0682416386976928e-14
+          },
+          "humidity": {
+            "rms": 5.830628035987117e-17,
+            "reference_rms": 0.00879626038836509,
+            "relative_rms": 6.6285305101919815e-15,
+            "linf": 1.8041124150158794e-16,
+            "reference_peak": 0.011673532761714536,
+            "relative_linf": 1.5454725247637055e-14,
+            "mean_difference": -3.114111860192878e-17
+          },
+          "sst_gradient": {
+            "rms": 8.546805708041479e-19,
+            "reference_rms": 9.147906181738248e-06,
+            "relative_rms": 9.342909227800421e-14,
+            "linf": 2.1074496648310515e-17,
+            "reference_peak": 1.2932998222115042e-05,
+            "relative_linf": 1.6295136121084245e-12,
+            "mean_difference": [
+              5.232177759849923e-23,
+              3.7978094220521125e-20
+            ]
+          },
+          "air_temperature_gradient": {
+            "rms": 9.291393331787126e-19,
+            "reference_rms": 9.420447458780816e-06,
+            "relative_rms": 9.86300637251217e-14,
+            "linf": 2.643694450213401e-18,
+            "reference_peak": 1.707320742667171e-05,
+            "relative_linf": 1.5484462785143873e-13,
+            "mean_difference": [
+              2.8196203573607195e-23,
+              4.9914843729449895e-21
+            ]
+          },
+          "humidity_gradient": {
+            "rms": 6.117952143834388e-22,
+            "reference_rms": 6.546387525027458e-09,
+            "relative_rms": 9.345539231285773e-14,
+            "linf": 1.8900007695371056e-21,
+            "reference_peak": 1.4855892455814723e-08,
+            "relative_linf": 1.2722229749296168e-13,
+            "mean_difference": [
+              -4.400368558257464e-26,
+              1.330147327646867e-23
+            ]
+          },
+          "stress": {
+            "rms": 4.887945952723609e-15,
+            "reference_rms": 0.044469503829934205,
+            "relative_rms": 1.099168088633662e-13,
+            "linf": 1.0796918933636352e-14,
+            "reference_peak": 0.07081385266416323,
+            "relative_linf": 1.5246902304328866e-13,
+            "mean_difference": [
+              1.0291249864541606e-17,
+              4.8248519779340475e-24
+            ]
+          },
+          "sensible_heat": {
+            "rms": 1.13876810684206e-12,
+            "reference_rms": 11.402900869468167,
+            "relative_rms": 9.986652693712073e-14,
+            "linf": 4.561684363579843e-12,
+            "reference_peak": 20.151862308549013,
+            "relative_linf": 2.2636539957126654e-13,
+            "mean_difference": 5.448816417624976e-13
+          },
+          "evaporation": {
+            "rms": 1.4002589788649557e-18,
+            "reference_rms": 2.1111654572272475e-05,
+            "relative_rms": 6.632634946121282e-14,
+            "linf": 4.4655576979246714e-18,
+            "reference_peak": 3.9300351592819244e-05,
+            "relative_linf": 1.1362640579379944e-13,
+            "mean_difference": 1.0558564933092985e-18
+          },
+          "total_heat": {
+            "rms": 4.465119339637381e-12,
+            "reference_rms": 63.97482168573553,
+            "relative_rms": 6.979494779323425e-14,
+            "linf": 1.503508428868372e-11,
+            "reference_peak": 118.34188306570317,
+            "relative_linf": 1.270478709582158e-13,
+            "mean_difference": 3.1845288436706774e-12
+          }
+        }
+      }
+    },
+    "24": {
+      "33": {
+        "600_300": {
+          "ocean_velocity": {
+            "rms": 2.4597106630924983e-14,
+            "reference_rms": 0.003049900782179894,
+            "relative_rms": 8.064887479173792e-12,
+            "linf": 1.1077645299812653e-13,
+            "reference_peak": 0.005600401171702219,
+            "relative_linf": 1.9780092461564943e-11,
+            "mean_difference": [
+              -2.167162970411134e-21,
+              8.889127554340657e-22
+            ]
+          },
+          "air_velocity": {
+            "rms": 5.128639061081425e-13,
+            "reference_rms": 4.809875281179902,
+            "relative_rms": 1.0662727745039009e-13,
+            "linf": 8.020251185694674e-13,
+            "reference_peak": 6.662690251703687,
+            "relative_linf": 1.2037556726644845e-13,
+            "mean_difference": [
+              1.510983892411661e-16,
+              1.086100710038985e-22
+            ]
+          },
+          "ocean_streamfunction": {
+            "rms": 9.190649970141812e-10,
+            "reference_rms": 417.92245073686297,
+            "relative_rms": 2.1991280808047644e-12,
+            "linf": 2.276635768794222e-09,
+            "reference_peak": 704.7358552983536,
+            "relative_linf": 3.2304809691148696e-12,
+            "mean_difference": -4.139321608100192e-15
+          },
+          "air_streamfunction": {
+            "rms": 8.12875879279086e-08,
+            "reference_rms": 765325.8065857217,
+            "relative_rms": 1.0621304969520042e-13,
+            "linf": 1.1199153959751129e-07,
+            "reference_peak": 1091813.252951084,
+            "relative_linf": 1.0257389649265304e-13,
+            "mean_difference": 1.8312467982729621e-10
+          },
+          "sst": {
+            "rms": 2.4744928560746086e-14,
+            "reference_rms": 2.843978019089707,
+            "relative_rms": 8.700815686566514e-15,
+            "linf": 1.1368683772161603e-13,
+            "reference_peak": 4.49535370893733,
+            "relative_linf": 2.5289853720652116e-14,
+            "mean_difference": 5.778037181799396e-17
+          },
+          "air_temperature": {
+            "rms": 9.501744741063319e-13,
+            "reference_rms": 2.8157237007010236,
+            "relative_rms": 3.3745302277697535e-13,
+            "linf": 2.4442670110147446e-12,
+            "reference_peak": 4.345152126942594,
+            "relative_linf": 5.6252737294485e-13,
+            "mean_difference": -5.159700654653957e-14
+          },
+          "humidity": {
+            "rms": 6.757547049451165e-16,
+            "reference_rms": 0.009201153795270969,
+            "relative_rms": 7.344238776798056e-14,
+            "linf": 2.159730727591125e-15,
+            "reference_peak": 0.012147790312605669,
+            "relative_linf": 1.7778794924950169e-13,
+            "mean_difference": -5.907566954585941e-17
+          },
+          "sst_gradient": {
+            "rms": 2.0606539026278195e-18,
+            "reference_rms": 9.137552049424138e-06,
+            "relative_rms": 2.255148743867002e-13,
+            "linf": 2.840302309177977e-17,
+            "reference_peak": 1.2914175310272733e-05,
+            "relative_linf": 2.1993679355728002e-12,
+            "mean_difference": [
+              1.4612073914026473e-22,
+              5.158882141920116e-21
+            ]
+          },
+          "air_temperature_gradient": {
+            "rms": 1.0588267472240552e-17,
+            "reference_rms": 9.461118389225794e-06,
+            "relative_rms": 1.1191348672159458e-12,
+            "linf": 1.9330287513150418e-17,
+            "reference_peak": 1.8264954812009507e-05,
+            "relative_linf": 1.0583265993322052e-12,
+            "mean_difference": [
+              -1.5144254911162681e-24,
+              8.157013110976883e-22
+            ]
+          },
+          "humidity_gradient": {
+            "rms": 7.853517760488593e-21,
+            "reference_rms": 7.616027256219429e-09,
+            "relative_rms": 1.0311829903280907e-12,
+            "linf": 1.942756543479836e-20,
+            "reference_peak": 1.797167227917288e-08,
+            "relative_linf": 1.0810104442708258e-12,
+            "mean_difference": [
+              5.4201805920230224e-27,
+              5.433865240999752e-23
+            ]
+          },
+          "stress": {
+            "rms": 9.735102447918087e-15,
+            "reference_rms": 0.04347977575231995,
+            "relative_rms": 2.238995551258944e-13,
+            "linf": 1.8499092616749145e-14,
+            "reference_peak": 0.06924558023892881,
+            "relative_linf": 2.6715196194354706e-13,
+            "mean_difference": [
+              -7.274221631994207e-18,
+              -1.0846120560104929e-23
+            ]
+          },
+          "sensible_heat": {
+            "rms": 8.81199650503235e-12,
+            "reference_rms": 10.2258895324083,
+            "relative_rms": 8.617339818805022e-13,
+            "linf": 2.596145520783466e-11,
+            "reference_peak": 18.05514912422695,
+            "relative_linf": 1.4378975786469018e-12,
+            "mean_difference": 1.3631792603720834e-12
+          },
+          "evaporation": {
+            "rms": 6.703380526788556e-18,
+            "reference_rms": 1.7721236063600954e-05,
+            "relative_rms": 3.7826822591439647e-13,
+            "linf": 2.2510747606230286e-17,
+            "reference_peak": 3.298228360854892e-05,
+            "relative_linf": 6.82510279560981e-13,
+            "mean_difference": 2.1188297280470283e-18
+          },
+          "total_heat": {
+            "rms": 2.4552655302191217e-11,
+            "reference_rms": 54.34660602235894,
+            "relative_rms": 4.5177899963228464e-13,
+            "linf": 8.178346888598753e-11,
+            "reference_peak": 100.46884673451835,
+            "relative_linf": 8.140181911522726e-13,
+            "mean_difference": 6.660276074541134e-12
+          }
+        },
+        "300_150": {
+          "ocean_velocity": {
+            "rms": 1.528224109196063e-15,
+            "reference_rms": 0.0030499007821801227,
+            "relative_rms": 5.010733851163715e-13,
+            "linf": 6.881227521213489e-15,
+            "reference_peak": 0.005600401171702385,
+            "relative_linf": 1.228702607231575e-12,
+            "mean_difference": [
+              2.9886202492336027e-21,
+              -1.6059409764058068e-21
+            ]
+          },
+          "air_velocity": {
+            "rms": 2.7417029696774146e-14,
+            "reference_rms": 4.809875281179875,
+            "relative_rms": 5.700153973649121e-15,
+            "linf": 4.707347730388805e-14,
+            "reference_peak": 6.662690251703645,
+            "relative_linf": 7.0652357419514435e-15,
+            "mean_difference": [
+              8.130237034898602e-19,
+              -1.6188033879782715e-22
+            ]
+          },
+          "ocean_streamfunction": {
+            "rms": 5.6959960553428994e-11,
+            "reference_rms": 417.9224507369031,
+            "relative_rms": 1.362931339366769e-13,
+            "linf": 1.4144063698040554e-10,
+            "reference_peak": 704.7358552984124,
+            "relative_linf": 2.0070021401211965e-13,
+            "mean_difference": 1.2177385785209649e-15
+          },
+          "air_streamfunction": {
+            "rms": 4.336488486046077e-09,
+            "reference_rms": 765325.8065857174,
+            "relative_rms": 5.666199217026383e-15,
+            "linf": 6.51925802230835e-09,
+            "reference_peak": 1091813.2529510781,
+            "relative_linf": 5.9710376336679844e-15,
+            "mean_difference": 1.0905460789418687e-11
+          },
+          "sst": {
+            "rms": 7.817657708757079e-15,
+            "reference_rms": 2.8439780190897075,
+            "relative_rms": 2.7488460375862304e-15,
+            "linf": 5.684341886080802e-14,
+            "reference_peak": 4.49535370893733,
+            "relative_linf": 1.2644926860326058e-14,
+            "mean_difference": 1.494473953719483e-16
+          },
+          "air_temperature": {
+            "rms": 6.286172256056359e-14,
+            "reference_rms": 2.8157237007010236,
+            "relative_rms": 2.232524538714969e-14,
+            "linf": 1.7053025658242404e-13,
+            "reference_peak": 4.345152126942764,
+            "relative_linf": 3.924609578684846e-14,
+            "mean_difference": 6.866580972448405e-16
+          },
+          "humidity": {
+            "rms": 4.8954346576088233e-17,
+            "reference_rms": 0.009201153795270945,
+            "relative_rms": 5.320457375818342e-15,
+            "linf": 1.734723475976807e-16,
+            "reference_peak": 0.012147790312605662,
+            "relative_linf": 1.4280156566225044e-14,
+            "mean_difference": 2.4301300541114866e-17
+          },
+          "sst_gradient": {
+            "rms": 1.2736554659270074e-19,
+            "reference_rms": 9.13755204942414e-06,
+            "relative_rms": 1.3938694510717176e-14,
+            "linf": 1.755844617549497e-18,
+            "reference_peak": 1.291417531027273e-05,
+            "relative_linf": 1.3596258184235662e-13,
+            "mean_difference": [
+              -4.11012143404099e-24,
+              2.2141640116973725e-21
+            ]
+          },
+          "air_temperature_gradient": {
+            "rms": 6.611591178188587e-19,
+            "reference_rms": 9.461118389225747e-06,
+            "relative_rms": 6.988170854851388e-14,
+            "linf": 1.2130118646629814e-18,
+            "reference_peak": 1.8264954812009222e-05,
+            "relative_linf": 6.641198279151641e-14,
+            "mean_difference": [
+              -1.1654063222170291e-23,
+              -5.579653305081859e-21
+            ]
+          },
+          "humidity_gradient": {
+            "rms": 4.951982421869113e-22,
+            "reference_rms": 7.61602725621943e-09,
+            "relative_rms": 6.502054490187395e-14,
+            "linf": 1.1921197302799213e-21,
+            "reference_peak": 1.7971672279172674e-08,
+            "relative_linf": 6.633326669669277e-14,
+            "mean_difference": [
+              6.219933568312601e-28,
+              -6.696918676171088e-24
+            ]
+          },
+          "stress": {
+            "rms": 5.232455915482712e-16,
+            "reference_rms": 0.04347977575231943,
+            "relative_rms": 1.2034229305342236e-14,
+            "linf": 1.096345296072485e-15,
+            "reference_peak": 0.06924558023892795,
+            "relative_linf": 1.583271152165391e-14,
+            "mean_difference": [
+              -4.751641089801363e-19,
+              1.1384517756229326e-23
+            ]
+          },
+          "sensible_heat": {
+            "rms": 5.645411685778226e-13,
+            "reference_rms": 10.225889532408189,
+            "relative_rms": 5.52070474444949e-14,
+            "linf": 2.2950530365051236e-12,
+            "reference_peak": 18.05514912422683,
+            "relative_linf": 1.2711349104425655e-13,
+            "mean_difference": 5.199859288520415e-14
+          },
+          "evaporation": {
+            "rms": 3.9110984357828475e-19,
+            "reference_rms": 1.7721236063600967e-05,
+            "relative_rms": 2.2070122093888014e-14,
+            "linf": 1.9752808329970284e-18,
+            "reference_peak": 3.298228360854853e-05,
+            "relative_linf": 5.988914704757024e-14,
+            "mean_difference": -5.111159863053501e-20
+          },
+          "total_heat": {
+            "rms": 1.4600858386311813e-12,
+            "reference_rms": 54.34660602235886,
+            "relative_rms": 2.6866182554812788e-14,
+            "linf": 6.778577699151356e-12,
+            "reference_peak": 100.46884673451558,
+            "relative_linf": 6.746944868456033e-14,
+            "mean_difference": -7.57948412539676e-14
+          }
+        }
+      },
+      "81": {
+        "600_300": {
+          "ocean_velocity": {
+            "rms": 3.8163549478592095e-14,
+            "reference_rms": 0.003048363341646075,
+            "relative_rms": 1.2519357176754493e-11,
+            "linf": 1.9619462919082938e-13,
+            "reference_peak": 0.005597615707840401,
+            "relative_linf": 3.504967818995253e-11,
+            "mean_difference": [
+              4.701932164935743e-21,
+              1.6430425934665962e-21
+            ]
+          },
+          "air_velocity": {
+            "rms": 5.095215777152083e-13,
+            "reference_rms": 4.809875257789068,
+            "relative_rms": 1.0593238917996754e-13,
+            "linf": 8.926193119047346e-13,
+            "reference_peak": 6.662774297307711,
+            "relative_linf": 1.3397111654606455e-13,
+            "mean_difference": [
+              2.0980617791756478e-16,
+              1.395569740595784e-22
+            ]
+          },
+          "ocean_streamfunction": {
+            "rms": 8.301849649339806e-10,
+            "reference_rms": 417.7925682003368,
+            "relative_rms": 1.9870745152553706e-12,
+            "linf": 2.4238602236437146e-09,
+            "reference_peak": 703.4572473771561,
+            "relative_linf": 3.4456397068636217e-12,
+            "mean_difference": 4.664118973719862e-15
+          },
+          "air_streamfunction": {
+            "rms": 8.079984745621677e-08,
+            "reference_rms": 765325.7626469722,
+            "relative_rms": 1.0557575793183896e-13,
+            "linf": 1.1199153959751129e-07,
+            "reference_peak": 1091816.2763546193,
+            "relative_linf": 1.0257361245010118e-13,
+            "mean_difference": 3.0240049628989246e-10
+          },
+          "sst": {
+            "rms": 3.506853324397731e-14,
+            "reference_rms": 2.8439780203432634,
+            "relative_rms": 1.233080318945102e-14,
+            "linf": 4.547473508864641e-13,
+            "reference_peak": 4.495352928480713,
+            "relative_linf": 1.0115943244530843e-13,
+            "mean_difference": -3.0524675545204853e-16
+          },
+          "air_temperature": {
+            "rms": 9.488594869811006e-13,
+            "reference_rms": 2.8157236004294317,
+            "relative_rms": 3.369860190951939e-13,
+            "linf": 2.4442670110147446e-12,
+            "reference_peak": 4.345320466832277,
+            "relative_linf": 5.625055803528817e-13,
+            "mean_difference": -4.6380267419086164e-14
+          },
+          "humidity": {
+            "rms": 6.739997529122736e-16,
+            "reference_rms": 0.009201155892148356,
+            "relative_rms": 7.325163933885952e-14,
+            "linf": 2.2412627309620348e-15,
+            "reference_peak": 0.0121480770494702,
+            "relative_linf": 1.8449526800291246e-13,
+            "mean_difference": -1.3490183510264409e-17
+          },
+          "sst_gradient": {
+            "rms": 6.918355671055354e-18,
+            "reference_rms": 9.13756934606727e-06,
+            "relative_rms": 7.57133041516446e-13,
+            "linf": 2.069733910196034e-16,
+            "reference_peak": 1.2916732599665486e-05,
+            "relative_linf": 1.602366460887822e-11,
+            "mean_difference": [
+              -2.2367692495102545e-21,
+              -3.184212031021588e-20
+            ]
+          },
+          "air_temperature_gradient": {
+            "rms": 1.072993671550769e-17,
+            "reference_rms": 9.461166434367571e-06,
+            "relative_rms": 1.1341029449108226e-12,
+            "linf": 2.9263684358935756e-17,
+            "reference_peak": 1.826211944380924e-05,
+            "relative_linf": 1.6024254166652046e-12,
+            "mean_difference": [
+              -3.715088710860026e-23,
+              -1.1732414208095196e-20
+            ]
+          },
+          "humidity_gradient": {
+            "rms": 7.991234662978428e-21,
+            "reference_rms": 7.616229168540398e-09,
+            "relative_rms": 1.0492376852297234e-12,
+            "linf": 2.2185830728599818e-20,
+            "reference_peak": 1.7949890687219982e-08,
+            "relative_linf": 1.2359869547504128e-12,
+            "mean_difference": [
+              3.6894308885973606e-27,
+              2.847392975440428e-23
+            ]
+          },
+          "stress": {
+            "rms": 9.656890000391671e-15,
+            "reference_rms": 0.04347979406979263,
+            "relative_rms": 2.2210063793979066e-13,
+            "linf": 1.8637869042848803e-14,
+            "reference_peak": 0.06924635606026953,
+            "relative_linf": 2.6915306599854977e-13,
+            "mean_difference": [
+              2.4308943761632553e-19,
+              -1.330752106886438e-23
+            ]
+          },
+          "sensible_heat": {
+            "rms": 8.787861727512477e-12,
+            "reference_rms": 10.22589051035884,
+            "relative_rms": 8.593737355793476e-13,
+            "linf": 2.5803359449128038e-11,
+            "reference_peak": 18.053212036796747,
+            "relative_linf": 1.4292946538563135e-12,
+            "mean_difference": 1.3117077399906446e-12
+          },
+          "evaporation": {
+            "rms": 6.580254403948694e-18,
+            "reference_rms": 1.7721237567883682e-05,
+            "relative_rms": 3.713202522533829e-13,
+            "linf": 2.36559361509181e-17,
+            "reference_peak": 3.297922373277314e-05,
+            "relative_linf": 7.172981493621388e-13,
+            "mean_difference": 1.7997234785280634e-18
+          },
+          "total_heat": {
+            "rms": 2.4254976192395774e-11,
+            "reference_rms": 54.346610793321645,
+            "relative_rms": 4.463015418686667e-13,
+            "linf": 8.034817255975213e-11,
+            "reference_peak": 100.45928298222185,
+            "relative_linf": 7.998083419923596e-13,
+            "mean_difference": 5.811009496428964e-12
+          }
+        },
+        "300_150": {
+          "ocean_velocity": {
+            "rms": 2.358277456274379e-15,
+            "reference_rms": 0.00304836334164629,
+            "relative_rms": 7.736208555115266e-13,
+            "linf": 1.2125717218512373e-14,
+            "reference_peak": 0.005597615707840459,
+            "relative_linf": 2.1662289537897614e-12,
+            "mean_difference": [
+              2.8459828388105645e-21,
+              -1.5808414999931382e-21
+            ]
+          },
+          "air_velocity": {
+            "rms": 3.227582912421625e-14,
+            "reference_rms": 4.809875257789037,
+            "relative_rms": 6.710325610201486e-15,
+            "linf": 6.306066779876212e-14,
+            "reference_peak": 6.66277429730766,
+            "relative_linf": 9.464626142933299e-15,
+            "mean_difference": [
+              9.101152343895188e-17,
+              2.401251554916869e-22
+            ]
+          },
+          "ocean_streamfunction": {
+            "rms": 5.151360274612042e-11,
+            "reference_rms": 417.7925682003724,
+            "relative_rms": 1.2329947123763726e-13,
+            "linf": 1.5073453596414765e-10,
+            "reference_peak": 703.4572473771901,
+            "relative_linf": 2.1427675459476014e-13,
+            "mean_difference": -2.306871370318396e-15
+          },
+          "air_streamfunction": {
+            "rms": 5.122402521408536e-09,
+            "reference_rms": 765325.7626469671,
+            "relative_rms": 6.693100861641084e-15,
+            "linf": 7.916241884231567e-09,
+            "reference_peak": 1091816.2763546123,
+            "relative_linf": 7.250525620173519e-15,
+            "mean_difference": 2.731341665456288e-11
+          },
+          "sst": {
+            "rms": 2.700095424515932e-14,
+            "reference_rms": 2.8439780203432776,
+            "relative_rms": 9.494079789653302e-15,
+            "linf": 5.684341886080802e-14,
+            "reference_peak": 4.495352928480713,
+            "relative_linf": 1.2644929055663554e-14,
+            "mean_difference": -1.3810367219163843e-16
+          },
+          "air_temperature": {
+            "rms": 6.270425152445438e-14,
+            "reference_rms": 2.8157236004294317,
+            "relative_rms": 2.2269320580646208e-14,
+            "linf": 1.7053025658242404e-13,
+            "reference_peak": 4.345320466832391,
+            "relative_linf": 3.9244575373455836e-14,
+            "mean_difference": -3.791554141158586e-15
+          },
+          "humidity": {
+            "rms": 4.3032790644848705e-17,
+            "reference_rms": 0.009201155892148366,
+            "relative_rms": 4.676889637482387e-15,
+            "linf": 1.43982048506075e-16,
+            "reference_peak": 0.01214807704947022,
+            "relative_linf": 1.1852250189041572e-14,
+            "mean_difference": -8.670922501122082e-18
+          },
+          "sst_gradient": {
+            "rms": 4.188022084352971e-19,
+            "reference_rms": 9.137569346067312e-06,
+            "relative_rms": 4.583299918982765e-14,
+            "linf": 1.2380769854022099e-17,
+            "reference_peak": 1.2916732599665537e-05,
+            "relative_linf": 9.585063218187767e-13,
+            "mean_difference": [
+              -1.080102634127823e-22,
+              4.043133992372088e-20
+            ]
+          },
+          "air_temperature_gradient": {
+            "rms": 6.646863021665663e-19,
+            "reference_rms": 9.461166434367525e-06,
+            "relative_rms": 7.025416017966926e-14,
+            "linf": 1.7769291802920562e-18,
+            "reference_peak": 1.826211944380889e-05,
+            "relative_linf": 9.73013666764982e-14,
+            "mean_difference": [
+              -3.835394172009006e-24,
+              -1.95713162133379e-21
+            ]
+          },
+          "humidity_gradient": {
+            "rms": 5.00791827022554e-22,
+            "reference_rms": 7.616229168540363e-09,
+            "relative_rms": 6.575325084638044e-14,
+            "linf": 1.3982915749365253e-21,
+            "reference_peak": 1.794989068721966e-08,
+            "relative_linf": 7.789972648313174e-14,
+            "mean_difference": [
+              -6.937155654666143e-27,
+              1.6042936185053938e-24
+            ]
+          },
+          "stress": {
+            "rms": 6.101308537518072e-16,
+            "reference_rms": 0.04347979406979202,
+            "relative_rms": 1.4032514799229492e-14,
+            "linf": 1.3045120539348542e-15,
+            "reference_peak": 0.06924635606026837,
+            "relative_linf": 1.8838710484627897e-14,
+            "mean_difference": [
+              7.961938859577892e-19,
+              7.52977666736819e-24
+            ]
+          },
+          "sensible_heat": {
+            "rms": 6.027146736728021e-13,
+            "reference_rms": 10.22589051035869,
+            "relative_rms": 5.894006718165623e-14,
+            "linf": 2.3234747459355276e-12,
+            "reference_peak": 18.053212036796612,
+            "relative_linf": 1.2870145995071403e-13,
+            "mean_difference": 8.772467654849176e-14
+          },
+          "evaporation": {
+            "rms": 4.460993647346636e-19,
+            "reference_rms": 1.7721237567883495e-05,
+            "relative_rms": 2.5173149619253295e-14,
+            "linf": 1.7618285302889447e-18,
+            "reference_peak": 3.297922373277242e-05,
+            "relative_linf": 5.3422377208295664e-14,
+            "mean_difference": 1.470195234061439e-19
+          },
+          "total_heat": {
+            "rms": 1.6413642547770963e-12,
+            "reference_rms": 54.346610793321034,
+            "relative_rms": 3.020177764201651e-14,
+            "linf": 6.23856521997368e-12,
+            "reference_peak": 100.45928298221982,
+            "relative_linf": 6.210043546774903e-14,
+            "mean_difference": 4.552702341196597e-13
+          }
+        }
+      }
+    }
+  },
+  "scope": "Default 24-hour transient; finite-refinement differences, not exact errors or equilibrium certification",
+  "screening_criteria": {
+    "relative_rms": 0.01,
+    "relative_linf": 0.05,
+    "time_to_space_ratio": 0.1
+  },
+  "assessment": {
+    "6": {
+      "ocean_velocity": {
+        "spatial_rms": 0.009521366434596721,
+        "spatial_peak": 0.01559826511707651,
+        "decreasing": true,
+        "time_to_space": 1.47015554108719e-08,
+        "temporal_order": 4.045828977632129,
+        "passes_screen": true
+      },
+      "air_velocity": {
+        "spatial_rms": 1.241284474811437e-06,
+        "spatial_peak": 2.429771603563369e-06,
+        "decreasing": true,
+        "time_to_space": 8.211144222293983e-08,
+        "temporal_order": 3.9891404290177546,
+        "passes_screen": true
+      },
+      "ocean_streamfunction": {
+        "spatial_rms": 0.0006104776292588226,
+        "spatial_peak": 0.0013601946121006236,
+        "decreasing": true,
+        "time_to_space": 3.451160114231687e-08,
+        "temporal_order": 4.042702531043069,
+        "passes_screen": true
+      },
+      "air_streamfunction": {
+        "spatial_rms": 3.6235731159362563e-08,
+        "spatial_peak": 7.280082278745553e-08,
+        "decreasing": true,
+        "time_to_space": 2.7040779160409973e-06,
+        "temporal_order": 3.9877586619927627,
+        "passes_screen": true
+      },
+      "sst": {
+        "spatial_rms": 4.062116953875305e-06,
+        "spatial_peak": 9.228418137718749e-06,
+        "decreasing": true,
+        "time_to_space": 1.7829875781180293e-09,
+        "temporal_order": 2.7644712616138074,
+        "passes_screen": true
+      },
+      "air_temperature": {
+        "spatial_rms": 8.449027671465439e-06,
+        "spatial_peak": 1.4611171520573218e-05,
+        "decreasing": true,
+        "time_to_space": 3.4064361042438854e-09,
+        "temporal_order": 3.9410349121036705,
+        "passes_screen": true
+      },
+      "humidity": {
+        "spatial_rms": 5.560841606365236e-06,
+        "spatial_peak": 1.4014085305238506e-05,
+        "decreasing": true,
+        "time_to_space": 1.3144973965219942e-09,
+        "temporal_order": null,
+        "passes_screen": true
+      },
+      "sst_gradient": {
+        "spatial_rms": 0.00028582038220838717,
+        "spatial_peak": 0.0006914374466750735,
+        "decreasing": true,
+        "time_to_space": 6.733966264905214e-10,
+        "temporal_order": null,
+        "passes_screen": true
+      },
+      "air_temperature_gradient": {
+        "spatial_rms": 0.0005854531996461151,
+        "spatial_peak": 0.0010179678213671566,
+        "decreasing": true,
+        "time_to_space": 2.0683422835682657e-10,
+        "temporal_order": null,
+        "passes_screen": true
+      },
+      "humidity_gradient": {
+        "spatial_rms": 0.001910446218249083,
+        "spatial_peak": 0.0031689062178268967,
+        "decreasing": true,
+        "time_to_space": 1.3370357135234408e-10,
+        "temporal_order": null,
+        "passes_screen": true
+      },
+      "stress": {
+        "spatial_rms": 2.6959880418844657e-06,
+        "spatial_peak": 6.891155994306384e-06,
+        "decreasing": true,
+        "time_to_space": 8.56197116196607e-08,
+        "temporal_order": 3.9936686024046106,
+        "passes_screen": true
+      },
+      "sensible_heat": {
+        "spatial_rms": 1.061963067230703e-05,
+        "spatial_peak": 1.4718647651092002e-05,
+        "decreasing": true,
+        "time_to_space": 1.3188822366585221e-08,
+        "temporal_order": 3.9775436930087618,
+        "passes_screen": true
+      },
+      "evaporation": {
+        "spatial_rms": 8.811401393759037e-06,
+        "spatial_peak": 1.1665110371567479e-05,
+        "decreasing": true,
+        "time_to_space": 1.381754820429775e-08,
+        "temporal_order": null,
+        "passes_screen": true
+      },
+      "total_heat": {
+        "spatial_rms": 9.124514082362027e-06,
+        "spatial_peak": 1.2025750539366885e-05,
+        "decreasing": true,
+        "time_to_space": 1.3529399241450465e-08,
+        "temporal_order": 3.976180886404753,
+        "passes_screen": true
+      }
+    },
+    "12": {
+      "ocean_velocity": {
+        "spatial_rms": 0.001322860060907075,
+        "spatial_peak": 0.003274202272954542,
+        "decreasing": true,
+        "time_to_space": 8.006104573273178e-09,
+        "temporal_order": 4.038408136395933,
+        "passes_screen": true
+      },
+      "air_velocity": {
+        "spatial_rms": 1.22822390540569e-06,
+        "spatial_peak": 2.424648172722929e-06,
+        "decreasing": true,
+        "time_to_space": 4.147702897527585e-08,
+        "temporal_order": 4.005682266694908,
+        "passes_screen": true
+      },
+      "ocean_streamfunction": {
+        "spatial_rms": 0.00013512650434228097,
+        "spatial_peak": 0.00025072784018683006,
+        "decreasing": true,
+        "time_to_space": 1.416213438178541e-08,
+        "temporal_order": 4.036300716267429,
+        "passes_screen": true
+      },
+      "air_streamfunction": {
+        "spatial_rms": 3.572377257091622e-08,
+        "spatial_peak": 7.128538835907869e-08,
+        "decreasing": true,
+        "time_to_space": 1.3931889700822385e-06,
+        "temporal_order": 4.005551468992265,
+        "passes_screen": true
+      },
+      "sst": {
+        "spatial_rms": 5.27957854188697e-06,
+        "spatial_peak": 1.2122828621116692e-05,
+        "decreasing": true,
+        "time_to_space": 1.7449552654565332e-09,
+        "temporal_order": 1.2461929154424547,
+        "passes_screen": true
+      },
+      "air_temperature": {
+        "spatial_rms": 8.17792023795968e-06,
+        "spatial_peak": 1.4410655973434908e-05,
+        "decreasing": true,
+        "time_to_space": 3.694746868741823e-09,
+        "temporal_order": 3.9586313147592254,
+        "passes_screen": true
+      },
+      "humidity": {
+        "spatial_rms": 5.139811791533999e-06,
+        "spatial_peak": 1.2912494008348114e-05,
+        "decreasing": true,
+        "time_to_space": 1.289644597708833e-09,
+        "temporal_order": null,
+        "passes_screen": true
+      },
+      "sst_gradient": {
+        "spatial_rms": 0.000368340456018253,
+        "spatial_peak": 0.000939384987814299,
+        "decreasing": true,
+        "time_to_space": 2.536487392342653e-10,
+        "temporal_order": null,
+        "passes_screen": true
+      },
+      "air_temperature_gradient": {
+        "spatial_rms": 0.0005561551691160274,
+        "spatial_peak": 0.0008692705783490801,
+        "decreasing": true,
+        "time_to_space": 1.773427079386636e-10,
+        "temporal_order": null,
+        "passes_screen": true
+      },
+      "humidity_gradient": {
+        "spatial_rms": 0.0015612603139400908,
+        "spatial_peak": 0.002299098062808206,
+        "decreasing": true,
+        "time_to_space": 5.985894311052335e-11,
+        "temporal_order": null,
+        "passes_screen": true
+      },
+      "stress": {
+        "spatial_rms": 1.305968055913245e-06,
+        "spatial_peak": 2.758759705579199e-06,
+        "decreasing": true,
+        "time_to_space": 8.416500569495394e-08,
+        "temporal_order": null,
+        "passes_screen": true
+      },
+      "sensible_heat": {
+        "spatial_rms": 1.240095665509278e-05,
+        "spatial_peak": 1.6383377814670285e-05,
+        "decreasing": true,
+        "time_to_space": 8.053130876488299e-09,
+        "temporal_order": 3.9687499322663236,
+        "passes_screen": true
+      },
+      "evaporation": {
+        "spatial_rms": 9.92299623117726e-06,
+        "spatial_peak": 1.337202377254718e-05,
+        "decreasing": true,
+        "time_to_space": 6.6841050743142214e-09,
+        "temporal_order": null,
+        "passes_screen": true
+      },
+      "total_heat": {
+        "spatial_rms": 1.0371738967721993e-05,
+        "spatial_peak": 1.383938190998756e-05,
+        "decreasing": true,
+        "time_to_space": 6.7293390250606865e-09,
+        "temporal_order": 3.930452813323955,
+        "passes_screen": true
+      }
+    },
+    "24": {
+      "ocean_velocity": {
+        "spatial_rms": 0.0013250508083638799,
+        "spatial_peak": 0.0021572566607042454,
+        "decreasing": true,
+        "time_to_space": 5.838424086294192e-10,
+        "temporal_order": null,
+        "passes_screen": true
+      },
+      "air_velocity": {
+        "spatial_rms": 1.2140614401175036e-06,
+        "spatial_peak": 2.405740796798087e-06,
+        "decreasing": true,
+        "time_to_space": 5.52717135102489e-09,
+        "temporal_order": 3.980617182250414,
+        "passes_screen": true
+      },
+      "ocean_streamfunction": {
+        "spatial_rms": 8.332199652889419e-05,
+        "spatial_peak": 0.00017863377998511427,
+        "decreasing": true,
+        "time_to_space": 1.4797949686056764e-09,
+        "temporal_order": 4.010407456681844,
+        "passes_screen": true
+      },
+      "air_streamfunction": {
+        "spatial_rms": 3.4953782863030574e-08,
+        "spatial_peak": 6.648105526960458e-08,
+        "decreasing": true,
+        "time_to_space": 1.9148430622998892e-07,
+        "temporal_order": 3.9794600389554686,
+        "passes_screen": true
+      },
+      "sst": {
+        "spatial_rms": 5.588949591994098e-06,
+        "spatial_peak": 1.3413809631821393e-05,
+        "decreasing": true,
+        "time_to_space": 1.6987234601745407e-09,
+        "temporal_order": 0.3771666958315439,
+        "passes_screen": true
+      },
+      "air_temperature": {
+        "spatial_rms": 7.904438312836297e-06,
+        "spatial_peak": 1.4828080358213696e-05,
+        "decreasing": true,
+        "time_to_space": 2.8173185366608874e-09,
+        "temporal_order": 3.919559289568001,
+        "passes_screen": true
+      },
+      "humidity": {
+        "spatial_rms": 4.605037530010579e-06,
+        "spatial_peak": 1.1762979389330903e-05,
+        "decreasing": true,
+        "time_to_space": 1.0156029363503674e-09,
+        "temporal_order": null,
+        "passes_screen": true
+      },
+      "sst_gradient": {
+        "spatial_rms": 0.00038576979192063383,
+        "spatial_peak": 0.0009628163398130988,
+        "decreasing": true,
+        "time_to_space": 1.188091969608058e-10,
+        "temporal_order": null,
+        "passes_screen": true
+      },
+      "air_temperature_gradient": {
+        "spatial_rms": 0.0005324155530379022,
+        "spatial_peak": 0.0008051638816045667,
+        "decreasing": true,
+        "time_to_space": 1.3195362114950823e-10,
+        "temporal_order": null,
+        "passes_screen": true
+      },
+      "humidity_gradient": {
+        "spatial_rms": 0.0012575887779651572,
+        "spatial_peak": 0.0018045558268266562,
+        "decreasing": true,
+        "time_to_space": 5.228517620264754e-11,
+        "temporal_order": null,
+        "passes_screen": true
+      },
+      "stress": {
+        "spatial_rms": 1.674538743015722e-06,
+        "spatial_peak": 4.133441738033664e-06,
+        "decreasing": true,
+        "time_to_space": 8.379928417755182e-09,
+        "temporal_order": null,
+        "passes_screen": true
+      },
+      "sensible_heat": {
+        "spatial_rms": 1.3892564242166253e-05,
+        "spatial_peak": 1.9911853179640038e-05,
+        "decreasing": true,
+        "time_to_space": 4.242562147221409e-09,
+        "temporal_order": 3.865965075733411,
+        "passes_screen": true
+      },
+      "evaporation": {
+        "spatial_rms": 1.1394488385213589e-05,
+        "spatial_peak": 1.60461324619693e-05,
+        "decreasing": true,
+        "time_to_space": 2.209239131080252e-09,
+        "temporal_order": null,
+        "passes_screen": true
+      },
+      "total_heat": {
+        "spatial_rms": 1.1873318694502411e-05,
+        "spatial_peak": 1.665477663789338e-05,
+        "decreasing": true,
+        "time_to_space": 2.5436677325944724e-09,
+        "temporal_order": 3.8853134182376126,
+        "passes_screen": true
+      }
+    }
+  }
+}

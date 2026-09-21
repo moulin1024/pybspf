@@ -2,6 +2,8 @@
 
 The package does not modify JAX precision or device configuration at import.
 """
+from .fast_axis import FastAxis, plan_fast_axis, sample_aligned_knots, boundary_clustered_knots
+from .fast_drift_kinetic import FastDriftKineticPlan
 from .basis import basis_matrix, open_knots, spline_primitive
 from .plans import Plan1D, TensorPlan, plan_1d, plan_2d, plan_3d, tensor_plan, with_regularization
 from .time_integration import rk4_step, integrate_rk4, integrate_linear_midpoint, integrate_schrodinger, integrate_nlse
@@ -9,6 +11,9 @@ from .galerkin import Galerkin1D, galerkin_1d
 from .elasticity import elastic_modes, integrate_elastic
 from .vlasov_poisson import (VlasovPoissonPlan, poisson_dirichlet, plan_vlasov_poisson,
                              vlasov_poisson_fields, integrate_vlasov_poisson)
+from .drift_kinetic import (DriftKineticPlan, plan_drift_kinetic, drift_kinetic_rhs,
+                            drift_kinetic_moments, integrate_drift_kinetic,
+                            integrate_log_drift_kinetic, log_drift_kinetic_diagnostics)
 from .parallel_kinetic import ParallelKineticPlan, plan_parallel_kinetic, integrate_parallel_kinetic
 from .alfven import AlfvenPlan, plan_alfven, integrate_alfven, alfven_energy, alfven_boundary_power
 from .sine_gordon import integrate_sine_gordon
@@ -50,10 +55,21 @@ from .stream_navier_stokes import (
 from .convex_poisson import ConvexPoissonPlan, ConvexPoissonSolution
 from .convex_poisson_grid import ConvexPoissonGridPlan, ConvexPoissonGridResult
 from .convex_poisson_tensor import TensorConvexPoissonPlan, PoissonIterationError
+from .fourier_extension import FourierExtensionPlan, FourierExtension
+from .fourier_poisson import FourierPoissonPlan, FourierPoissonSolution
+from .grad_shafranov import FixedBoundaryGSPlan, FixedBoundaryGSSolution
+from .gs_response import GSFixedPointResponse, GSResponseResult
+from .solovev import SolovevEquilibrium, SolovevFluxDomain
 from .immersed_poisson import EllipticHole, ImmersedPoissonPlan, ImmersedPoissonSolution
 from .immersed_flow import ImmersedFlowPlan, ImmersedFlowStepper
 
 __all__ = [
+    "FastAxis", "plan_fast_axis", "FastDriftKineticPlan", "sample_aligned_knots", "boundary_clustered_knots",
+    "FixedBoundaryGSPlan", "FixedBoundaryGSSolution",
+    "GSFixedPointResponse", "GSResponseResult",
+    "SolovevEquilibrium", "SolovevFluxDomain",
+    "FourierExtensionPlan", "FourierExtension",
+    "FourierPoissonPlan", "FourierPoissonSolution",
     "ImmersedFlowPlan", "ImmersedFlowStepper",
     "EllipticHole", "ImmersedPoissonPlan", "ImmersedPoissonSolution",
     "ConvexPoissonPlan", "ConvexPoissonSolution",
@@ -81,6 +97,9 @@ __all__ = [
     "solve_pressure_poisson2d", "project_pressure2d",
     "VlasovPoissonPlan", "poisson_dirichlet", "plan_vlasov_poisson",
     "vlasov_poisson_fields", "integrate_vlasov_poisson",
+    "DriftKineticPlan", "plan_drift_kinetic", "drift_kinetic_rhs",
+    "drift_kinetic_moments", "integrate_drift_kinetic",
+    "integrate_log_drift_kinetic", "log_drift_kinetic_diagnostics",
     "ParallelKineticPlan", "plan_parallel_kinetic", "integrate_parallel_kinetic",
     "AlfvenPlan", "plan_alfven", "integrate_alfven", "alfven_energy", "alfven_boundary_power",
     "integrate_sine_gordon",
@@ -94,3 +113,52 @@ __all__ = [
     "gradient", "divergence", "curl", "hessian", "laplacian", "interpolate",
     "interpolate_grid", "integrate", "integrate_box", "antiderivative",
 ]
+
+from .gyrokinetic_slab import (
+    SlabGKPlan, plan_slab_gk, slab_gk_project, slab_gk_fields,
+    slab_gk_rhs, slab_gk_diagnostics, integrate_slab_gk,
+)
+__all__ += ["SlabGKPlan", "plan_slab_gk", "slab_gk_project", "slab_gk_fields",
+            "slab_gk_rhs", "slab_gk_diagnostics", "integrate_slab_gk"]
+from .gyrokinetic_slab import slab_gk_source_rates
+from .gyrokinetic_mms import SlabMMS, plan_slab_mms
+__all__ += ["slab_gk_source_rates", "SlabMMS", "plan_slab_mms"]
+
+from .gyrokinetic_slab import slab_gk_solve_charge, slab_gk_rhs_with_field_hat
+__all__ += ["slab_gk_solve_charge", "slab_gk_rhs_with_field_hat"]
+
+from .open_slab_packet import (
+    OpenSlabPacket, plan_open_slab_packet, packet_initial, packet_reference,
+    packet_reference_moments, packet_fields, packet_rhs, packet_diagnostics,
+    integrate_open_packet,
+)
+__all__ += ["OpenSlabPacket", "plan_open_slab_packet", "packet_initial",
+            "packet_reference", "packet_reference_moments", "packet_fields",
+            "packet_rhs", "packet_diagnostics", "integrate_open_packet"]
+
+from .linear_itg import (
+    ITGRadial, LinearITG, plan_itg_radial, plan_linear_itg,
+    linear_itg_fields, linear_itg_rhs, linear_itg_initial,
+    linear_itg_diagnostics, integrate_linear_itg,
+)
+__all__ += ["ITGRadial", "LinearITG", "plan_itg_radial", "plan_linear_itg",
+            "linear_itg_fields", "linear_itg_rhs", "linear_itg_initial",
+            "linear_itg_diagnostics", "integrate_linear_itg"]
+from .nonlinear_itg import (
+    NonlinearITG, plan_nonlinear_itg, nonlinear_itg_project,
+    nonlinear_itg_fields, nonlinear_itg_bracket, nonlinear_itg_rhs,
+    nonlinear_itg_initial, nonlinear_itg_diagnostics, integrate_nonlinear_itg,
+    nonlinear_itg_drive_power, integrate_driven_itg,
+)
+__all__ += ["NonlinearITG", "plan_nonlinear_itg", "nonlinear_itg_project",
+            "nonlinear_itg_fields", "nonlinear_itg_bracket", "nonlinear_itg_rhs",
+            "nonlinear_itg_initial", "nonlinear_itg_diagnostics", "integrate_nonlinear_itg"]
+__all__ += ["nonlinear_itg_drive_power", "integrate_driven_itg"]
+from .collisional_itg import (
+    CollisionalITG, plan_collisional_itg, collisional_itg_collision,
+    collisional_itg_rhs, collisional_itg_rates, collisional_itg_transport,
+    integrate_collisional_itg,
+)
+__all__ += ["CollisionalITG", "plan_collisional_itg", "collisional_itg_collision",
+            "collisional_itg_rhs", "collisional_itg_rates", "collisional_itg_transport",
+            "integrate_collisional_itg"]

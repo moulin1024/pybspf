@@ -186,6 +186,44 @@ and reusable SVD solves. See [the solver guide](../docs/jax_convex_poisson_solve
 两层粗空间修正和参考 SVD。实验后端同时提供投影粗空间与代数谱粗空间，
 默认拒绝未收敛结果。详见 [两层求解器说明](../docs/jax_convex_poisson_tensor.md)。
 
+`pde/fourier_extension_poisson.py` 复现 arXiv:1706.04848 Algorithm 1 的
+FFT/低秩 Fourier extension，并验证“延拓 forcing＋Fourier 特解＋MFS 调和边界修正”
+的凸域 Poisson 求解器。包括相同延拓问题的直接 TSVD 对照、全域独立 H2 验证及
+首次构造/重复 RHS 分开计时。详见 [算法与使用说明](../docs/fourier_extension_poisson.md)。
+
+`pde/solovev_bspf_validation.py` 在两个解析闭合磁通面上验证固定边界 BSPF
+Grad–Shafranov 求解器，包括含对数项的非多项式 Solov'ev 平衡。输出磁通、极向磁场、
+GS 残差及加密求积的总电流误差；`pde/render_solovev_bspf.py` 绘制磁通面与收敛图。
+详见 [Solov'ev 验证说明](../docs/solovev_bspf.md)。
+
+`pde/benchmark_gs_response.py` 比较固定边界 GS 的预编译磁通响应与已缓存基函数的
+原求解路径，报告每步总耗时、额外内存和增量回本次数，见
+[快速响应说明](../docs/gs_fast_response.md)。
+
+## 水平二维海气双向耦合
+
+`pde/air_sea_double_gyre.py` 求解封闭 β 平面海洋双环流与大气混合层的水平二维耦合。
+大气东西周期、南北不可穿透自由滑移；SST、大气温度与比湿采用保守标量输运。
+默认用四阶 MRI-GARK-ERK45a/RK4 多速率推进，界面双方使用共同阶段状态和通量。
+`pde/validate_air_sea_mri4.py` 对实际海气方程检验四阶时间收敛，旧的一阶耦合可用
+`--method lagged` 复现；其窗口和网格加密脚本仍为 `pde/validate_air_sea_double_gyre.py`。
+见 [四阶耦合与验证](../docs/air_sea_mri4.md) 及 [物理模型与历史结果](../docs/air_sea_double_gyre.md)。
+
+The audited air–sea entry point is `pde/air_sea_double_gyre.py` or the installed
+`bspf-air-sea` CLI with `experiments/air_sea/*.json`. The original demonstration
+is explicitly retained as `pde/air_sea_double_gyre_legacy.py`.
+`pde/report_air_sea_platform.py RUN --out REPORT_DIRECTORY` generates a separate
+read-only evidence report; `pde/render_air_sea_mp4.py` accepts both the research
+NetCDF layout and legacy NPZ snapshots. See [the platform guide](../docs/air_sea_research_platform.md).
+
+- `pde/open_slab_packet.py`: 无源开放磁力线 GK 波包；非周期 BSPF 高阶误差、粒子与自由能通量收支。
+- `pde/validate_open_packet_knots.py`: 保持均匀 FFT 采样，对比均匀样条结点与温和端点加密，细化至 257 点。先运行前一脚本。
+- `pde/linear_itg.py`: 标准 BSPF 线性 ITG 原型；常曲率局部梯度、有限径向 FLR、连续色散参考、增长率和自由能检验，径向网格止于129。
+- `pde/nonlinear_itg_conservation.py`: 无驱动、无耗散的多模态非线性守恒测试；验证熵型二次量、场能、总自由能、带状模态生成及 RK4 时间收敛。
+- `pde/driven_nonlinear_itg.py`: 打开固定 ITG 梯度驱动，观察带状流生成及线性增长转入非线性阶段；含线性对照、同阶段驱动功收支和模态谱。
+- `pde/bgk_itg_saturation.py`: 可调 ν 的回旋平均 BGK，含 J0/J1 矩修正；可重启长时运行，检查热通量分窗平均、自由能谱及驱动—耗散收支。`pde/report_bgk_itg.py` 可从检查点重新分析统计窗口。
+- `pde/scan_bgk_velocity.py`: 固定 Nx=33，扫描四档速度求积并延长到 t=1200；`pde/report_bgk_velocity_scan.py` 比较窗口长度、分块不确定度、速度谱尾和能量收支。见[速度收敛试验](../docs/jax_bgk_velocity_convergence.md)。
+
 ## 内孤立波斜坡算例
 
 [`pde/isw_slope`](pde/isw_slope/README.md) 用 `pybspf.ClosedBSPFLine` 和

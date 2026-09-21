@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "surface_reference": {"rtol": 1e-6, "stress_atol_pa": 1e-8, "heat_atol_w_m2": 1e-5},
+  "space": {"relative_rms": 0.01, "relative_linf": 0.05, "require_decreasing": true},
+  "error_separation": {"time_over_space": 0.1, "quadrature_over_space": 0.1},
+  "smooth_time_order": {"minimum": 3.6, "maximum": 4.4, "valid_intervals": 3},
+  "budgets": {"heat_atol": 0.001, "water_atol": 1e-9, "linear_rtol": 1e-10, "kinetic_atol": 1e-6, "kinetic_rtol": 1e-5},
+  "note": "v1 acceptance contract; runtime budget values are explicitly copied into each versioned run configuration. Spatial/reference/order checks are asserted by the versioned validation implementation and tests. Changing this file alone does not override those checks."
+}

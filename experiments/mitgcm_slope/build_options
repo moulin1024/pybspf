@@ -1,0 +1,19 @@
+# Serial arm64 GNU Fortran, no external I/O or MPI dependencies.
+FC=gfortran
+F90C=gfortran
+CC=clang
+LINK=gfortran
+CPP='/usr/bin/cpp -traditional -P'
+DEFINES='-DWORDLENGTH=4 -DNML_TERMINATOR'
+FC_NAMEMANGLE='#define FC_NAMEMANGLE(X) X ## _'
+S64='$(TOOLSDIR)/set64bitConst.sh'
+EXTENDED_SRC_FLAG='-ffixed-line-length-132'
+FFLAGS='-fconvert=big-endian -fallow-argument-mismatch'
+FOPTIM='-O3 -ftree-vectorize -funroll-loops'
+NOOPTFLAGS='-O2'
+NOOPTFILES=''
+F90FLAGS="$FFLAGS -ffree-form"
+F90OPTIM="$FOPTIM"
+CFLAGS='-O2'
+INCLUDES=''
+LIBS=''

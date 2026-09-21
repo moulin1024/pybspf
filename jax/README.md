@@ -429,6 +429,33 @@ evaluates derivatives of the original fitted spline/Fourier interpolant
 directly, avoiding a new fit to derivative samples. See
 [validation](../docs/jax_alfven_example.md).
 
+### Magnetic-mirror drift kinetics (1z2v)
+
+The default `plan_drift_kinetic` backend is now `matrix_free`: shifted FFTs,
+local spline evaluation, Fourier Toeplitz convolution and fixed-rank mass
+corrections replace full axis matrices. Sample-aligned knots preserve split-knot quadrature;
+`boundary_clustered_knots` is an optional large-axis configuration requiring
+its own physical convergence check. Small incompatible grids raise an error instead of silently
+falling back. `backend="dense"` retains the original reference. See
+[implementation, constraints and measured performance](../docs/jax_fast_drift_kinetic.md).
+
+
+`plan_drift_kinetic(z_plan, v_plan, magnetic_field=..., magnetic_gradient=...,
+mu_max=..., n_mu=...)` extends the BSPF weak transport to static flux tubes
+with acceleration `-mu * B_prime / mass`. Magnetic moment is invariant and
+uses independent Gauss–Legendre quadrature nodes. `integrate_drift_kinetic`
+returns the distribution and accumulated particle/total-energy inflow at all
+four z/v faces; `drift_kinetic_moments` measures parallel/perpendicular energy
+exchange. The measure assumes `A(z)*B(z)` is constant. For strictly positive distributions, `integrate_log_drift_kinetic` evolves
+`log(f)` and `log_drift_kinetic_diagnostics` integrates the exponential
+reconstruction. This removes negative undershoots even between nodes without
+clipping; use the log diagnostics rather than interpolating exponentiated nodal
+samples. The default mirror example uses this path and checks conservation
+independently. Exact vacuum/zero-inflow data require the original linear-f
+path. No electric field, collisions or positivity limiter is included. See the
+[model and validation](../docs/jax_drift_kinetic_mirror.md) and
+[runnable mirror example](../examples/pde/drift_kinetic_mirror.py).
+
 ### Open parallel kinetic transport (1z1v)
 
 `plan_parallel_kinetic(z_plan, v_plan, acceleration=..., quadrature_order=8)`
@@ -524,3 +551,75 @@ The [matched narrow-layer study](../docs/kh_hybrid_outflow.md) compares widths
 0.5 and 1 against width 2. At D0=1 and peak damping 4 the narrower layers stayed
 stable, but the dynamic condition did not preserve the wider-domain interior
 solution; see the reported quantitative differences before reducing the layer.
+
+## FFT Fourier extension and Dirichlet Poisson
+
+`FourierExtensionPlan` implements Algorithm 1 of Matthysen--Huybrechs
+(arXiv:1706.04848): FFT restriction/adjoint, a randomized plunge-region
+factorization, and the adjoint correction. `FourierPoissonPlan` extends the
+forcing, computes a Fourier particular solution with explicit mean handling,
+and fits a harmonic MFS boundary correction on a convex spline domain.
+Both plans reuse their factors across right hand sides. This is a CPU
+NumPy/SciPy path, not a JIT/GPU solver.
+
+See [the algorithm, API and benchmark guide](../docs/fourier_extension_poisson.md)
+for independent validation, oversampling requirements, and setup/RHS costs.
+
+## Fixed-boundary Grad--Shafranov
+
+`FixedBoundaryGSPlan` solves the linear axisymmetric GS operator on a smooth
+convex domain at positive major radius using BSPF fields and physical boundary
+data. `SolovevEquilibrium` and `SolovevFluxDomain` supply polynomial and
+logarithmic analytic equilibria with exact closed flux-surface boundaries.
+Both pressure and toroidal-field source terms are retained.
+See [the Solov'ev validation guide](../docs/solovev_bspf.md) for equations,
+physical-coordinate conventions, magnetic-field errors and convergence runs.
+
+For repeated fixed-boundary GS right-hand sides, `plan.compile_response()`
+precompiles flux output at the source quadrature points. `fast.solve(f, g).flux`
+avoids coefficient recovery and repeated basis evaluation; optional derivative
+responses and lazy coefficient recovery remain available. See
+[fixed-point GS response](../docs/gs_fast_response.md) for costs and benchmarks.
+
+## Horizontal 2D air–sea coupling
+
+`bspf_jax.air_sea` couples a closed beta-plane BSPF ocean to a zonally periodic,
+meridionally free-slip atmospheric mixed layer using Fourier/sine/cosine modes.
+Temperature and specific humidity use conservative weak transport. The default
+MRI-GARK-ERK45a/RK4 method is fourth order, with ocean interior dynamics slow
+and both sides of exchange fast, sharing common evolving stage states and budgets.
+The original first-order scheme is selectable with `method="lagged"`.
+There is no resolved vertical turbulence or prognostic ocean freshwater/salinity.
+See the [fourth-order coupling guide](../docs/air_sea_mri4.md),
+`examples/pde/air_sea_double_gyre.py`, and `examples/pde/validate_air_sea_mri4.py`.
+
+### Audited horizontal air–sea research platform
+
+Install `python -m pip install -e './jax[air-sea,test]'` from the repository root.
+The `bspf-air-sea` command provides versioned JSON runs, guarded MRI-GARK4
+coupling, a pinned JAX COARE 3.5 core, process budgets, NetCDF output and exact
+NPZ+JSON restart. See [the model and reproducibility guide](../docs/air_sea_research_platform.md).
+Long acceptance experiments are separate from ordinary JAX CI; availability of
+the runner is not a claim that all 24-hour/30-day release gates have passed.
+
+### Electrostatic slab gyrokinetics with finite Larmor radius
+
+`plan_slab_gk` and `integrate_slab_gk` provide a periodic 3x2v delta-f prototype
+with kinetic ions, adiabatic electrons, full Bessel gyroaveraging, polarization,
+parallel streaming and dealiased nonlinear E×B transport. Spatial operators use
+FFT and the quasineutral field solve is diagonal in Fourier space. This model
+monitors quadratic free energy; it is not a full-f magnetic-mirror solver.
+See [model, conventions and validation](../docs/jax_gyrokinetic_slab.md) and
+`examples/pde/gyrokinetic_slab.py`.
+
+非周期 GK 验证见 [开放离子声波包](../docs/jax_open_slab_packet.md)：BSPF 轴级 FFT/低秩演化、独立特征参考解和粒子/自由能出射收支。`plan_open_slab_packet(endpoint_blend=0.5)` 支持温和向端点加密样条结点，保持 FFT 采样均匀。
+
+[标准 BSPF 线性 ITG](../docs/jax_linear_itg.md)：`plan_itg_radial` / `plan_linear_itg` / `integrate_linear_itg` 提供有限径向区间、常曲率无磁剪切的静电线性模型，保留FLR并分别验证空间、速度和时间精度。不是非线性雪崩或Cyclone基准。
+
+[无驱动多模态非线性守恒测试](../docs/jax_nonlinear_itg_conservation.md)：`plan_nonlinear_itg` / `integrate_nonlinear_itg` 加入完全反对称的弱形式 E×B 括号和带状绝热电子响应。标准 BSPF 径向离散、周期 y/z Galerkin 截断、完整 J0 FLR；分别检验纯非线性 S/E 守恒与全无驱动系统 W 守恒。
+
+[驱动 ITG 与带状流](../docs/jax_driven_nonlinear_itg.md)：设置 `plan_nonlinear_itg(a_t=4.)` 并用 `integrate_driven_itg` 推进，可记录同 RK4 阶段的背景梯度做功，比较自洽非线性演化与线性对照。梯度默认仍为零。
+
+[BGK 碰撞与统计饱和诊断](../docs/jax_bgk_itg_saturation.md)：`plan_collisional_itg` 默认使用回旋平均线性化 BGK，频率 `nu` 可调；`integrate_collisional_itg` 同阶段累计驱动功和碰撞耗散。保留 `model="local"` 作局部回旋中心 BGK 对照，统计判据独立检查热通量、平均能谱和功率平衡。
+
+[固定 Nx=33 的速度扫描](../docs/jax_bgk_velocity_convergence.md)：`itg_bracket_tensor` 预收缩同一标准 BSPF 三线性积分，加速重复非线性演化；`itg_statistics` 用累计驱动功构造分块均值，检查平均热通量的不确定度和统计等效性。

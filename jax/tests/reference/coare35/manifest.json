@@ -1,0 +1,10 @@
+{
+  "repository": "https://github.com/NOAA-PSL/COARE-algorithm",
+  "commit": "bd1cac80d2dae454e699f9ef46204dfd88086a71",
+  "files": {
+    "LICENSE": "dcff242e4542bbc091429745a77bceb96ca4124582cef5f1cb38a1571df53a1e",
+    "Python/COARE3.5/coare35vn.py": "7d55910d32c0c76df0663a01ca479d44b4021480d1179bebec193f051ccc248a",
+    "Python/COARE3.5/meteo.py": "45776b8e829fa421f83a5ad4d7d0df58f7e92e7340b6787d4fa6d3e41bdd23ac",
+    "Python/COARE3.5/util.py": "f5cfed68e937dfc1a8bae8d9466a7be4a2a99617aa255ed236cbfb9b0168aa81"
+  }
+}

@@ -1,0 +1,350 @@
+{
+  "config": {
+    "length": 1000000.0,
+    "ocean_depth": 50.0,
+    "mixed_layer_depth": 5.0,
+    "atmosphere_depth": 300.0,
+    "rho_ocean": 1025.0,
+    "rho_air": 1.2,
+    "cp_ocean": 3990.0,
+    "cp_air": 1004.0,
+    "latent_heat": 2500000.0,
+    "reference_temperature": 290.0,
+    "pressure": 101325.0,
+    "f0": 0.0001,
+    "beta": 2e-11,
+    "ocean_viscosity": 2000.0,
+    "air_viscosity": 20000.0,
+    "ocean_diffusivity": 1000.0,
+    "air_diffusivity": 20000.0,
+    "bottom_drag": 1.1574074074074074e-07,
+    "drag_coefficient": 0.0013,
+    "heat_coefficient": 0.0012,
+    "moisture_coefficient": 0.0012,
+    "wind_speed": 8.0,
+    "wind_restore_rate": 4.6296296296296294e-05,
+    "temperature_restore_rate": 1.1574074074074073e-05,
+    "humidity_restore_rate": 5.787037037037037e-06,
+    "radiation": 100.0
+  },
+  "n": 33,
+  "duration_seconds": 4800.0,
+  "macro_steps": [
+    2400.0,
+    1200.0,
+    600.0,
+    300.0,
+    150.0
+  ],
+  "refinement": "H and actual fast step H/10 halved together, identical spatial discretization",
+  "runs": {
+    "mri-gark4": {
+      "2400": {
+        "stepper": {
+          "dt_air": 240.0,
+          "dt_ocean": 2400.0,
+          "window": 2400.0,
+          "air_steps": 10,
+          "ocean_steps": 1,
+          "method": "mri-gark4",
+          "inner_steps": 2
+        },
+        "effective_dt_air": 240.0,
+        "heat_error": -4.656612873077393e-10,
+        "water_error": 4.718447854656915e-16,
+        "runtime_seconds": 1.6380590421613306
+      },
+      "1200": {
+        "stepper": {
+          "dt_air": 120.0,
+          "dt_ocean": 1200.0,
+          "window": 1200.0,
+          "air_steps": 10,
+          "ocean_steps": 1,
+          "method": "mri-gark4",
+          "inner_steps": 2
+        },
+        "effective_dt_air": 120.0,
+        "heat_error": -1.5133991837501526e-09,
+        "water_error": 8.326672684688674e-17,
+        "runtime_seconds": 2.035410959040746
+      },
+      "600": {
+        "stepper": {
+          "dt_air": 60.0,
+          "dt_ocean": 600.0,
+          "window": 600.0,
+          "air_steps": 10,
+          "ocean_steps": 1,
+          "method": "mri-gark4",
+          "inner_steps": 2
+        },
+        "effective_dt_air": 60.0,
+        "heat_error": 2.2118911147117615e-09,
+        "water_error": 1.4155343563970746e-15,
+        "runtime_seconds": 2.8850070000626147
+      },
+      "300": {
+        "stepper": {
+          "dt_air": 30.0,
+          "dt_ocean": 300.0,
+          "window": 300.0,
+          "air_steps": 10,
+          "ocean_steps": 1,
+          "method": "mri-gark4",
+          "inner_steps": 2
+        },
+        "effective_dt_air": 30.0,
+        "heat_error": 8.731149137020111e-10,
+        "water_error": 1.124100812432971e-15,
+        "runtime_seconds": 4.387720959028229
+      },
+      "150": {
+        "stepper": {
+          "dt_air": 15.0,
+          "dt_ocean": 150.0,
+          "window": 150.0,
+          "air_steps": 10,
+          "ocean_steps": 1,
+          "method": "mri-gark4",
+          "inner_steps": 2
+        },
+        "effective_dt_air": 15.0,
+        "heat_error": -7.916241884231567e-09,
+        "water_error": -2.3869795029440866e-15,
+        "runtime_seconds": 7.870165916159749
+      }
+    },
+    "lagged": {
+      "2400": {
+        "stepper": {
+          "dt_air": 240.0,
+          "dt_ocean": 2400.0,
+          "window": 2400.0,
+          "air_steps": 10,
+          "ocean_steps": 1,
+          "method": "lagged",
+          "inner_steps": 2
+        },
+        "effective_dt_air": 240.0,
+        "heat_error": 1.0477378964424133e-09,
+        "water_error": 1.6653345369377348e-15,
+        "runtime_seconds": 1.390737749869004
+      },
+      "1200": {
+        "stepper": {
+          "dt_air": 120.0,
+          "dt_ocean": 1200.0,
+          "window": 1200.0,
+          "air_steps": 10,
+          "ocean_steps": 1,
+          "method": "lagged",
+          "inner_steps": 2
+        },
+        "effective_dt_air": 120.0,
+        "heat_error": 3.2014213502407074e-09,
+        "water_error": 2.0539125955565396e-15,
+        "runtime_seconds": 1.701766791054979
+      },
+      "600": {
+        "stepper": {
+          "dt_air": 60.0,
+          "dt_ocean": 600.0,
+          "window": 600.0,
+          "air_steps": 10,
+          "ocean_steps": 1,
+          "method": "lagged",
+          "inner_steps": 2
+        },
+        "effective_dt_air": 60.0,
+        "heat_error": 5.820766091346741e-11,
+        "water_error": 7.216449660063518e-16,
+        "runtime_seconds": 2.4118955831509084
+      },
+      "300": {
+        "stepper": {
+          "dt_air": 30.0,
+          "dt_ocean": 300.0,
+          "window": 300.0,
+          "air_steps": 10,
+          "ocean_steps": 1,
+          "method": "lagged",
+          "inner_steps": 2
+        },
+        "effective_dt_air": 30.0,
+        "heat_error": 8.381903171539307e-09,
+        "water_error": 4.038436252074007e-15,
+        "runtime_seconds": 3.601251166081056
+      },
+      "150": {
+        "stepper": {
+          "dt_air": 15.0,
+          "dt_ocean": 150.0,
+          "window": 150.0,
+          "air_steps": 10,
+          "ocean_steps": 1,
+          "method": "lagged",
+          "inner_steps": 2
+        },
+        "effective_dt_air": 15.0,
+        "heat_error": -1.280568540096283e-09,
+        "water_error": 2.636779683484747e-16,
+        "runtime_seconds": 7.696300333132967
+      }
+    }
+  },
+  "successive_differences": {
+    "mri-gark4": [
+      {
+        "ocean_velocity": 3.228206943653993e-10,
+        "air_velocity": 1.5049582397078716e-09,
+        "sst": 2.755302345654776e-10,
+        "air_temperature": 4.5186196537090556e-10,
+        "humidity": 4.199575008729414e-13,
+        "scaled_combined": 3.276975573849052e-09
+      },
+      {
+        "ocean_velocity": 1.96194797228633e-11,
+        "air_velocity": 9.251653561173951e-11,
+        "sst": 1.6438154180664124e-11,
+        "air_temperature": 2.7628440449602655e-11,
+        "humidity": 2.5732833656135013e-14,
+        "scaled_combined": 1.9916401052947207e-10
+      },
+      {
+        "ocean_velocity": 1.2081278685160046e-12,
+        "air_velocity": 5.742130504905139e-12,
+        "sst": 1.0037588240146682e-12,
+        "air_temperature": 1.7143804059409952e-12,
+        "humidity": 1.5969230581221203e-15,
+        "scaled_combined": 1.226558668528904e-11
+      },
+      {
+        "ocean_velocity": 7.493281057924818e-14,
+        "air_velocity": 3.536890624693408e-13,
+        "sst": 6.204871666766711e-14,
+        "air_temperature": 1.0694034564667952e-13,
+        "humidity": 9.637346182414997e-17,
+        "scaled_combined": 7.60806410069835e-13
+      }
+    ],
+    "lagged": [
+      {
+        "ocean_velocity": 9.7326877732802e-07,
+        "air_velocity": 0.00010639681102287188,
+        "sst": 4.611914315068304e-06,
+        "air_temperature": 7.484465110485344e-05,
+        "humidity": 7.236268140650434e-08,
+        "scaled_combined": 7.711653348901434e-05
+      },
+      {
+        "ocean_velocity": 4.2823038476654553e-07,
+        "air_velocity": 5.102710706448263e-05,
+        "sst": 2.19038359679748e-06,
+        "air_temperature": 3.589304744967202e-05,
+        "humidity": 3.428718439599307e-08,
+        "scaled_combined": 3.693083684771392e-05
+      },
+      {
+        "ocean_velocity": 2.0138964411633154e-07,
+        "air_velocity": 2.4991181671868692e-05,
+        "sst": 1.0681271360668978e-06,
+        "air_temperature": 1.7595863740469112e-05,
+        "humidity": 1.6688853003430306e-08,
+        "scaled_combined": 1.8092954713633215e-05
+      },
+      {
+        "ocean_velocity": 9.780520133141473e-08,
+        "air_velocity": 1.2367458098998092e-05,
+        "sst": 5.275450855581481e-07,
+        "air_temperature": 8.714313124639937e-06,
+        "humidity": 8.233191709446715e-09,
+        "scaled_combined": 8.957784536893731e-06
+      }
+    ]
+  },
+  "observed_orders": {
+    "mri-gark4": [
+      4.040336042049516,
+      4.021268824714136,
+      4.01094303056636
+    ],
+    "lagged": [
+      1.0622142473995817,
+      1.0293979241919118,
+      1.0142141596586012
+    ]
+  },
+  "errors_vs_finest_mri": {
+    "mri-gark4": [
+      {
+        "ocean_velocity": 3.437227332208661e-10,
+        "air_velocity": 1.6035218442929296e-09,
+        "sst": 2.930270900325289e-10,
+        "air_temperature": 4.812230898034919e-10,
+        "humidity": 4.4731997649429546e-13,
+        "scaled_combined": 3.48914738991727e-09
+      },
+      {
+        "ocean_velocity": 2.0902533081077564e-11,
+        "air_velocity": 9.861159002954666e-11,
+        "sst": 1.7503806564352953e-11,
+        "air_temperature": 2.944844510646696e-11,
+        "humidity": 2.742484755842276e-14,
+        "scaled_combined": 2.1219011674792615e-10
+      },
+      {
+        "ocean_velocity": 1.2830605808316976e-12,
+        "air_velocity": 6.0958012230953325e-12,
+        "sst": 1.0657572722497324e-12,
+        "air_temperature": 1.821292903492238e-12,
+        "humidity": 1.6929328808054192e-15,
+        "scaled_combined": 1.3026383157388234e-11
+      },
+      {
+        "ocean_velocity": 7.493281057924818e-14,
+        "air_velocity": 3.536890624693408e-13,
+        "sst": 6.204871666766711e-14,
+        "air_temperature": 1.0694034564667952e-13,
+        "humidity": 9.637346182414997e-17,
+        "scaled_combined": 7.60806410069835e-13
+      }
+    ],
+    "lagged": [
+      {
+        "ocean_velocity": 1.786921185628479e-06,
+        "air_velocity": 0.00020706137234469647,
+        "sst": 8.912446705926325e-06,
+        "air_temperature": 0.0001455762961894833,
+        "humidity": 1.3967074738257322e-07,
+        "scaled_combined": 0.00014985389655878265
+      },
+      {
+        "ocean_velocity": 8.218929271262126e-07,
+        "air_velocity": 0.00010066821333779004,
+        "sst": 4.3081480245614e-06,
+        "air_temperature": 7.084609370013945e-05,
+        "humidity": 6.73609489294991e-08,
+        "scaled_combined": 7.28628852580519e-05
+      },
+      {
+        "ocean_velocity": 3.9498363222014667e-07,
+        "air_velocity": 4.9641535262060784e-05,
+        "sst": 2.118812652792473e-06,
+        "air_temperature": 3.496809787347061e-05,
+        "humidity": 3.308095987047771e-08,
+        "scaled_combined": 3.5948662681524843e-05
+      },
+      {
+        "ocean_velocity": 1.9377986270190424e-07,
+        "air_velocity": 2.4650405855354837e-05,
+        "sst": 1.0508227682975283e-06,
+        "air_temperature": 1.7374160289867323e-05,
+        "humidity": 1.6393044962902178e-08,
+        "scaled_combined": 1.785784060908082e-05
+      }
+    ]
+  },
+  "reference": "MRI H=150 s; finite-step reference, not analytic truth; orders use successive differences",
+  "scope": "Temporal convergence of this semi-discrete transient, not spatial convergence or ocean equilibrium"
+}

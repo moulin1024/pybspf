@@ -167,6 +167,31 @@ def main():
             history.append(diag)
             snapshots.append(output_state.copy())
             times.append(t)
+            # Publish one complete checkpoint atomically for live inspection.
+            # The currently running process must be restarted to pick up code edits.
+            checkpoint_fields = plan.grid(output_state, x, y)
+            checkpoint = args.out / "latest.tmp.npz"
+            np.savez_compressed(
+                checkpoint,
+                x=x,
+                y=y,
+                t=t,
+                fields=np.stack([
+                    checkpoint_fields[key] for key in ("u", "v", "vorticity", "psi")
+                ]),
+                center=plan.hole.center,
+                axes=plan.hole.axes,
+                buffer_start=plan.buffer_start,
+                sigma=plan.sponge_profile(x),
+                state=output_state,
+                coefficients=plan.coefficients(output_state),
+                nx=plan.nx,
+                ny=plan.ny,
+            )
+            checkpoint.replace(args.out / "latest.npz")
+            history_path = args.out / "history.tmp.json"
+            history_path.write_text(json.dumps(history, indent=2) + "\n")
+            history_path.replace(args.out / "history.json")
             print(json.dumps(diag), flush=True)
             if not np.all(np.isfinite(output_state)) or diag["max_speed"] > 20:
                 raise RuntimeError("Flow became unstable")
