@@ -64,9 +64,9 @@ reference flow and maintained base, so its kinetic energy need not decrease.
 ## Reproduce
 
 ```sh
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src:scratch \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=scratch \
  python scratch/run_kh_hybrid_sweep.py --extension .5 --nx 112
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src:scratch \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=scratch \
  python scratch/run_kh_hybrid_sweep.py --extension 1 --nx 128
 ```
 
@@ -75,7 +75,7 @@ runs in a pair have identical initial data, viscosity, damping, and resolution.
 The normal runner also supports this combination, for example:
 
 ```sh
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src:scratch \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=scratch \
  python scratch/run_kh_stream.py --nx 112 --ny 80 --T 12 --dt .002 \
  --x-boundary dynamic --boundary-d0 1 --layers --extension .5 \
  --sponge-strength 4 --seed-cutoff-width 1 \

@@ -5,8 +5,8 @@
 
 实现入口：[`tokamak_axisymmetric.py`](../examples/pde/tokamak_axisymmetric.py)。
 磁平衡与线性模型分别位于
-[`tokamak_equilibrium.py`](../jax/src/bspf_jax/tokamak_equilibrium.py) 和
-[`tokamak_linear.py`](../jax/src/bspf_jax/tokamak_linear.py)。
+[`tokamak_equilibrium.py`](../packages/models/src/bspf_models/plasma/tokamak_equilibrium.py) 和
+[`tokamak_linear.py`](../packages/models/src/bspf_models/plasma/tokamak_linear.py)。
 
 ## 已实现的物理范围
 
@@ -154,19 +154,19 @@ B_R=-\psi_Z/R,\quad B_Z=\psi_R/R,\quad B_\phi=F_0/R,
 从仓库根目录运行，依赖 JAX、NumPy、SciPy、gmpy2；渲染另需 Matplotlib 和 imageio-ffmpeg。
 
 ```bash
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python examples/pde/tokamak_axisymmetric.py --n 49 --sensitivity \
   --out build/tokamak_axisymmetric_n49
 
 MPLCONFIGDIR=/tmp/bspf-mpl python examples/pde/render_tokamak_axisymmetric.py \
   build/tokamak_axisymmetric_n49
 
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python examples/pde/tokamak_axisymmetric.py --n 33 --control \
   --out build/tokamak_axisymmetric_control
 
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
-  python -m pytest jax/tests/test_tokamak.py -q
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+  python -m pytest packages/models/tests/test_tokamak.py -q
 ```
 
 主算例输出 `summary.json`、`evolution.npz`、本地调试缓存 `model.pkl`，渲染输出

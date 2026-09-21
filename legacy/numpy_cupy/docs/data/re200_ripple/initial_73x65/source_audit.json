@@ -1,0 +1,28 @@
+[
+  {
+    "t": 0.0,
+    "omega_rms": 1.0562641198758207,
+    "bspf_fourth_difference_rms": 5.242650730873556e-10,
+    "rational_fourth_difference_rms": 4.727092969300337e-06,
+    "total_fourth_difference_rms": 4.727101604603354e-06,
+    "rational_to_bspf_fourth_difference": 9016.60860499987,
+    "discrete_rate_rms": 2.4095180631728286,
+    "discrete_rate_fourth_difference_rms": 0.20541252614507854,
+    "local_vorticity_equation": [
+      {
+        "h": 0.002,
+        "rhs_rms": 2.156420106829931,
+        "residual_rms": 0.9748788897465333,
+        "rhs_fourth_difference_rms": 3.485018788980463e-05,
+        "residual_fourth_difference_rms": 0.20541254299688264
+      },
+      {
+        "h": 0.001,
+        "rhs_rms": 2.1564201070365807,
+        "residual_rms": 0.974878889835968,
+        "rhs_fourth_difference_rms": 3.485018870235316e-05,
+        "residual_fourth_difference_rms": 0.20541254299685122
+      }
+    ]
+  }
+]

@@ -10,7 +10,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
-from bspf_jax.embedded_poisson import benchmark_domains
+from bspf_models.elliptic.embedded_poisson import benchmark_domains
 
 
 def main():

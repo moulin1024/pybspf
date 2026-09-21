@@ -7,10 +7,10 @@
 
 实现位置：
 
-- `jax/src/bspf_jax/rational_stokes.py`：可复用的齐次 Stokes 边界延拓。
-- `jax/src/bspf_jax/immersed_flow.py`：合成空间、完整算子及原 IMEX midpoint 推进。
+- `packages/models/src/bspf_models/fluids/rational_stokes.py`：可复用的齐次 Stokes 边界延拓。
+- `packages/models/src/bspf_models/fluids/immersed_flow.py`：合成空间、完整算子及原 IMEX midpoint 推进。
 - `examples/pde/hybrid_flow_mms.py`：非零体力 Stokes 与非定常、非线性 NS MMS。
-- `jax/tests/test_hybrid_flow.py`：含有理时间项的 MMS、时间阶、缓冲、通量和流函数单值性。
+- `packages/models/tests/test_hybrid_flow.py`：含有理时间项的 MMS、时间阶、缓冲、通量和流函数单值性。
 
 ## 为什么不是把 NS 当作稳态 Stokes 求解
 
@@ -221,7 +221,7 @@ u_L=U_0-E(γU_0)，无需推进 BSPF 体内系数。该提升相对独立 AAA �
 结果及图在 `build/immersed_flow/hybrid/channel/aaa_comparison/`。
 
 ```sh
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-mpl python examples/pde/compare_hybrid_lightning.py
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-mpl python examples/pde/compare_hybrid_lightning.py
 ```
 
 ## 使用
@@ -229,7 +229,7 @@ PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bs
 ```python
 import jax
 jax.config.update("jax_enable_x64", True)
-from bspf_jax import ImmersedFlowPlan
+from bspf_models.fluids.immersed_flow import ImmersedFlowPlan
 
 plan = ImmersedFlowPlan(nx=73, ny=33, wall_method="rational")
 step = plan.stepper(0.02)
@@ -238,13 +238,13 @@ state = step.step(state, 0.0)  # 完整 NS，默认缓冲层已启用
 ```
 
 ```sh
-pip install -e 'jax[rational-flow]'
-export PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
+pip install -e '.[host,notebook,test]' -e './packages/models[precision,test]' -e './packages/sim[air-sea,test]'
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
 python examples/pde/hybrid_flow_mms.py
 python examples/pde/hybrid_flow_mms.py --quadrature-factor 4 --out build/immersed_flow/hybrid/mms_q4
 MPLCONFIGDIR=/tmp/bspf-mpl python examples/pde/render_hybrid_flow_mms.py
 python examples/pde/immersed_channel_flow.py --wall-method rational --out build/immersed_flow/hybrid/channel
-python -m pytest -q jax/tests/test_hybrid_flow.py jax/tests/test_immersed_flow.py jax/tests/test_cavity.py jax/tests/test_lightning_stokes_reference.py
+python -m pytest -q packages/models/tests/test_hybrid_flow.py packages/models/tests/test_immersed_flow.py packages/models/tests/test_cavity.py packages/models/tests/test_lightning_stokes_reference.py
 ```
 
 `rational_options` 可以设置 degree、corner_poles、laurent、samples、rcond。
@@ -277,7 +277,7 @@ moving those factorizations to NumPy:
 ```bash
 LD_PRELOAD=/mpcdf/soft/SLE_15/packages/x86_64/cuda/13.0.1/lib64/libcublas.so.13 \
 JAX_PLATFORM_NAME=gpu OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
-PYTHONPATH=jax/src:/tmp/pybspf-gpu-deps \
+PYTHONPATH=/tmp/pybspf-gpu-deps \
 python examples/pde/immersed_channel_flow.py --backend gpu \
   --wall-method rational --out build/immersed_flow/hybrid/channel
 ```
@@ -286,7 +286,7 @@ The temporary dependency path above contains `gmpy2`; normally install the
 package's `rational-flow` extra instead. The library preload is specific to
 this environment, not a portable requirement.
 
-Regression coverage: `jax/tests/test_immersed_flow_gpu.py` compares five steps
+Regression coverage: `packages/models/tests/test_immersed_flow_gpu.py` compares five steps
 and diagnostics with the host implementation, checks device placement, and
 runs evolution/diagnostics under JAX's implicit-transfer guard.
 

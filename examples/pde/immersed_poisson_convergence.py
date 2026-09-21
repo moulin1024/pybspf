@@ -7,8 +7,8 @@ from pathlib import Path
 import jax
 import numpy as np
 
-from bspf_jax.immersed_poisson import ImmersedPoissonPlan
-from bspf_jax.random_wave_mms import RandomWaveMMS
+from bspf_models.elliptic.immersed_poisson import ImmersedPoissonPlan
+from bspf_models.elliptic.random_wave_mms import RandomWaveMMS
 
 
 class HoleMMS:

@@ -39,7 +39,7 @@ installed BLAS stack, not a universal defect in all OpenBLAS builds.
 
 ```sh
 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python -m jupyterlab
-OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python -m pytest -c jax/pyproject.toml jax/tests
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python -m pytest tests packages/models/tests packages/sim/tests
 ```
 
 Start a fresh kernel/process. These variables are read during numerical-library
@@ -51,7 +51,7 @@ JIT and its independent task scheduling remain enabled.
 
 The package must not silently change process-wide thread settings on import.
 The notebook test runner supplies them before launching Python, and
-`jax/tests/test_cpu_solve_runtime.py` repeats the independent JAX/SciPy probe
+`tests/test_cpu_solve_runtime.py` repeats the independent JAX/SciPy probe
 in a fresh, explicitly configured CPU process.
 
 For a long-term environment repair, use a validated BLAS build suitable for

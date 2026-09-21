@@ -2,7 +2,8 @@ import pickle,numpy as np
 import jax
 jax.config.update('jax_enable_x64',True)
 from pathlib import Path
-from bspf_jax.tokamak_linear import assemble_linear_tokamak,growing_modes
+from bspf_models.plasma.tokamak_linear import assemble_linear_tokamak
+from bspf_models.plasma.tokamak_linear import growing_modes
 p=pickle.loads(Path('build/tokamak_plan33.pkl').read_bytes())
 path=Path('build/tokamak_eq_0.002_0.18.npz')
 if not path.exists():path=Path('build/tokamak_eq_0.001_0.15.npz')

@@ -4,7 +4,8 @@ from pathlib import Path
 import json
 import numpy as np
 import jax.numpy as jnp
-from bspf_jax.stream_navier_stokes import StreamLine, StreamNavierStokes2DPlan
+from bspf_models._numerics.trial_spaces import StreamLine
+from bspf_models.fluids.stream_navier_stokes import StreamNavierStokes2DPlan
 
 
 def load_open_plan(directory):

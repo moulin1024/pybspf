@@ -6,7 +6,7 @@ import numpy as np
 import jax
 
 from dynamic_boundary_common import load_open_plan
-from bspf_jax.stream_navier_stokes import stream_evaluate_line
+from bspf_models._numerics.trial_spaces import stream_evaluate_line
 
 jax.config.update("jax_enable_x64", True)
 root = Path("build/kh_stream")

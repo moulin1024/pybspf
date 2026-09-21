@@ -31,7 +31,7 @@ order 7. Stable sech-squared evaluation avoids cancellation in the tanh tails.
 
 ## Implementation mechanism
 
-`jax/src/bspf_jax/plans.py` builds a one-sided polynomial stencil by solving a
+`src/pybspf/plans.py` builds a one-sided polynomial stencil by solving a
 Taylor/Vandermonde system and dividing derivative weights by powers of dx.
 For degree 9 the default constraint order is 8, imposing derivatives 0 through 7.
 With nine boundary samples, these are derivatives of a degree-8 interpolant.
@@ -40,7 +40,7 @@ seventh derivative therefore has only second-order local accuracy. Symmetry
 can cancel leading terms in this particular field. These local orders are
 not the observed global BSPF convergence order.
 
-`jax/src/bspf_jax/operators.py` inserts these estimated derivatives directly
+`src/pybspf/operators.py` inserts these estimated derivatives directly
 into the equality-constraint right-hand side. There is no defect correction or
 accuracy check on that data. Once the Fourier approximation error decreases
 below the endpoint-induced error, the latter produces a power-law region.

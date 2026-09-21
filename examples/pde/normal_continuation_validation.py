@@ -6,9 +6,10 @@ from pathlib import Path
 import numpy as np
 from scipy.spatial import cKDTree
 
-from bspf_jax.embedded_poisson import benchmark_domains
-from bspf_jax.normal_continuation import NormalContinuation, chart
-from bspf_jax.random_wave_mms import RandomWaveMMS
+from bspf_models.elliptic.embedded_poisson import benchmark_domains
+from pybspf.normal_continuation import NormalContinuation
+from pybspf.normal_continuation import chart
+from bspf_models.elliptic.random_wave_mms import RandomWaveMMS
 
 
 def main():

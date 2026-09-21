@@ -3,8 +3,8 @@
 import jax
 
 jax.config.update("jax_enable_x64", True)
-from bspf_jax.mapped_boussinesq import MappedBoussinesq
-from bspf_jax import isw_slope as backend
+from bspf_models.fluids.mapped_boussinesq import MappedBoussinesq
+import bspf_models.fluids.isw_slope as backend
 from common import geometry, background, SharedInitial, NU, KAPPA
 
 

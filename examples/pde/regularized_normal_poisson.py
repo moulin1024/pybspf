@@ -8,11 +8,14 @@ import jax
 import numpy as np
 import scipy.linalg as la
 
-from bspf_jax.embedded_poisson import benchmark_domains
-from bspf_jax.normal_continuation import chart
-from bspf_jax.random_wave_mms import RandomWaveMMS
-from bspf_jax.regularized_normal import collar_matrices, normal_weights
-from bspf_jax.smooth_extension import factors, evaluate_factors, replace_boundary_rule
+from bspf_models.elliptic.embedded_poisson import benchmark_domains
+from pybspf.normal_continuation import chart
+from bspf_models.elliptic.random_wave_mms import RandomWaveMMS
+from bspf_models.elliptic.regularized_normal import collar_matrices
+from bspf_models.elliptic.regularized_normal import normal_weights
+from bspf_models.elliptic.smooth_extension import factors
+from bspf_models.elliptic.smooth_extension import evaluate_factors
+from bspf_models.elliptic.smooth_extension import replace_boundary_rule
 from embedded_poisson_approximation import interior
 
 jax.config.update("jax_enable_x64", True)

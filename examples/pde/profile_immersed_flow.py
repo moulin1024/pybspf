@@ -8,7 +8,7 @@ from time import perf_counter
 
 import jax
 import numpy as np
-from bspf_jax.immersed_flow import ImmersedFlowPlan
+from bspf_models.fluids.immersed_flow import ImmersedFlowPlan
 
 
 def main():

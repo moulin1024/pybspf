@@ -5,13 +5,11 @@ from pathlib import Path
 import jax
 import jax.numpy as jnp
 import numpy as np
-from bspf_jax import (
-    plan_pressure_poisson2d,
-    pressure_schur,
-    pressure_gradient,
-    solve_pressure_poisson2d,
-    pressure_remove_mean,
-)
+from bspf_models.elliptic.pressure import plan_pressure_poisson2d
+from bspf_models.elliptic.pressure import pressure_schur
+from bspf_models.elliptic.pressure import pressure_gradient
+from bspf_models.elliptic.pressure import solve_pressure_poisson2d
+from bspf_models.elliptic.pressure import pressure_remove_mean
 
 jax.config.update("jax_enable_x64", True)
 

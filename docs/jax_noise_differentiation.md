@@ -16,17 +16,20 @@ by the same factor preserves the discrepancy choice (up to numerical rounding).
 The actual smoothing coefficients are the per-axis `alpha` values in diagnostics.
 
 ```python
+
+import pybspf.operators as bspf_operators
+import pybspf.plans as bspf_plans
 import jax
 jax.config.update('jax_enable_x64', True)
 import jax.numpy as jnp
-import bspf_jax as bspf
+import pybspf as bspf
 
 x = jnp.linspace(0., 1., 65)
-plan = bspf.plan_1d(x, noise_std=sigma_prior)  # your a priori noise estimate
+plan = bspf_plans.plan_1d(x, noise_std=sigma_prior)  # your a priori noise estimate
 # samples are your acquired measurements; no clean signal is passed
-slope = jax.jit(bspf.differentiate)(plan, samples)
-fit = jax.jit(lambda p, f: bspf.differentiate(p, f, order=0))(plan, samples)
-choices = jax.jit(bspf.noise_diagnostics)(plan, samples)
+slope = jax.jit(bspf_operators.differentiate)(plan, samples)
+fit = jax.jit(lambda p, f: bspf_operators.differentiate(p, f, order=0))(plan, samples)
+choices = jax.jit(bspf_operators.noise_diagnostics)(plan, samples)
 ```
 
 Use `plan_2d(x,y,noise_std=sigma_prior)` or `plan_3d(x,y,z,noise_std=sigma_prior)` with the

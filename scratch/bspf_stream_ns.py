@@ -1,18 +1,16 @@
 """Compatibility aliases for the exploratory scripts; implementation is in JAX."""
 
 import numpy as np
-from bspf_jax.stream_navier_stokes import (
-    StreamLine,
-    StreamNavierStokes2DPlan as StreamPlan,
-    plan_stream_navier_stokes2d,
-    stream_ns_velocity as velocity,
-    stream_ns_vorticity as vorticity,
-    stream_ns_load as load,
-    stream_ns_rhs as rhs,
-    stream_ns_rk4_step as rk4,
-    stream_kh_initial as kh_seed,
-    stream_evaluate_line as evaluate_line,
-)
+from bspf_models._numerics.trial_spaces import StreamLine
+from bspf_models.fluids.stream_navier_stokes import StreamNavierStokes2DPlan as StreamPlan
+from bspf_models.fluids.stream_navier_stokes import plan_stream_navier_stokes2d
+from bspf_models.fluids.stream_navier_stokes import stream_ns_velocity as velocity
+from bspf_models.fluids.stream_navier_stokes import stream_ns_vorticity as vorticity
+from bspf_models.fluids.stream_navier_stokes import stream_ns_load as load
+from bspf_models.fluids.stream_navier_stokes import stream_ns_rhs as rhs
+from bspf_models.fluids.stream_navier_stokes import stream_ns_rk4_step as rk4
+from bspf_models.fluids.stream_navier_stokes import stream_kh_initial as kh_seed
+from bspf_models._numerics.trial_spaces import stream_evaluate_line as evaluate_line
 
 
 def plan(

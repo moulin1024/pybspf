@@ -7,14 +7,16 @@ The optional DCT/HODLR backend uses SciPy during host compression setup; its
 application is JAX. Neither backend depends on the NumPy solver or benchmark folder.
 
 ```python
+
+import bspf_models.elliptic.pressure as bspf_pressure
 import jax
 jax.config.update("jax_enable_x64", True)
 import jax.numpy as jnp
-import bspf_jax as b
+import pybspf as b
 
 x = jnp.linspace(0, 1, 64)
 y = jnp.linspace(0, 1.5, 72)
-plan = b.plan_pressure_poisson2d(
+plan = bspf_pressure.plan_pressure_poisson2d(
     x, y,
     endpoint_method="chebyshev",
     chebyshev_modes=14,
@@ -24,9 +26,9 @@ plan = b.plan_pressure_poisson2d(
 X, Y = jnp.meshgrid(x, y, indexing="ij")
 exact = jnp.exp(X + 0.5*Y)
 raw = jnp.stack([exact, 0.5*exact], axis=-1)
-projected, result = jax.jit(b.project_pressure2d)(plan, raw)
+projected, result = jax.jit(bspf_pressure.project_pressure2d)(plan, raw)
 assert bool(result.converged)
-pressure_error = jnp.linalg.norm(result.pressure - b.pressure_remove_mean(plan, exact))
+pressure_error = jnp.linalg.norm(result.pressure - bspf_pressure.pressure_remove_mean(plan, exact))
 ```
 
 No Chebyshev nodes are needed: the fit uses the existing uniform-grid endpoint
@@ -118,12 +120,12 @@ flags, and pressure accuracy improvements at production spline order.
 
 ```sh
 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
-  python -m pytest -c jax/pyproject.toml jax/tests/test_pressure.py
+  python -m pytest -c jax/pyproject.toml packages/models/tests/test_pressure.py
 ```
 
 ## Experimental DCT/HODLR direct transforms
 
-Install the optional setup dependency with `pip install -e 'jax[compression]'`.
+Install the optional setup dependency with `pip install -e '.[host,notebook,test]' -e './packages/models[precision,test]' -e './packages/sim[air-sea,test]'`.
 Use `transform_backend="dct_hodlr"` in `plan_pressure_poisson2d`, or reuse a dense
 plan without repeating its assembly:
 

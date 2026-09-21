@@ -13,10 +13,10 @@ from time import perf_counter
 import jax
 import numpy as np
 
-from bspf_jax.convex_poisson_grid import _TensorGridOutput
-from bspf_jax.embedded_poisson import benchmark_domains
-from bspf_jax.random_wave_mms import RandomWaveMMS
-from bspf_jax.stream_navier_stokes import _stream_line
+from bspf_models.elliptic.convex_poisson_grid import _TensorGridOutput
+from bspf_models.elliptic.embedded_poisson import benchmark_domains
+from bspf_models.elliptic.random_wave_mms import RandomWaveMMS
+from bspf_models._numerics.trial_spaces import _stream_line
 
 
 def median_time(callback, repeat=21):

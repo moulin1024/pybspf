@@ -93,4 +93,4 @@ m(N)=\max(16,\lceil N/64\rceil),
 - FFT微扰数据：`build/pressure_accuracy_diagnosis/roundoff.json`。
 - 控制实验：`build/pressure_accuracy_controls/results.json`。
 
-均使用 `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src python3 ...`。本次只增加诊断与控制实验，没有修改生产求解器的默认参数或算法。
+均使用 `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3 ...`。本次只增加诊断与控制实验，没有修改生产求解器的默认参数或算法。

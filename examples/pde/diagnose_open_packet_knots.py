@@ -6,9 +6,11 @@ import jax
 jax.config.update('jax_enable_x64',True)
 import jax.numpy as jnp,numpy as np,json
 from dataclasses import replace
-from bspf_jax.open_slab_packet import *
-from bspf_jax.fast_axis import axis_values,plan_fast_axis,sample_aligned_knots
-from bspf_jax.plans import plan_1d
+from bspf_models.kinetic.open_slab_packet import *
+from pybspf.fast_axis import axis_values
+from pybspf.fast_axis import plan_fast_axis
+from pybspf.fast_axis import sample_aligned_knots
+from pybspf.plans import plan_1d
 
 def main():
     from pathlib import Path

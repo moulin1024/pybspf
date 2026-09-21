@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 import numpy as np
 
-from bspf_jax.immersed_flow import channel_lift
-from bspf_jax.immersed_poisson import EllipticHole
-from bspf_jax.rational_stokes import RationalStokesExtension
+from bspf_models.fluids.immersed_flow import channel_lift
+from bspf_models.elliptic.immersed_poisson import EllipticHole
+from bspf_models.fluids.rational_stokes import RationalStokesExtension
 
 
 def metrics(u, v, w, ref, mask):

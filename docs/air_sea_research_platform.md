@@ -7,7 +7,7 @@
 在仓库根目录，使用支持 float64 的 JAX 环境：
 
 ```bash
-python -m pip install -e './jax[air-sea,test]'
+python -m pip install -e '.[host,test]' -e './packages/models[precision,test]' -e './packages/sim[air-sea,test]'
 bspf-air-sea run --config experiments/air_sea/coare35_24h.json --out build/my_coare24h
 bspf-air-sea report build/my_coare24h > build/my_coare24h_report.json
 bspf-air-sea resume build/my_coare24h/checkpoints/step000000144.json --until 172800
@@ -16,7 +16,7 @@ bspf-air-sea validate --suite smoke --config experiments/air_sea/coare35_24h.jso
 
 `until` 单位是从初始时刻起的秒数，必须与同步分组精确对齐。实验目录必须不存在。续跑读检查点中的完整原配置；更换参数、网格、时间方法或软件环境需要新建派生实验。输出 JSON 配置不能作为续跑时覆盖检查点参数的入口。
 
-Python API 位于 `bspf_jax.air_sea_platform`：`run(config, out, until=None)`、`resume(checkpoint, until=None)`、`validate(suite, config, out)`、`report(run_directory)`。报告读取已有文件，不改变原实验。示例 `examples/pde/air_sea_double_gyre.py` 是参数兼容入口；原历史驱动保存在 `air_sea_double_gyre_legacy.py`。
+Python API 位于 `bspf_sim.air_sea.platform`：`run(config, out, until=None)`、`resume(checkpoint, until=None)`、`validate(suite, config, out)`、`report(run_directory)`。报告读取已有文件，不改变原实验。示例 `examples/pde/air_sea_double_gyre.py` 是参数兼容入口；原历史驱动保存在 `air_sea_double_gyre_legacy.py`。
 
 ## 方程、边界与单位
 
@@ -36,7 +36,7 @@ Python API 位于 `bspf_jax.air_sea_platform`：`run(config, out, until=None)`�
 
 ## 表面代理与 COARE 3.5
 
-`surface.method=constant` 保留历史常系数公式。`coare35` 使用 NOAA 官方参考源码的动量、热量、水汽交换核心；参考提交 `bd1cac80d2dae454e699f9ef46204dfd88086a71`，源码、许可证、SHA256 清单位于 `jax/tests/reference/coare35/`，不会自动追踪上游。
+`surface.method=constant` 保留历史常系数公式。`coare35` 使用 NOAA 官方参考源码的动量、热量、水汽交换核心；参考提交 `bd1cac80d2dae454e699f9ef46204dfd88086a71`，源码、许可证、SHA256 清单位于 `packages/models/tests/reference/coare35/`，不会自动追踪上游。
 
 原始参考：[NOAA-PSL COARE-algorithm](https://github.com/NOAA-PSL/COARE-algorithm/tree/bd1cac80d2dae454e699f9ef46204dfd88086a71)。参考核的官方常数与适配到模型 `rho_air/cp_air/Lv` 的通量分开验证。
 
@@ -68,7 +68,7 @@ Python API 位于 `bspf_jax.air_sea_platform`：`run(config, out, until=None)`�
 ## 自动验证与发布门槛
 
 ```bash
-python -m pytest -q jax/tests/test_air_sea.py jax/tests/test_multirate.py jax/tests/test_surface_exchange.py jax/tests/test_air_sea_audit.py jax/tests/test_air_sea_platform.py jax/tests/test_air_sea_validation.py
+python -m pytest -q packages/models/tests/test_air_sea.py tests/test_multirate.py packages/models/tests/test_surface_exchange.py packages/models/tests/test_air_sea_audit.py packages/sim/tests/test_air_sea_platform.py packages/sim/tests/test_air_sea_validation.py
 bspf-air-sea validate --suite all --config experiments/air_sea/coare35_24h.json --out build/full_acceptance
 ```
 

@@ -4,7 +4,8 @@ from pathlib import Path
 import jax
 import numpy as np
 import scipy.linalg as la
-from bspf_jax.immersed_flow import ImmersedFlowPlan, channel_lift
+from bspf_models.fluids.immersed_flow import ImmersedFlowPlan
+from bspf_models.fluids.immersed_flow import channel_lift
 jax.config.update('jax_enable_x64', True)
 out = Path('build/immersed_flow/artifact_diagnosis')
 p = ImmersedFlowPlan(nx=73, ny=33, wall_rcond=1e-3)

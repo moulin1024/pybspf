@@ -89,16 +89,18 @@ S_x=(B_x[I_x,:]Z_x)(B_x[I_x,:]Z_x)^T.
 ## 使用方式
 
 ```python
+
+import bspf_models.fluids.navier_stokes as bspf_navier_stokes
 import jax
-import bspf_jax as b
+import pybspf as b
 jax.config.update("jax_enable_x64", True)
 
 # p 为现有的 PressurePoisson2DPlan
-ns = b.plan_navier_stokes2d(p, viscosity=0.002, closure="sbp84")
-u, base, initial_diag = b.kh_initial_velocity(ns, perturbation=0.03)
-force = -b.ns_raw_rhs(ns, base)
-u, diag = b.ns_rk4_step(ns, u, 0.002, force)  # 不传 sponge
-residual = b.ns_divergence(ns, u)
+ns = bspf_navier_stokes.plan_navier_stokes2d(p, viscosity=0.002, closure="sbp84")
+u, base, initial_diag = bspf_navier_stokes.kh_initial_velocity(ns, perturbation=0.03)
+force = -bspf_navier_stokes.ns_raw_rhs(ns, base)
+u, diag = bspf_navier_stokes.ns_rk4_step(ns, u, 0.002, force)  # 不传 sponge
+residual = bspf_navier_stokes.ns_divergence(ns, u)
 ```
 
 选用该分支后，使用 `ns_divergence` 和 `ns_project_velocity`，不要用 `pressure_divergence(p, u)` 评价新空间离散的约束。`ns_vorticity` 自动使用所选导数。旧默认分支继续使用原 BSPF 压力投影及其历史精修设置。
@@ -108,14 +110,14 @@ residual = b.ns_divergence(ns, u)
 单元测试覆盖：SBP 矩阵恒等式、边界四阶/内部八阶多项式精确性、光滑函数的边界收敛、正负流向的加权耗散、投影与独立二维稠密约束 SVD 的对照、幂等性、正交性、全网格散度和壁面约束、非线性动能恒等式，以及均匀基流线性扰动能量恒等式。另运行原 NS 的三个回归测试。
 
 ```bash
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
-  python -m pytest jax/tests/test_ns_energy_closure.py jax/tests/test_navier_stokes.py -q
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+  python -m pytest packages/models/tests/test_ns_energy_closure.py packages/models/tests/test_navier_stokes.py -q
 
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python scratch/diagnose_kh_stability.py --closure sbp84 \
   --nx 160 --ny 112 --mode evolve --T 6 --dt 0.002
 
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python scratch/diagnose_kh_stability.py --closure sbp84 \
   --nx 160 --ny 112 --mode evolve --T 6 --dt 0.001
 ```

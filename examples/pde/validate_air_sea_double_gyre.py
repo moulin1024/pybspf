@@ -2,7 +2,7 @@
 
 Uses a deliberately faster-adjusting shallow mixed-layer case to expose lag
 error. It does NOT certify a mature, grid-converged ocean gyre equilibrium.
-PYTHONPATH=jax/src python examples/pde/validate_air_sea_double_gyre.py
+python examples/pde/validate_air_sea_double_gyre.py
 """
 
 import argparse
@@ -14,15 +14,13 @@ import time
 import jax
 import numpy as np
 
-from bspf_jax.air_sea import (
-    air_sea_fields,
-    air_sea_step,
-    heat_content,
-    initial_air_sea_state,
-    plan_air_sea,
-    plan_air_sea_stepper,
-    scalar_mean,
-)
+from bspf_models.air_sea.air_sea import air_sea_fields
+from bspf_models.air_sea.air_sea import air_sea_step
+from bspf_models.air_sea.air_sea import heat_content
+from bspf_models.air_sea.air_sea import initial_air_sea_state
+from bspf_models.air_sea.air_sea import plan_air_sea
+from bspf_models.air_sea.air_sea import plan_air_sea_stepper
+from bspf_models.air_sea.air_sea import scalar_mean
 
 
 def integrate(plan, stepper, seconds):

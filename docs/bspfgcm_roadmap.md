@@ -22,11 +22,11 @@ MITgcm 使用有限体积及压力方法；将它的差分导数逐个替换成 
 | 现有组件 | 可复用内容 | 不能据此声称的能力 |
 | --- | --- | --- |
 | pybspf / JAX 一维与张量算子 | 导数、积分、边界修正、变换缓存 | 球面守恒和长期 GCM 稳定性 |
-| `jax/src/bspf_jax/weak_navier_stokes.py` | 二维质量矩阵、弱散度与伴随梯度的组织 | 已完成三维兼容空间 |
-| `jax/src/bspf_jax/pressure3d.py` | 三维张量压力直接核心及压缩变换 | 完整物理壁面补全、球面变系数压力求解 |
+| `packages/models/src/bspf_models/fluids/weak_navier_stokes.py` | 二维质量矩阵、弱散度与伴随梯度的组织 | 已完成三维兼容空间 |
+| `packages/models/src/bspf_models/elliptic/pressure3d.py` | 三维张量压力直接核心及压缩变换 | 完整物理壁面补全、球面变系数压力求解 |
 | `BSPF_3D64_T2_20260917/` | 三维无滑移 NS、阶段压力、重启及审计范例 | 分层、自由表面、湍流分辨率或球面验证 |
-| `jax/src/bspf_jax/air_sea.py` | 界面通量预算、理想强迫和标量输运范例 | 三维湿大气和斜压海洋 |
-| `jax/src/bspf_jax/multirate.py` | 四阶 MRI-GARK 显式积分与阶条件测试 | 任意隐式/投影/凝结组合后的四阶精度 |
+| `packages/models/src/bspf_models/air_sea/air_sea.py` | 界面通量预算、理想强迫和标量输运范例 | 三维湿大气和斜压海洋 |
+| `src/pybspf/multirate.py` | 四阶 MRI-GARK 显式积分与阶条件测试 | 任意隐式/投影/凝结组合后的四阶精度 |
 
 已读取三维 NS 保存的 COMPLETE_PASS 和独立审计；它是 64³ 光滑受迫制造解的单网格
 延长试验，不是本次重新运行。当前二维耦合保持为回归算例；不再以在其 y 动量中增加
@@ -148,7 +148,7 @@ MITgcm 的通用垂直坐标组织值得借鉴，但无需在首版强行把两�
 
 ## 建议的软件边界
 
-先在本仓库增加独立 `bspfgcm` 命名空间，复用 `bspf_jax`，稳定后再决定独立发布。
+先在本仓库增加独立 `bspfgcm` 命名空间，复用 `pybspf`，稳定后再决定独立发布。
 以下为建议目录，尚未创建：
 
 ```text

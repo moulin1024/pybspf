@@ -1,6 +1,6 @@
 """Nonperiodic KH using same-space weak BSPF, direct projection, no sponge.
 
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
  MPLCONFIGDIR=/tmp/pybspf-mpl python scratch/run_kh_weak.py
 """
 
@@ -11,15 +11,13 @@ import time
 import jax
 import jax.numpy as jnp
 import numpy as np
-from bspf_jax.weak_navier_stokes import (
-    plan_weak_navier_stokes2d,
-    weak_kh_initial_velocity,
-    weak_ns_momentum_load,
-    weak_ns_rk4_step,
-    weak_ns_divergence,
-    weak_ns_vorticity,
-    weak_ns_pointwise_divergence,
-)
+from bspf_models.fluids.weak_navier_stokes import plan_weak_navier_stokes2d
+from bspf_models.fluids.weak_navier_stokes import weak_kh_initial_velocity
+from bspf_models.fluids.weak_navier_stokes import weak_ns_momentum_load
+from bspf_models.fluids.weak_navier_stokes import weak_ns_rk4_step
+from bspf_models.fluids.weak_navier_stokes import weak_ns_divergence
+from bspf_models.fluids.weak_navier_stokes import weak_ns_vorticity
+from bspf_models.fluids.weak_navier_stokes import weak_ns_pointwise_divergence
 
 
 def render(out):

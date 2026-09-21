@@ -53,14 +53,14 @@ C = h/(rho R)
 ## 复现
 
 ```bash
-export PYTHONPATH=jax/src
+
 export OPENBLAS_NUM_THREADS=1
 export OMP_NUM_THREADS=1
 python examples/pde/tokamak_plasma_vacuum.py --out build/tokamak_vacuum_bspf
 python examples/pde/tokamak_confined.py --out build/tokamak_confined_bspf
 python examples/pde/render_tokamak_vacuum.py --out build/tokamak_vacuum_bspf
 python examples/pde/render_tokamak_confined.py --out build/tokamak_confined_bspf
-python -m pytest jax/tests/test_tokamak_vacuum.py jax/tests/test_tokamak_vacuum_bspf.py -q
+python -m pytest packages/models/tests/test_tokamak_vacuum.py packages/models/tests/test_tokamak_vacuum_bspf.py -q
 ```
 
 `--vacuum-radial-modes` 和 `--vacuum-angular-modes` 可用于真空增长算例的空间收敛检查。

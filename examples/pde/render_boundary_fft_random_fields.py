@@ -10,7 +10,7 @@ from scipy.signal import resample
 
 from boundary_fft_core import BoundaryFFTPlan, Circle
 from boundary_fft_random_mms import EllipseVolumeReference, ForcingModes
-from bspf_jax.random_wave_mms import RandomWaveMMS
+from bspf_models.elliptic.random_wave_mms import RandomWaveMMS
 
 
 def main():

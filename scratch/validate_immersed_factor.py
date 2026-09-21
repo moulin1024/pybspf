@@ -6,7 +6,8 @@ jax.config.update('jax_enable_x64', True)
 import jax.numpy as jnp
 import numpy as np
 import scipy.linalg as la
-from bspf_jax.immersed_flow import ImmersedFlowPlan, elliptic_wall_factor
+from bspf_models.fluids.immersed_flow import ImmersedFlowPlan
+from bspf_models.fluids.immersed_flow import elliptic_wall_factor
 
 p=ImmersedFlowPlan(nx=33,ny=25,wall_method='factor')
 left,right,h=p.bounds

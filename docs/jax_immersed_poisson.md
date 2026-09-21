@@ -1,6 +1,6 @@
 # BSPF 光滑场浸没边界 Poisson 原型
 
-实现：`jax/src/bspf_jax/immersed_poisson.py`。问题为
+实现：`packages/models/src/bspf_models/elliptic/immersed_poisson.py`。问题为
 
 \[
  B=[-1,1]^2,\qquad H=\{((x-.19)/.31)^2+((y+.13)/.23)^2<1\},
@@ -154,7 +154,7 @@ SVD 缓存不包含临时分解工作区；峰值内存更高。10 项相关测�
 ```python
 import jax
 import numpy as np
-from bspf_jax import ImmersedPoissonPlan
+from bspf_models.elliptic.immersed_poisson import ImmersedPoissonPlan
 
 jax.config.update("jax_enable_x64", True)
 plan = ImmersedPoissonPlan(nodes=65)
@@ -173,10 +173,10 @@ u_physical = np.where(fluid, u, np.nan)
 孔内返回值仅是辅助场；用户可以用同一几何掩码隐藏它。
 
 ```sh
-export PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
 python examples/pde/immersed_poisson_convergence.py --nodes 17 25 33 49 65 81
 MPLCONFIGDIR=/tmp/bspf-mpl python examples/pde/render_immersed_poisson.py
-python -m pytest -q jax/tests/test_immersed_poisson.py
+python -m pytest -q packages/models/tests/test_immersed_poisson.py
 ```
 
 ## 成本和结论边界

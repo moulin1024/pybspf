@@ -18,7 +18,7 @@ def main():
     root=Path(__file__).resolve().parents[2]
     out=Path(args.out).resolve();out.mkdir(parents=True,exist_ok=True)
     env=os.environ.copy()
-    env.update(OPENBLAS_NUM_THREADS='1',OMP_NUM_THREADS='1',PYTHONPATH=str(root/'jax/src'))
+    env.update(OPENBLAS_NUM_THREADS='1',OMP_NUM_THREADS='1')
 
     def run(pair):
         nv,nmu=pair;name=f'v{nv}_m{nmu}_dt01';directory=out/name

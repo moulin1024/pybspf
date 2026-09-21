@@ -51,9 +51,9 @@
 ## 运行和产物
 
 ```sh
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-mpl \
+OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-mpl \
   python examples/pde/validate_air_sea_resolution.py
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-mpl \
+OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-mpl \
   python examples/pde/plot_air_sea_resolution.py
 ```
 

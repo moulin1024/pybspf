@@ -10,8 +10,9 @@ import jax
 import jax.numpy as jnp
 import jax.scipy.linalg as jl
 import numpy as np
-from bspf_jax.immersed_flow import ImmersedFlowPlan,channel_lift
-from bspf_jax.immersed_flow_gpu import _explicit
+from bspf_models.fluids.immersed_flow import ImmersedFlowPlan
+from bspf_models.fluids.immersed_flow import channel_lift
+from bspf_models.fluids.immersed_flow_gpu import _explicit
 import argparse
 ap=argparse.ArgumentParser();ap.add_argument('--nx',type=int,required=True);ap.add_argument('--ny',type=int,required=True);ap.add_argument('--degree',type=int,default=96);ap.add_argument('--laurent',type=int,default=64);ap.add_argument('--samples',type=int,default=800);args=ap.parse_args()
 jax.config.update('jax_enable_x64',True)

@@ -1,7 +1,7 @@
 """Run and plot the BSPF regularized lid-driven incompressible NS cavity.
 
 From the repository root:
-  PYTHONPATH=jax/src MPLCONFIGDIR=/tmp/bspf-mpl python examples/pde/cavity_2d.py
+  MPLCONFIGDIR=/tmp/bspf-mpl python examples/pde/cavity_2d.py
 """
 
 import argparse
@@ -13,15 +13,14 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from bspf_jax.cavity import (
-    plan_cavity,
-    plan_cavity_stepper,
-    cavity_step,
-    cavity_fields,
-    cavity_rhs,
-    cavity_ramp,
-)
-from bspf_jax.stream_navier_stokes import stream_ns_divergence, stream_ns_velocity
+from bspf_models.fluids.cavity import plan_cavity
+from bspf_models.fluids.cavity import plan_cavity_stepper
+from bspf_models.fluids.cavity import cavity_step
+from bspf_models.fluids.cavity import cavity_fields
+from bspf_models.fluids.cavity import cavity_rhs
+from bspf_models.fluids.cavity import cavity_ramp
+from bspf_models.fluids.stream_navier_stokes import stream_ns_divergence
+from bspf_models.fluids.stream_navier_stokes import stream_ns_velocity
 
 
 def render(path, x, psi, velocity, omega, history, reynolds, t):
@@ -142,7 +141,7 @@ def main():
             p.x.weights[:, None] * p.y.weights[None, :] * jnp.sum(vq**2, axis=-1)
         )
         s, rate = cavity_ramp(t, c.ramp_time)
-        from bspf_jax.cavity import cavity_lift
+        from bspf_models.fluids.cavity import cavity_lift
 
         lid = 16 * p.x.x**2 * (1 - p.x.x) ** 2 * s
         boundary = jnp.maximum(

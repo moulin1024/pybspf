@@ -72,7 +72,7 @@ maintained with the same constant base-balancing load as the fixed-wall runner.
 ## Reproduce
 
 ```sh
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src:scratch \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=scratch \
  MPLCONFIGDIR=/tmp/pybspf-mpl python scratch/run_kh_stream.py \
  --nx 96 --ny 80 --T 12 --dt .002 --x-boundary open --layers \
  --out build/kh_stream/open96 --render
@@ -84,7 +84,7 @@ compatible with the open basis. `boundary_linf` now measures only the boundaries
 where velocity is prescribed; `vertical_boundary_v_linf` records the free
 transverse velocity separately.
 
-Tests in `jax/tests/test_stream_open_boundary.py` independently check the
+Tests in `packages/models/tests/test_stream_open_boundary.py` independently check the
 boundary kinetic-energy flux, pointwise divergence, retained horizontal
 conditions, and a continuous manufactured stationary Navier–Stokes solution
 with nonzero open-face velocities and pressure. The manufactured traction,
@@ -135,7 +135,7 @@ Smooth compact support is not global analyticity, so retaining BSPF order does
 not by itself prove exponential convergence of the whole extended problem.
 
 ```sh
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src:scratch \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=scratch \
  MPLCONFIGDIR=/tmp/pybspf-mpl python scratch/run_kh_stream.py \
  --nx 160 --ny 80 --T 12 --dt .002 --x-boundary open --layers \
  --extension 2 --sponge-strength 4 \

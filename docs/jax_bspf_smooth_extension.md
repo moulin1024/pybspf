@@ -1,6 +1,6 @@
 # BSPF 未知场平滑延拓：解析 B-spline 法向原型
 
-实现：`jax/src/bspf_jax/smooth_extension.py`。这是受
+实现：`packages/models/src/bspf_models/elliptic/smooth_extension.py`。这是受
 [IBSE 方法](https://arxiv.org/abs/1506.07561)启发的模态 Galerkin 原型，
 并非原文 Fourier / 正则化 delta 离散的复现。当前结果没有超过直接强残差求解。
 
@@ -83,7 +83,7 @@ N=33/49及较稀界面结果也保存在对应 build 目录，尚未证明网格
 ## 复现与输出
 
 ```sh
-export PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
 python examples/pde/embedded_poisson_smooth_extension.py --nodes 49 --boundary-order 6 --out build/embedded_poisson_smooth_extension_n49
 python examples/pde/embedded_poisson_smooth_extension.py --nodes 49 --boundary-order 12 --matching-orders 1 2 --reuse-cache --geometry-cache build/embedded_poisson_smooth_extension_n49 --out build/embedded_poisson_smooth_extension_dense
 python examples/pde/embedded_poisson_smooth_extension_control.py

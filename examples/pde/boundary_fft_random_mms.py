@@ -14,8 +14,8 @@ import numpy as np
 from scipy.signal import resample
 
 from boundary_fft_core import BoundaryFFTPlan, Circle, geometry_remainder
-from bspf_jax.convex_poisson import ArcLengthBoundary
-from bspf_jax.random_wave_mms import RandomWaveMMS
+from bspf_models.elliptic.convex_poisson import ArcLengthBoundary
+from bspf_models.elliptic.random_wave_mms import RandomWaveMMS
 
 
 class ForcingModes:

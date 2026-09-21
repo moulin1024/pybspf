@@ -9,9 +9,13 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from bspf_jax.gyrokinetic_slab import (plan_slab_gk,slab_gk_fields,slab_gk_rhs,
-    slab_gk_project,slab_gk_diagnostics,integrate_slab_gk)
-from bspf_jax.gyrokinetic_mms import plan_slab_mms
+from bspf_models.kinetic.gyrokinetic_slab import plan_slab_gk
+from bspf_models.kinetic.gyrokinetic_slab import slab_gk_fields
+from bspf_models.kinetic.gyrokinetic_slab import slab_gk_rhs
+from bspf_models.kinetic.gyrokinetic_slab import slab_gk_project
+from bspf_models.kinetic.gyrokinetic_slab import slab_gk_diagnostics
+from bspf_models.kinetic.gyrokinetic_slab import integrate_slab_gk
+from bspf_models.kinetic.gyrokinetic_mms import plan_slab_mms
 
 
 def norm(p,a):

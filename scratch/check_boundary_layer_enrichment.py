@@ -8,8 +8,8 @@ import scipy.linalg as la
 from scipy.interpolate import BSpline
 from scipy.special import roots_legendre
 import jax
-from bspf_jax.pressure import _make_line
-from bspf_jax._weak_basis import mp_trial_values
+from bspf_models._numerics.trial_spaces import _make_line
+from bspf_models._numerics._weak_basis import mp_trial_values
 
 jax.config.update("jax_enable_x64", True)
 n = 48

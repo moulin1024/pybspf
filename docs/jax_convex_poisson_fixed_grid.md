@@ -17,8 +17,8 @@ H2 系数缩放和截断阈值。首次构造的稠密计算/存储成本没有�
 ```python
 import jax
 import numpy as np
-from bspf_jax import ConvexPoissonGridPlan
-from bspf_jax.embedded_poisson import benchmark_domains
+from bspf_models.elliptic.convex_poisson_grid import ConvexPoissonGridPlan
+from bspf_models.elliptic.embedded_poisson import benchmark_domains
 
 jax.config.update("jax_enable_x64", True)
 domain = benchmark_domains()[0]
@@ -75,15 +75,15 @@ result = grid_plan.solve(f, g)
 ## 验证与复现
 
 ```bash
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python examples/pde/convex_poisson_fixed_grid.py --nodes 33 --grid 33
 
 # 需要已有 build/convex_poisson_n65 的参考解；此命令只测输出，不重求 PDE。
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python examples/pde/benchmark_convex_poisson_grid.py --grids 65 129 257
 
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
-  python -m pytest -q jax/tests/test_convex_poisson_grid.py
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+  python -m pytest -q packages/models/tests/test_convex_poisson_grid.py
 ```
 
 示例将网格、掩码和数值解保存为 `grid_solution.npz`，不保存内部系数。

@@ -4,12 +4,10 @@ import json
 from pathlib import Path
 import jax
 import numpy as np
-from bspf_jax.tokamak_equilibrium import (
-    plan_axisymmetric_bspf,
-    fit_fixed_coils,
-    solve_equilibrium,
-)
-from bspf_jax.tokamak_vacuum import assemble_plasma_vacuum
+from bspf_models.plasma.tokamak_equilibrium import plan_axisymmetric_bspf
+from bspf_models.plasma.tokamak_equilibrium import fit_fixed_coils
+from bspf_models.plasma.tokamak_equilibrium import solve_equilibrium
+from bspf_models.plasma.tokamak_vacuum import assemble_plasma_vacuum
 
 
 def main():

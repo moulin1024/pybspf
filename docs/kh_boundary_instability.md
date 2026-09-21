@@ -128,7 +128,7 @@ d/dt [ 1/2 ∫ w² dx ] = -ν ∫ (w_x)² dx ≤ 0.
 - `build/kh_stability/`：JSON、特征向量、速度快照、PNG/PDF；原动画与生产代码未修改。
 
 ```bash
-export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
 python3 scratch/diagnose_kh_stability.py --mode operators --nx 160 --ny 112
 python3 scratch/diagnose_kh_stability.py --mode evolve --nx 160 --ny 112 --variant none --T 3
 python3 scratch/diagnose_kh_stability.py --mode evolve --nx 160 --ny 112 --variant none --dt .001 --T 3

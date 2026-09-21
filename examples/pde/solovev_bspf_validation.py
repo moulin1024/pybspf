@@ -1,5 +1,7 @@
 """BSPF fixed-boundary GS convergence on exact Solov'ev flux surfaces."""
 
+from importlib import import_module
+
 import argparse
 from dataclasses import asdict
 import hashlib
@@ -14,8 +16,10 @@ import scipy
 import scipy.linalg as la
 from scipy.optimize import root
 
-from bspf_jax.grad_shafranov import FixedBoundaryGSPlan, evaluate_gs_factors
-from bspf_jax.solovev import SolovevEquilibrium, SolovevFluxDomain
+from bspf_models.plasma.grad_shafranov import FixedBoundaryGSPlan
+from bspf_models.plasma.grad_shafranov import evaluate_gs_factors
+from bspf_models.plasma.solovev import SolovevEquilibrium
+from bspf_models.plasma.solovev import SolovevFluxDomain
 
 jax.config.update("jax_enable_x64", True)
 
@@ -87,7 +91,7 @@ def run(args):
     cases = {"polynomial": SolovevEquilibrium(), "logarithmic": SolovevEquilibrium(logarithmic=0.08)}
     domains = {name: SolovevFluxDomain(eq) for name, eq in cases.items()}
     grids = {name: validation_grid(domain) for name, domain in domains.items()}
-    source_paths = [Path(__file__), Path("jax/src/bspf_jax/solovev.py"), Path("jax/src/bspf_jax/grad_shafranov.py")]
+    source_paths = [Path(__file__), Path(import_module("bspf_models.plasma.solovev").__file__), Path(import_module("bspf_models.plasma.grad_shafranov").__file__)]
     report = dict(settings=vars(args) | {"out": str(args.out)},
                   profiles={name: asdict(eq) for name, eq in cases.items()},
                   source_sha256={str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in source_paths},

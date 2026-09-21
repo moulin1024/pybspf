@@ -1,17 +1,17 @@
 # Joint noise-regularized BSPF prototype
 
 `noise_regularized_bspf.py` is an isolated NumPy/SciPy experiment, not a change
-to the `bspf_jax` API. It uses the JAX library only for comparison baselines.
+to the `pybspf` API. It uses the JAX library only for comparison baselines.
 
 From the repository root:
 
 ```sh
-OMP_NUM_THREADS=4 PYTHONPATH=jax/src python docs/diagnostics/run_with_local_blas.py \
+OMP_NUM_THREADS=4  python docs/diagnostics/run_with_local_blas.py \
   scratch/noise_regularized_bspf.py
 ```
 
 Without the corrected local BLAS, use the original environment with
-`OMP_NUM_THREADS=1 PYTHONPATH=jax/src python scratch/noise_regularized_bspf.py`.
+`OMP_NUM_THREADS=1  python scratch/noise_regularized_bspf.py`.
 Requires NumPy, SciPy, JAX, and Matplotlib.
 
 Optional arguments: `--samples 513 --realizations 32 --noise 1e-4

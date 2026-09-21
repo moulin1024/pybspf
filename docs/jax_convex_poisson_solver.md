@@ -1,6 +1,6 @@
 # BSPF 光滑凸域 Poisson 求解器
 
-入口 `bspf_jax.ConvexPoissonPlan`。仅需指定网格上的解时，可使用
+入口 `bspf_models.elliptic.convex_poisson.ConvexPoissonPlan`。仅需指定网格上的解时，可使用
 [`ConvexPoissonGridPlan`](jax_convex_poisson_fixed_grid.md)，缓存一维因子进行张量求值。
 求解
 −Δu=f 于光滑凸闭合 B-spline 域 Ω，u=g 于 Γ。
@@ -43,8 +43,8 @@
 ```python
 import jax
 import numpy as np
-from bspf_jax import ConvexPoissonPlan
-from bspf_jax.embedded_poisson import benchmark_domains
+from bspf_models.elliptic.convex_poisson import ConvexPoissonPlan
+from bspf_models.elliptic.embedded_poisson import benchmark_domains
 
 jax.config.update("jax_enable_x64", True)
 domain = benchmark_domains()[0]
@@ -118,13 +118,13 @@ H2系数尺度。低波数4π与高波数12π使用同一64波随机MMS。
 可运行：
 
 ```sh
-export PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
 python examples/pde/convex_poisson.py --single --out build/convex_poisson_unrestricted
 python examples/pde/convex_poisson.py --nodes 65 --boundary-count 1024 --single --out build/convex_poisson_n65
 python examples/pde/convex_poisson.py --cached-dirichlet
 python examples/pde/convex_poisson_best_h2.py
 MPLCONFIGDIR=/tmp/bspf-mpl python examples/pde/render_convex_poisson.py
-python -m pytest -q jax/tests/test_convex_poisson.py
+python -m pytest -q packages/models/tests/test_convex_poisson.py
 ```
 
 `--resume`只用于同一空间/参数的中断实验。缓存来自本地旧实验，必须可信。

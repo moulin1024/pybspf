@@ -1,6 +1,6 @@
 # 解析法向窄带延拓的独立验证
 
-实现 `jax/src/bspf_jax/normal_continuation.py`，实验
+实现 `src/pybspf/normal_continuation.py`，实验
 `examples/pde/normal_continuation_validation.py`。本阶段隔离延拓误差：
 输入仅为内侧带函数值，包括边界端点；没有真实梯度、Laplacian 或外域值输入。
 使用同一随机波 MMS（种子20260918，64个连续波数，最高4π/12π），
@@ -71,10 +71,10 @@ Laplacian 为物理 Hessian 的迹，包含曲率相关项，不把法向二阶�
 ## 复现
 
 ```sh
-export PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
 python examples/pde/normal_continuation_validation.py
 MPLCONFIGDIR=/tmp/bspf-mpl python examples/pde/render_normal_continuation.py
-python -m pytest -q jax/tests/test_normal_continuation.py
+python -m pytest -q packages/models/tests/test_normal_continuation.py
 ```
 
 JSON、误差图 PNG/PDF、外推放大倍数在 `build/normal_continuation/`。

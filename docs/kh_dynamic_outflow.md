@@ -88,7 +88,7 @@ boundary. The KH runner uses the same initial modal state as the open-only run
 when loading those saved factors:
 
 ```sh
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src:scratch \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=scratch \
  MPLCONFIGDIR=/tmp/pybspf-mpl python scratch/run_kh_stream.py \
  --nx 96 --ny 80 --T 12 --dt .002 --x-boundary dynamic --boundary-d0 1 \
  --basis-from build/kh_stream/open96 --layers \

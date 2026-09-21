@@ -4,15 +4,20 @@ Dense matrices are constructed ONLY as timing references. Both paths use the
 same quadrature and trial functions; correctness is tested independently
 in test_fast_axis.py against direct Fourier sums. Warm JIT calls block before timing ends.
 """
+
+import pybspf.plans as bspf_plans
 import argparse, json, time, gc
 from pathlib import Path
 import jax
 jax.config.update('jax_enable_x64',True)
 import jax.numpy as jnp
 import numpy as np
-import bspf_jax as b
-from bspf_jax.fast_axis import (plan_fast_axis,axis_values,axis_transport,
-                                plan_axis_multiplier,axis_apply_multiplier,boundary_clustered_knots)
+from pybspf.fast_axis import plan_fast_axis
+from pybspf.fast_axis import axis_values
+from pybspf.fast_axis import axis_transport
+from pybspf.fast_axis import plan_axis_multiplier
+from pybspf.fast_axis import axis_apply_multiplier
+from pybspf.fast_axis import boundary_clustered_knots
 
 
 def main():
@@ -24,7 +29,7 @@ def main():
     for n in args.sizes:
         t0=time.perf_counter()
         x=jnp.linspace(-4.,4.,n)
-        p=b.plan_1d(x,degree=7,knots=boundary_clustered_knots(x),boundary_points=9)
+        p=bspf_plans.plan_1d(x,degree=7,knots=boundary_clustered_knots(x),boundary_points=9)
         a=plan_fast_axis(p,quadrature_order=12)
         op=plan_axis_multiplier(a,a.points)
         op.symbol.block_until_ready(); setup=time.perf_counter()-t0

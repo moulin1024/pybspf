@@ -16,10 +16,13 @@ import scipy.linalg as la
 from scipy.interpolate import BSpline
 from scipy.special import roots_legendre
 
-from bspf_jax.convex_poisson import ArcLengthBoundary, box_h2_root, trace_transform
-from bspf_jax.embedded_poisson import benchmark_domains
-from bspf_jax.random_wave_mms import RandomWaveMMS
-from bspf_jax.stream_navier_stokes import _stream_line, stream_evaluate_line
+from bspf_models.elliptic.convex_poisson import ArcLengthBoundary
+from bspf_models.elliptic.convex_poisson import box_h2_root
+from bspf_models.elliptic.convex_poisson import trace_transform
+from bspf_models.elliptic.embedded_poisson import benchmark_domains
+from bspf_models.elliptic.random_wave_mms import RandomWaveMMS
+from bspf_models._numerics.trial_spaces import _stream_line
+from bspf_models._numerics.trial_spaces import stream_evaluate_line
 from embedded_poisson_approximation import interior
 
 

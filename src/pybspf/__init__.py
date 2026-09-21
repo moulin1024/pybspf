@@ -1,58 +1,15 @@
-"""B-spline/Fourier operators and compatible problem-specific solver exports."""
-
-# Re-export the canonical grid type and the current operator wrappers so users
-# can import from ``pybspf`` directly instead of depending on file layout.
-from .basis import BSplineValues, make_bspline_basis_values
-from .bspf_split import bspf_kkt_1d_decompose_precompute, split2d_kkt_directional
-from .grid import Grid1D
-from .galerkin import ClosedBSPFLine
-from .ops.differentiation import DerivativeResult
-from .operators import BSPF1D, BSPF2D, PiecewiseBSPF1D, bspf1d, bspf2d
-from .time_integration import integrate_rk4
-
-__all__ = [
-    "ClosedBSPFLine",
-    "BSPF1D",
-    "BSPF2D",
-    "BSplineValues",
-    "DerivativeResult",
-    "Grid1D",
-    "PiecewiseBSPF1D",
-    "Poisson1DDirichletSolver",
-    "Poisson2DDirichletSolver",
-    "PressurePoisson2D",
-    "PressurePoisson2DResult",
-    "bspf1d",
-    "bspf2d",
-    "bspf_kkt_1d_decompose_precompute",
-    "bspf_kkt_poisson_neumann_apply",
-    "bspf_kkt_poisson_neumann_precompute",
-    "integrate_rk4",
-    "make_bspline_basis_values",
-    "split2d_kkt_directional",
-]
-
-
-# Solver imports are deferred so core operators do not load research workflows.
-_SOLVER_EXPORTS = {
-    "Poisson1DDirichletSolver": ".solvers.poisson1d",
-    "Poisson2DDirichletSolver": ".solvers.poisson2d",
-    "PressurePoisson2D": ".solvers.pressure_poisson2d",
-    "PressurePoisson2DResult": ".solvers.pressure_poisson2d",
-    "bspf_kkt_poisson_neumann_apply": ".solvers.poisson_neumann_bspf",
-    "bspf_kkt_poisson_neumann_precompute": ".solvers.poisson_neumann_bspf",
-}
-
+"""JAX BSPF calculus. Importing does not alter precision or device settings."""
+from .fast_axis import FastAxis, plan_fast_axis, sample_aligned_knots, boundary_clustered_knots
+from .basis import basis_matrix, open_knots, spline_primitive
+from .plans import Plan1D, TensorPlan, plan_1d, plan_2d, plan_3d, tensor_plan, with_regularization
+from .time_integration import rk4_step, integrate_rk4, integrate_linear_midpoint
+from .galerkin import Galerkin1D, galerkin_1d
+from .operators import endpoint_jets, Split, decompose, derivatives, differentiate, mixed_partial, gradient, divergence, curl, hessian, laplacian, tensor_decompose, noise_diagnostics
+from .calculus import interpolate, interpolate_grid, integrate, integrate_box, antiderivative
+__all__ = ['FastAxis', 'FourierExtension', 'FourierExtensionPlan', 'Galerkin1D', 'Plan1D', 'Split', 'TensorPlan', 'antiderivative', 'basis_matrix', 'boundary_clustered_knots', 'curl', 'decompose', 'derivatives', 'differentiate', 'divergence', 'endpoint_jets', 'galerkin_1d', 'gradient', 'hessian', 'integrate', 'integrate_box', 'integrate_linear_midpoint', 'integrate_rk4', 'interpolate', 'interpolate_grid', 'laplacian', 'mixed_partial', 'noise_diagnostics', 'open_knots', 'plan_1d', 'plan_2d', 'plan_3d', 'plan_fast_axis', 'rk4_step', 'sample_aligned_knots', 'spline_primitive', 'tensor_decompose', 'tensor_plan', 'with_regularization']
 
 def __getattr__(name):
-    if name not in _SOLVER_EXPORTS:
-        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-    from importlib import import_module
-
-    value = getattr(import_module(_SOLVER_EXPORTS[name], __name__), name)
-    globals()[name] = value
-    return value
-
-
-def __dir__():
-    return sorted(set(globals()) | set(__all__))
+    if name in ("FourierExtensionPlan", "FourierExtension"):
+        from . import fourier_extension
+        return getattr(fourier_extension, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

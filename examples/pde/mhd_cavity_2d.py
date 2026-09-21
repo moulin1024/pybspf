@@ -1,6 +1,6 @@
 """Release a central pair of magnetic islands in a BSPF incompressible cavity.
 
-PYTHONPATH=jax/src python examples/pde/mhd_cavity_2d.py \
+python examples/pde/mhd_cavity_2d.py \
   --background build/cavity_n49/state.npz
 Run without --background for independently reproducible startup from rest.
 """
@@ -13,16 +13,16 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from bspf_jax.mhd_cavity import (
-    plan_mhd_cavity,
-    island_pair,
-    mhd_step,
-    magnetic_fields,
-    mhd_velocity,
-    mhd_budget,
-)
-from bspf_jax.cavity import plan_cavity_stepper, cavity_step, cavity_ramp
-from bspf_jax.stream_navier_stokes import stream_ns_divergence
+from bspf_models.plasma.mhd_cavity import plan_mhd_cavity
+from bspf_models.plasma.mhd_cavity import island_pair
+from bspf_models.plasma.mhd_cavity import mhd_step
+from bspf_models.plasma.mhd_cavity import magnetic_fields
+from bspf_models.plasma.mhd_cavity import mhd_velocity
+from bspf_models.plasma.mhd_cavity import mhd_budget
+from bspf_models.fluids.cavity import plan_cavity_stepper
+from bspf_models.fluids.cavity import cavity_step
+from bspf_models.fluids.cavity import cavity_ramp
+from bspf_models.fluids.stream_navier_stokes import stream_ns_divergence
 
 
 def main():

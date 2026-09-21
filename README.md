@@ -1,130 +1,64 @@
 # pybspf
 
-B-spline fitting plus Fourier residual correction for sampled functions on
-uniform grids. The core operators use NumPy/SciPy on CPU or CuPy/CuPyX on CUDA.
+JAX B-spline plus Fourier calculus in one to three dimensions. Version 0.2
+uses the former JAX implementation as the only maintained numerical core.
+CPU and GPU execution use JAX; NumPy/SciPy remain available for host setup.
+Importing the library does not change JAX precision or device configuration.
 
 ## Install
 
-Python 3.10 or newer is required. From this checkout:
+```sh
+python -m pip install -e '.[host,test]'
+python -m pip install -e './packages/models[precision,test]'
+python -m pip install -e './packages/sim[air-sea,test]'
+```
+
+Install only the first package for numerical calculus. Models contain PDE
+solvers; the simulation package contains CLI, checkpoint and reporting workflows.
+Select the JAX device installation appropriate to your environment separately.
+
+```python
+import jax
+jax.config.update("jax_enable_x64", True)
+import jax.numpy as jnp
+from pybspf import plan_1d, differentiate
+
+x = jnp.linspace(0.0, 1.0, 65)
+p = plan_1d(x)
+df = differentiate(p, jnp.sin(2 * jnp.pi * x))
+```
+
+## Package boundaries
+
+- `pybspf`: bases, plans, calculus, Galerkin spaces, generic time integration.
+- `bspf_models`: elliptic, fluid, kinetic, plasma, wave and air-sea models.
+- `bspf_sim`: simulation configuration, execution, checkpoints, output and CLI.
+
+```python
+from bspf_models.fluids.navier_stokes import plan_navier_stokes2d
+from bspf_models.kinetic.nonlinear_itg import NonlinearITG
+from bspf_sim.air_sea.platform import run
+```
+
+`bspf-air-sea` retains its `run`, `resume`, `report` and `validate` commands.
+See [migration](docs/migration.md), [architecture](docs/design.md),
+[API](docs/api.md), and [examples](examples/README.md).
+
+## Validation
 
 ```sh
-python -m pip install .
-# Development installation:
-python -m pip install -e '.[dev]'
-# CUDA 12 installation (choose a matching CuPy build for other CUDA versions):
-python -m pip install '.[gpu]'
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 OPENBLAS_NUM_THREADS=1 python -m pytest
+python -m build --no-isolation
+python -m build --no-isolation packages/models
+python -m build --no-isolation packages/sim
 ```
 
-## Differentiate a signal
+Tests enable x64 explicitly. GPU tests require a JAX GPU environment.
+The default suite excludes the archived NumPy/CuPy implementation.
 
-```python
-import numpy as np
-from pybspf import BSPF1D
+## Archive
 
-x = np.linspace(0.0, 2.0 * np.pi, 257)
-f = np.sin(x) + 0.1 * x
-op = BSPF1D.from_grid(degree=5, x=x, n_basis=24)
-
-result = op.derivatives(f, orders=(1, 2), lam=1e-8)
-df, d2f = result[1], result[2]
-spline = result.spline
-
-# Reuse the operator and its cached factorization for more signals.
-batch = np.column_stack([f, np.cos(x)])  # (samples, signals)
-batched = op.derivatives_batched(batch, orders=(1, 2), lam=1e-8)
-area = op.definite_integral(f)
-x_fine, f_fine = op.interpolate(f)
-```
-
-`differentiate(f, k=1)` returns `(derivative, spline)`. The multi-order methods
-return a `DerivativeResult` indexed by derivative order (1–4). Real and complex
-signals are supported for fitting and differentiation; integration and
-interpolation currently require real signals. Computation uses float64 or
-complex128.
-
-## Two dimensions
-
-```python
-from pybspf import BSPF2D
-
-y = np.linspace(0.0, 1.0, 129)
-xx, yy = np.meshgrid(x, y)
-field = np.sin(xx) + yy**3  # (len(y), len(x))
-op2 = BSPF2D.from_grids(x=x, y=y, degree_x=5, degree_y=5)
-dx, spline_x = op2.partial_x(field)
-laplacian = op2.laplacian(field)
-```
-
-Axis 0 is y; axis 1 is x. Batched 1D solves underpin the 2D methods.
-
-For a no-slip pressure projection using `div(Q grad p) = div(Q raw)`, see the
-[2D tensor pressure solver](docs/pressure_projection2d.md) and
-[runnable example](examples/pressure_projection2d.py). It includes the BSPF line
-operators, tensor inverse, and seven-mode wall-pressure completion extracted
-from the 3D NS benchmark.
-
-## GPU usage
-
-```python
-import cupy as cp
-from pybspf import BSPF1D
-
-x_gpu = cp.linspace(0.0, 2.0 * cp.pi, 257)
-f_gpu = cp.sin(x_gpu)
-op_gpu = BSPF1D.from_grid(degree=5, x=x_gpu, use_gpu=True)
-result_gpu = op_gpu.derivatives(f_gpu, orders=(1, 2))
-df_cpu = cp.asnumpy(result_gpu[1])  # explicit transfer when needed
-```
-
-Set `use_gpu=True` explicitly. Factories may upload coordinate and knot arrays
-during construction; computational methods require samples on the selected
-backend. Array outputs stay on that backend. `definite_integral` returns a Python
-float, which synchronizes a GPU scalar. No CUDA environment variables are changed
-by the core package; configure your CUDA installation outside Python.
-
-| Feature | NumPy | CuPy |
-| --- | --- | --- |
-| 1D fitting and derivatives, including complex/batched samples | Yes | Implemented; CUDA parity tests provided |
-| 2D derivatives and Laplacian | Yes | Implemented; CUDA parity tests provided |
-| Piecewise derivatives | Yes | Implemented |
-| Real definite integrals and antiderivatives | Yes | Implemented; CUDA parity tests provided |
-| Interpolation and endpoint zero-flux repair | Yes | Not supported |
-| Problem-specific Poisson/Schrödinger solvers | CPU implementations | Not a general GPU API |
-
-GPU tests skip when CuPy or a CUDA device is unavailable. Implementation support
-does not imply validation on every CUDA/CuPy combination.
-
-## Contracts and limitations
-
-- Coordinates must be finite, strictly increasing, one-dimensional, and uniformly
-  spaced. The grid includes both physical endpoints.
-- `lam` is finite, nonnegative regularization. Reuse one operator for a fixed grid.
-- `correction="none"` disables Fourier correction for differentiation.
-- Neumann constraints require `order >= 2`; this counts value and derivative
-  constraints at each endpoint.
-- `PiecewiseBSPF1D` splits at supplied breakpoints. Every segment must meet
-  `min_points_per_seg`; short segments raise an error instead of leaving zeros.
-- Interpolation uses a spline plus linearly interpolated residual. `use_fft=True`
-  raises `NotImplementedError`.
-- Partial definite integrals integrate the residual over the requested interval.
-  Bounds must be within the grid; reversed bounds change the sign.
-- The specialized Poisson solver suite has four pre-existing failures involving
-  PDE conventions and an obsolete entry point. See the [assessment](docs/assessment.md)
-  before relying on those workflows. This checkout is not release-ready yet.
-
-## Development
-
-```sh
-python -m pytest                    # full suite, including known solver failures
-python -m pytest -m gpu             # CUDA parity checks
-python -m pytest -m performance     # timing comparisons; use a quiet machine
-python -m pip wheel . --no-deps
-```
-
-Tests are collected from `tests/`, not executable research examples. If unrelated
-globally installed pytest plugins interfere, run with
-`PYTEST_DISABLE_PLUGIN_AUTOLOAD=1`.
-
-Read the [API](docs/api.md), [architecture](docs/design.md),
-[compatibility notes](docs/compatibility_strategy.md), and
-[assessment and next steps](docs/assessment.md).
+The previous object-oriented `pybspf` API, solvers, tests and backend adapters
+are preserved in [legacy/numpy_cupy](legacy/numpy_cupy/README.md). That package
+is unmaintained and must be installed only in a separate environment. Neither
+`BSPF1D` nor the old `pybspf` import path is a compatibility alias in 0.2.

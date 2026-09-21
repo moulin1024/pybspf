@@ -7,8 +7,8 @@ from pathlib import Path
 import jax
 import numpy as np
 
-from bspf_jax.embedded_poisson import benchmark_domains
-from bspf_jax.random_wave_mms import RandomWaveMMS
+from bspf_models.elliptic.embedded_poisson import benchmark_domains
+from bspf_models.elliptic.random_wave_mms import RandomWaveMMS
 from compare_poisson_bases import ProfileMMS, TrialBasis, exact_jets, field_jets
 
 

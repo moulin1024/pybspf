@@ -47,18 +47,22 @@
 ## 使用
 
 ```python
+
+import bspf_models.kinetic.drift_kinetic as bspf_drift_kinetic
+import pybspf.fast_axis as bspf_fast_axis
+import pybspf.plans as bspf_plans
 import jax
 jax.config.update("jax_enable_x64", True)
 import jax.numpy as jnp
-import bspf_jax as b
+import pybspf as b
 
 z = jnp.linspace(-4., 4., 65)
 v = jnp.linspace(-3., 3., 65)
-zp = b.plan_1d(z, degree=7,
-    knots=b.sample_aligned_knots(z, degree=7, n_basis=21), boundary_points=9)
-vp = b.plan_1d(v, degree=7,
-    knots=b.sample_aligned_knots(v, degree=7, n_basis=21), boundary_points=9)
-model = b.plan_drift_kinetic(
+zp = bspf_plans.plan_1d(z, degree=7,
+    knots=bspf_fast_axis.sample_aligned_knots(z, degree=7, n_basis=21), boundary_points=9)
+vp = bspf_plans.plan_1d(v, degree=7,
+    knots=bspf_fast_axis.sample_aligned_knots(v, degree=7, n_basis=21), boundary_points=9)
+model = bspf_drift_kinetic.plan_drift_kinetic(
     zp, vp, magnetic_field=lambda z: 1+z*z/2,
     magnetic_gradient=lambda z: z, mu_max=2., n_mu=12,
     quadrature_order=12,
@@ -66,7 +70,7 @@ model = b.plan_drift_kinetic(
 # integrate_log_drift_kinetic 和 log_drift_kinetic_diagnostics 的接口不变。
 ```
 
-实现位于 `jax/src/bspf_jax/fast_axis.py` 和 `fast_drift_kinetic.py`。
+实现位于 `src/pybspf/fast_axis.py` 和 `fast_drift_kinetic.py`。
 `test_fast_axis.py` 用独立直接 Fourier 求和与稠密求解验证奇偶网格、伴随关系、
 质量逆、弱分部积分和非多项式乘法。测试和基准可以组装稠密参考；快速求解器本身不组装。
 
@@ -121,11 +125,11 @@ degree=7，固定 22 个边界集中样条基，Gauss 阶数 12，偶数网格�
 基准的同一算子两种应用方式相对差异低于 7e-15；数学正确性另由独立直接求和测试验证。
 
 ```bash
-OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 PYTHONPATH=jax/src \
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
   python examples/pde/benchmark_fast_axes.py
-OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 PYTHONPATH=jax/src \
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
   python examples/pde/benchmark_fast_axes.py --sizes 4096 8192 \
   --out build/fast_mirror/axis_benchmark_large.json
-OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 PYTHONPATH=jax/src \
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
   python examples/pde/validate_fast_mirror.py
 ```

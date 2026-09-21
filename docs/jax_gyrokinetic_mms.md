@@ -1,7 +1,7 @@
 # 五维非线性静电 slab 的解析制造解（MMS）
 
 本验证针对 `gyrokinetic_slab.py` 中的周期 δf 模型，空间域为 [0,2π)³。
-解析参考与源项实现在 `jax/src/bspf_jax/gyrokinetic_mms.py`；
+解析参考与源项实现在 `packages/models/src/bspf_models/kinetic/gyrokinetic_mms.py`；
 运行 `examples/pde/validate_slab_mms.py` 可重现时间、空间和速度积分扫描。
 
 ## 制造解与解析场闭合
@@ -139,11 +139,11 @@ N=25 的场误差被高波数 μ 积分误差污染；提高至 24×40 后消除
 这也说明空间与速度积分不能只各自用一个小分辨率就宣称独立收敛。
 
 ```bash
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python examples/pde/validate_slab_mms.py
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest \
-  jax/tests/test_gyrokinetic_mms.py jax/tests/test_gyrokinetic_slab.py -q
+  packages/models/tests/test_gyrokinetic_mms.py packages/models/tests/test_gyrokinetic_slab.py -q
 ```
 
 输出：`build/gyrokinetic_mms/report.json`、`convergence.png`。
@@ -195,7 +195,7 @@ Laguerre 从 2 加到 24 点时，从 8.067e-4 降至 6.083e-17。
 这是一张制造解在 t=0.17 的半离散检查，不是 65³ 的时间推进性能基准。
 
 ```bash
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python examples/pde/validate_slab_mms_large.py \
   --sizes 25 33 49 65 --n-v 24 --n-mu 96 --method direct --v-block 24 \
   --out build/gyrokinetic_mms/spatial65_refined
@@ -263,7 +263,7 @@ N=65 时共 632,736,000 个相空间节点，若完整存放一个 float64 分�
 规则均保持不变，但程序不存放 N³×N_v×N_mu 的通用分布数组。
 
 ```bash
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python examples/pde/validate_slab_mms_large.py \
   --sizes 17 33 49 65 81 97 113 129 --n-v 40 --n-mu 192 \
   --method separable --out build/gyrokinetic_mms/spatial129

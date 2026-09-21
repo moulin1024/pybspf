@@ -14,13 +14,11 @@ import jax.numpy as jnp
 import numpy as np
 from numpy.polynomial import Polynomial
 from math import comb
-from bspf_jax.weak_navier_stokes import (
-    plan_weak_navier_stokes2d,
-    weak_ns_load,
-    weak_ns_rhs,
-    weak_ns_project,
-    weak_ns_divergence,
-)
+from bspf_models.fluids.weak_navier_stokes import plan_weak_navier_stokes2d
+from bspf_models.fluids.weak_navier_stokes import weak_ns_load
+from bspf_models.fluids.weak_navier_stokes import weak_ns_rhs
+from bspf_models.fluids.weak_navier_stokes import weak_ns_project
+from bspf_models.fluids.weak_navier_stokes import weak_ns_divergence
 
 
 def shape(x, k=2.3):

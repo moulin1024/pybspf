@@ -1,8 +1,10 @@
 """Compute and render the nonperiodic, boundary-buffered JAX BSPF KH example.
 
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
  MPLCONFIGDIR=/tmp/pybspf-mpl python scratch/run_kh_nonperiodic.py
 """
+
+import bspf_models.elliptic.pressure as bspf_pressure
 
 import argparse
 import json
@@ -13,14 +15,11 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-import bspf_jax as b
-from bspf_jax.navier_stokes import (
-    plan_navier_stokes2d,
-    kh_initial_velocity,
-    ns_raw_rhs,
-    ns_rk4_step,
-    ns_vorticity,
-)
+from bspf_models.fluids.navier_stokes import plan_navier_stokes2d
+from bspf_models.fluids.navier_stokes import kh_initial_velocity
+from bspf_models.fluids.navier_stokes import ns_raw_rhs
+from bspf_models.fluids.navier_stokes import ns_rk4_step
+from bspf_models.fluids.navier_stokes import ns_vorticity
 
 
 def render(out, fps=25):
@@ -187,7 +186,7 @@ def main():
             "frame-dt must be an integer multiple of dt, and T of frame-dt"
         )
     start = time.perf_counter()
-    p = b.plan_pressure_poisson2d(
+    p = bspf_pressure.plan_pressure_poisson2d(
         jnp.linspace(-3, 3, args.nx),
         jnp.linspace(-1, 1, args.ny),
         endpoint_method="chebyshev",
@@ -213,7 +212,7 @@ def main():
                     jnp.sum(center * p.weights * u[..., 1] ** 2)
                     / jnp.sum(center * p.weights)
                 ),
-                jnp.max(abs(b.pressure_divergence(p, u))),
+                jnp.max(abs(bspf_pressure.pressure_divergence(p, u))),
                 jnp.max(abs(wall[..., None] * (u - base))),
                 0.5 * jnp.sum(p.weights[..., None] * u * u),
                 jnp.max(jnp.sqrt(jnp.sum(u * u, axis=-1))),
@@ -305,7 +304,7 @@ def main():
     validation["unperturbed_control_linf"] = float(jnp.max(abs(control - base)))
     if not bool(valid) or validation["unperturbed_control_linf"] > 1e-8:
         raise RuntimeError(f"Base-flow control failed: {validation}")
-    _, pressure_result = b.project_pressure2d(
+    _, pressure_result = bspf_pressure.project_pressure2d(
         p, ns_raw_rhs(plan, velocity) + force - sponge[..., None] * (velocity - base)
     )
     if not bool(pressure_result.converged):

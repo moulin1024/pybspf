@@ -3,8 +3,8 @@ import json
 from pathlib import Path
 import jax
 import numpy as np
-import bspf_jax.immersed_flow as flow
-from bspf_jax.rational_stokes import RationalStokesExtension
+import bspf_models.fluids.immersed_flow as flow
+from bspf_models.fluids.rational_stokes import RationalStokesExtension
 jax.config.update('jax_enable_x64',True)
 class GeometryReady(Exception):pass
 def stop_volume(*args,**kwargs):raise GeometryReady

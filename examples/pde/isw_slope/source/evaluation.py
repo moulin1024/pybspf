@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 import numpy as np
 from common import ROOT, geometry, background
-from pybspf import ClosedBSPFLine
+from pybspf.trial_spaces import ClosedBSPFLine
 
 
 def t2(x, a, z):

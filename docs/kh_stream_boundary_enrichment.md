@@ -3,7 +3,7 @@
 The boundary stripe instability seen in the previous `96 x 80` weak KH result
 is removed in the tested runs without a sponge, filter, reduced-order boundary
 stencil, increased viscosity, or a change to the prescribed velocity boundaries.
-The implementation is `jax/src/bspf_jax/stream_navier_stokes.py`.
+The implementation is `packages/models/src/bspf_models/fluids/stream_navier_stokes.py`.
 
 ## What the controlled experiments established
 
@@ -174,7 +174,7 @@ maintaining the base. No run in this report uses a sponge.
   The final MPFR/QR setup gives `8.997e-13` at 96x96 for the same analytic test.
   A pressure-gradient-only force projects to roundoff. This test is independent
   of the discrete momentum operator.
-- `jax/tests/test_stream_navier_stokes.py` checks continuous pressure-gradient
+- `packages/models/tests/test_stream_navier_stokes.py` checks continuous pressure-gradient
   removal, mixed derivative cancellation at off-grid points, clamped wall
   values, viscous energy balance, constant-advection neutrality, polynomial
   reproduction, and MPFR second derivatives (including odd/even node counts).
@@ -187,8 +187,8 @@ resolved sharp layer from oscillations extending into the domain.
 ## Usage and artifacts
 
 ```sh
-python -m pip install -e 'jax[weak-ns]'
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src:scratch \
+python -m pip install -e '.[host,notebook,test]' -e './packages/models[precision,test]' -e './packages/sim[air-sea,test]'
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=scratch \
  MPLCONFIGDIR=/tmp/pybspf-mpl python scratch/run_kh_stream.py \
  --nx 96 --ny 80 --T 6 --dt .002 --layers .002 .008 .032 \
  --out build/kh_stream/final96 --render

@@ -11,9 +11,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm, TwoSlopeNorm
 
-from bspf_jax.embedded_poisson import background_line, benchmark_domains
-from bspf_jax.random_wave_mms import RandomWaveMMS
-from bspf_jax.stream_navier_stokes import stream_evaluate_line
+from bspf_models.elliptic.embedded_poisson import background_line
+from bspf_models.elliptic.embedded_poisson import benchmark_domains
+from bspf_models.elliptic.random_wave_mms import RandomWaveMMS
+from bspf_models._numerics.trial_spaces import stream_evaluate_line
 
 jax.config.update("jax_enable_x64", True)
 

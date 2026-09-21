@@ -11,7 +11,8 @@ import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from bspf_jax.air_sea import AirSeaState, plan_air_sea
+from bspf_models.air_sea.air_sea import AirSeaState
+from bspf_models.air_sea.air_sea import plan_air_sea
 from validate_air_sea_resolution import diagnostics
 
 

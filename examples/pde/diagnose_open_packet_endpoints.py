@@ -3,11 +3,15 @@ import jax
 jax.config.update('jax_enable_x64',True)
 import jax.numpy as jnp,numpy as np,json
 from dataclasses import replace
-from bspf_jax.plans import plan_1d
-from bspf_jax.fast_axis import plan_fast_axis,sample_aligned_knots,axis_values
-from bspf_jax.operators import differentiate
-from bspf_jax.open_slab_packet import (plan_open_slab_packet, integrate_open_packet,
-    packet_initial, packet_reference)
+from pybspf.plans import plan_1d
+from pybspf.fast_axis import plan_fast_axis
+from pybspf.fast_axis import sample_aligned_knots
+from pybspf.fast_axis import axis_values
+from pybspf.operators import differentiate
+from bspf_models.kinetic.open_slab_packet import plan_open_slab_packet
+from bspf_models.kinetic.open_slab_packet import integrate_open_packet
+from bspf_models.kinetic.open_slab_packet import packet_initial
+from bspf_models.kinetic.open_slab_packet import packet_reference
 
 def main():
     from pathlib import Path

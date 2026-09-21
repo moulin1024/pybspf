@@ -1,0 +1,8 @@
+{
+  "source_commit": "361a39593de3ee6656b00f52cdd0b778a58280c5",
+  "files": {
+    "step000000002.json": "bd98ef752ebf17bb65850a5d8e86864e4b7ffcc6b80f3863c73fb76282a9d397",
+    "step000000002.npz": "70148e813b6c5dda7074baa0c63a59c6b5cfb2150a7c51c5590f1b91391b1ab6"
+  },
+  "generation": "Original air_sea_platform.run: SpatialConfig(33,20), TimeConfig(30,6,30), OutputConfig(120,30,60,60), until=60"
+}

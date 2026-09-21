@@ -6,7 +6,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from bgk_itg_saturation import analyze
-from bspf_jax.itg_statistics import heat_uncertainty,compare_heat_means
+from bspf_models.kinetic.itg_statistics import heat_uncertainty
+from bspf_models.kinetic.itg_statistics import compare_heat_means
 
 
 def main():

@@ -8,8 +8,12 @@ import jax.numpy as jnp
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from bspf_jax.nonlinear_itg import (plan_nonlinear_itg,nonlinear_itg_initial,
-    nonlinear_itg_rhs,nonlinear_itg_fields,nonlinear_itg_diagnostics,integrate_nonlinear_itg)
+from bspf_models.kinetic.nonlinear_itg import plan_nonlinear_itg
+from bspf_models.kinetic.nonlinear_itg import nonlinear_itg_initial
+from bspf_models.kinetic.nonlinear_itg import nonlinear_itg_rhs
+from bspf_models.kinetic.nonlinear_itg import nonlinear_itg_fields
+from bspf_models.kinetic.nonlinear_itg import nonlinear_itg_diagnostics
+from bspf_models.kinetic.nonlinear_itg import integrate_nonlinear_itg
 
 
 def run(p,dt,*,end=20.,linear=False):

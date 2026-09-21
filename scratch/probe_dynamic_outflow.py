@@ -7,16 +7,14 @@ import numpy as np
 import jax
 import jax.numpy as jnp
 from dynamic_boundary_common import load_open_plan
-from bspf_jax.stream_navier_stokes import (
-    with_stream_dynamic_boundary,
-    stream_ns_load,
-    stream_ns_rhs,
-    stream_ns_rk4_step,
-    stream_ns_inertia_apply,
-    stream_ns_velocity,
-    stream_ns_vorticity,
-    stream_evaluate_line,
-)
+from bspf_models.fluids.stream_navier_stokes import with_stream_dynamic_boundary
+from bspf_models.fluids.stream_navier_stokes import stream_ns_load
+from bspf_models.fluids.stream_navier_stokes import stream_ns_rhs
+from bspf_models.fluids.stream_navier_stokes import stream_ns_rk4_step
+from bspf_models.fluids.stream_navier_stokes import stream_ns_inertia_apply
+from bspf_models.fluids.stream_navier_stokes import stream_ns_velocity
+from bspf_models.fluids.stream_navier_stokes import stream_ns_vorticity
+from bspf_models._numerics.trial_spaces import stream_evaluate_line
 
 jax.config.update("jax_enable_x64", True)
 start = time.perf_counter()

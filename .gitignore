@@ -210,3 +210,10 @@ bspf-paper-python-standalone/
 BSPF_3D64_T2_20260917
 docs
 experiments
+# Maintain migration documentation and the explicit source archive.
+!/legacy/numpy_cupy/docs/
+!/legacy/numpy_cupy/docs/**
+!/docs/
+/docs/*
+!/docs/migration.md
+!/docs/migration-baseline.json

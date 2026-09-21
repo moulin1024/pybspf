@@ -1,7 +1,7 @@
 # Noisy 1D differentiation: effect of local Chebyshev endpoints
 
 The runnable [notebook](../examples/operation/differentiate_1d_noisy.ipynb) calls
-`bspf_jax` directly. It is registered in the notebook execution tests. Here LDC
+`pybspf` directly. It is registered in the notebook execution tests. Here LDC
 means the archive's local low-degree Chebyshev endpoint estimator; this does not
 compare against the separate Full-LDC algorithm or iterative defect correction.
 

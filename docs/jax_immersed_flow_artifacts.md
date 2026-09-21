@@ -7,7 +7,7 @@
 
 代码：
 
-- `jax/src/bspf_jax/immersed_flow.py`：原 SVD 方法及可选解析壁面因子。
+- `packages/models/src/bspf_models/fluids/immersed_flow.py`：原 SVD 方法及可选解析壁面因子。
 - `examples/pde/lightning_stokes_reference.py`：独立 Goursat/AAA–lightning 参考实现。
 - `examples/pde/compare_immersed_stokes.py`：固定空间的实际解/最佳逼近对照。
 - `examples/pde/render_immersed_stokes.py`、`render_immersed_artifacts.py`：误差图与 NS 对照。
@@ -146,13 +146,13 @@ AAA–lightning 用孔内极点、Laurent 和对数项表示边界引起的解�
 ## 复现
 
 ```sh
-export PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
 python examples/pde/lightning_stokes_reference.py
 python examples/pde/compare_immersed_stokes.py
 MPLCONFIGDIR=/tmp/bspf-mpl python examples/pde/render_immersed_stokes.py
 python examples/pde/immersed_channel_flow.py --wall-method factor --out build/immersed_flow/factor
 MPLCONFIGDIR=/tmp/bspf-mpl python examples/pde/render_immersed_flow.py --out build/immersed_flow/factor
-python -m pytest -q jax/tests/test_immersed_flow.py jax/tests/test_cavity.py jax/tests/test_lightning_stokes_reference.py
+python -m pytest -q packages/models/tests/test_immersed_flow.py packages/models/tests/test_cavity.py packages/models/tests/test_lightning_stokes_reference.py
 ```
 
 依赖 SciPy 的 `scipy.interpolate.AAA`（本机 SciPy 1.17.1）。无需 MATLAB，

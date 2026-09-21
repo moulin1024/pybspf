@@ -10,16 +10,16 @@
 从仓库根目录安装两个包，JAX 的 GPU 后端需按设备单独安装：
 
 ```bash
-python -m pip install -e . -e './jax[slope]'
+python -m pip install -e '.[host,notebook,test]' -e './packages/models[precision,test]'
 python examples/pde/isw_slope/run_slope.py \
   --case R2_321x161 --dt 0.5 --tfinal 50 --save 50 --out build/isw-slope-50s
 ```
 
-未安装时可在命令前加 `PYTHONPATH=src:jax/src`。
+运行前先安装上述包，不再通过源码目录设置 PYTHONPATH。
 单 CPU 计算线程运行：
 
 ```bash
-PYTHONPATH=src:jax/src PJRT_NPROC=1 JAX_PLATFORMS=cpu \
+PJRT_NPROC=1 JAX_PLATFORMS=cpu \
 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 \
 python examples/pde/isw_slope/run_slope.py \
   --dt 0.5 --tfinal 50 --save 50 --out build/isw-slope-singlecore
@@ -37,7 +37,7 @@ python examples/pde/isw_slope/run_slope.py \
 
 - `pybspf.ClosedBSPFLine`：端点节点化的 QR BSPF 标量空间及导数闭合的
   无滑移流函数空间。与压力求解器复用 QR 样条拟合，不导入旧三维求解器。
-- `bspf_jax.mapped_boussinesq.MappedBoussinesq`：给定几何和背景分层的
+- `bspf_models.fluids.mapped_boussinesq.MappedBoussinesq`：给定几何和背景分层的
   二维映射模型，复用库内张量算子、预条件 CG 和 RK4。
 - `source/common.py`：本算例的地形、坐标映射、分层和冻结初场。
 - `source/slope_solver.py`：将这些物理定义传给库模型的薄适配器。
@@ -58,7 +58,7 @@ python examples/pde/isw_slope/run_slope.py \
 `diagnostics.json` 和完成后的 `summary.json`。导出物理场可用：
 
 ```bash
-PYTHONPATH=src:jax/src python examples/pde/isw_slope/export_fields.py \
+python examples/pde/isw_slope/export_fields.py \
   --run build/isw-slope-50s --out build/isw-slope-50s.nc
 ```
 
@@ -67,14 +67,14 @@ NetCDF 导出复用已安装的 SciPy，无额外依赖；导出网格是后处�
 ## 回归验证
 
 ```bash
-PYTHONPATH=src:jax/src PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest \
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest \
   tests/test_galerkin.py tests/test_pressure_poisson2d.py \
-  jax/tests/test_isw_slope.py jax/tests/test_flow_kernels.py -q
+  packages/models/tests/test_isw_slope.py packages/models/tests/test_flow_kernels.py -q
 ```
 
 测试覆盖闭合基函数的壁面迹、导数关系、质量正交性，迁移前 NumPy 数值记录，
 初值投影、RK4、散度、能量关系、失败拒绝、小状态包回传和检查点续跑。
-测试参考数组在 `jax/tests/reference/isw_slope`，不携带第二份求解器。
+测试参考数组在 `packages/models/tests/reference/isw_slope`，不携带第二份求解器。
 
 迁移验证：上述 34 项测试通过；321×161、dt=0.5 s 完成 0–50 s 的 100 步。
 在共同 97×65 后处理网格上，50 s 的 u/w 与迁移前结果最大绝对差约

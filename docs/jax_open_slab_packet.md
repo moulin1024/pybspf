@@ -78,11 +78,11 @@ W(t)-W(0)+\int_0^t(\mathcal F_W+\mathcal D_{\rm boundary})\,dt=0.$$
 ## 复现
 
 ```bash
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python examples/pde/open_slab_packet.py
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python examples/pde/validate_open_packet_knots.py
-PYTHONPATH=jax/src python -m pytest jax/tests/test_open_slab_packet.py jax/tests/test_fast_axis.py -q
+python -m pytest packages/models/tests/test_open_slab_packet.py tests/test_fast_axis.py -q
 ```
 
 条件与插值扫描可另运行 `examples/pde/diagnose_open_packet_knots.py`。
@@ -127,4 +127,4 @@ Chebyshev 端点估计已经采用增广 QR。12 模态、24 点窗口时，257 
 
 49至129点约11阶的实测下降不延续至细网格；193至257误差回升。固定16点窗口未消除平台，257点与FD9的1.20e-9接近。粒子和自由能最大相对收支缺陷分别为3.19e-10、6.06e-12。
 
-复现：`PYTHONPATH=jax/src python examples/pde/validate_open_packet_conservative.py`。结果保存在 `build/open_slab_packet/conservative_window.json`、`conservative_window.png`、`conservative_window.pdf`，257点完整检查时序为`conservative_window_257.npz`。
+复现：`python examples/pde/validate_open_packet_conservative.py`。结果保存在 `build/open_slab_packet/conservative_window.json`、`conservative_window.png`、`conservative_window.pdf`，257点完整检查时序为`conservative_window_257.npz`。

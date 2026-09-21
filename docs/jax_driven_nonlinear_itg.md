@@ -43,8 +43,8 @@ $$P_n+P_T=\frac{\operatorname{Re}\langle\widehat X+\sqrt w J\widehat\phi,R_*\ran
 ## 复现与边界
 
 ```bash
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src python examples/pde/driven_nonlinear_itg.py
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src python examples/pde/driven_nonlinear_itg.py --dt .025 --out build/driven_nonlinear_itg/refined
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python examples/pde/driven_nonlinear_itg.py
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python examples/pde/driven_nonlinear_itg.py --dt .025 --out build/driven_nonlinear_itg/refined
 ```
 
 输出包含增长/带状流/收支图 `growth.png/pdf`、模态谱 `spectra.png`、JSON 报告，以及保存电势、诊断、驱动功和最终状态的 `nonlinear.npz`、`linear.npz`。

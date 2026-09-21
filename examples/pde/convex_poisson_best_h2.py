@@ -8,11 +8,12 @@ import jax
 import numpy as np
 import scipy.linalg as la
 
-from bspf_jax.embedded_poisson import benchmark_domains
-from bspf_jax._flow_kernels import tensor_product
-from bspf_jax.smooth_extension import factors, evaluate_factors
-from bspf_jax.random_wave_mms import RandomWaveMMS
-from bspf_jax.convex_poisson import box_h2_root
+from bspf_models.elliptic.embedded_poisson import benchmark_domains
+from pybspf.tensor import tensor_product
+from bspf_models.elliptic.smooth_extension import factors
+from bspf_models.elliptic.smooth_extension import evaluate_factors
+from bspf_models.elliptic.random_wave_mms import RandomWaveMMS
+from bspf_models.elliptic.convex_poisson import box_h2_root
 from embedded_poisson_approximation import interior
 
 jax.config.update("jax_enable_x64", True)

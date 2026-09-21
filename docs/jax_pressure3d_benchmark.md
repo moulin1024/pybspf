@@ -1,6 +1,6 @@
 # 三维 BSPF 压力直接法：64³、128³、256³，零精修
 
-本次实现 `jax/src/bspf_jax/pressure3d.py`，将原始三维代码的张量直接核心移植到 JAX，并复用一维 DCT＋按层分块压缩变换。两种后端均仅做一次直接应用，没有 GMRES、固定点迭代或残差精修。
+本次实现 `packages/models/src/bspf_models/elliptic/pressure3d.py`，将原始三维代码的张量直接核心移植到 JAX，并复用一维 DCT＋按层分块压缩变换。两种后端均仅做一次直接应用，没有 GMRES、固定点迭代或残差精修。
 
 ## 对照范围
 
@@ -31,7 +31,7 @@
 运行：
 
 ```bash
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python3 scratch/benchmark_pressure3d.py
 MPLCONFIGDIR=/tmp/pybspf-mpl python3 scratch/report_pressure3d.py
 ```
@@ -100,7 +100,7 @@ RSS 是进程累计高水位，包含 Python/JAX/XLA、setup、编译缓存、�
 验证结果：上述新增测试及相关回归测试共 **26 passed**（113.80 s）；三个新增 Python 文件及报告脚本通过 Ruff。
 
 ```bash
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
-  python3 -m pytest jax/tests/test_pressure3d.py jax/tests/test_pressure.py \
-  jax/tests/test_compressed_pressure.py jax/tests/test_navier_stokes.py -q
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+  python3 -m pytest packages/models/tests/test_pressure3d.py packages/models/tests/test_pressure.py \
+  packages/models/tests/test_compressed_pressure.py packages/models/tests/test_navier_stokes.py -q
 ```

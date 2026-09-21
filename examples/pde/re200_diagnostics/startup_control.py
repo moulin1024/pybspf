@@ -5,9 +5,9 @@ import jax
 import jax.numpy as jnp
 import jax.scipy.linalg as jl
 import numpy as np
-from bspf_jax.immersed_flow import ImmersedFlowPlan
-from bspf_jax.immersed_flow_gpu import _explicit
-from bspf_jax._flow_kernels import imex_midpoint
+from bspf_models.fluids.immersed_flow import ImmersedFlowPlan
+from bspf_models.fluids.immersed_flow_gpu import _explicit
+from pybspf.time_integration import imex_midpoint
 jax.config.update('jax_enable_x64',True)
 device=jax.devices('gpu')[0];p=ImmersedFlowPlan(assembly_device=device,basis_precision='float64',nx=73,ny=33,reynolds=200,wall_method='rational')
 step=p.stepper(.01,device=device)

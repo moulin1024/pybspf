@@ -2,7 +2,9 @@ import jax
 jax.config.update('jax_enable_x64',True)
 import numpy as np,pickle
 from pathlib import Path
-from bspf_jax.tokamak_equilibrium import plan_axisymmetric_bspf,fit_fixed_coils,solve_equilibrium
+from bspf_models.plasma.tokamak_equilibrium import plan_axisymmetric_bspf
+from bspf_models.plasma.tokamak_equilibrium import fit_fixed_coils
+from bspf_models.plasma.tokamak_equilibrium import solve_equilibrium
 cache=Path('build/tokamak_plan33.pkl')
 if cache.exists():p=pickle.loads(cache.read_bytes())
 else:

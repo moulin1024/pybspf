@@ -1,0 +1,20 @@
+[
+  {
+    "grid": "73x33",
+    "residual_rms": 0.6696723221959445,
+    "fourth_difference_rms": 0.01094589726106463,
+    "ripple_peak_cycles_per_y": 7.006369426751586
+  },
+  {
+    "grid": "145x33",
+    "residual_rms": 0.48838116455473696,
+    "fourth_difference_rms": 0.0041053688759767355,
+    "ripple_peak_cycles_per_y": 7.006369426751586
+  },
+  {
+    "grid": "73x65",
+    "residual_rms": 0.974878889835968,
+    "fourth_difference_rms": 0.20541254299685122,
+    "ripple_peak_cycles_per_y": 14.012738853503173
+  }
+]

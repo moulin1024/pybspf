@@ -11,9 +11,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
-from bspf_jax.embedded_poisson import benchmark_domains
-from bspf_jax.random_wave_mms import RandomWaveMMS
-from bspf_jax.stream_navier_stokes import stream_evaluate_line
+from bspf_models.elliptic.embedded_poisson import benchmark_domains
+from bspf_models.elliptic.random_wave_mms import RandomWaveMMS
+from bspf_models._numerics.trial_spaces import stream_evaluate_line
 
 jax.config.update("jax_enable_x64", True)
 
@@ -70,7 +70,7 @@ def main():
         )
         axes[row, 1].set_title("Physical absolute error (independent grid)")
         fig.colorbar(im, ax=axes[row, 1], shrink=0.8)
-        from bspf_jax.smooth_extension import basis_operators
+        from bspf_models.elliptic.smooth_extension import basis_operators
 
         bp, _, normals = domain.boundary_rule(20)
         _, _, dn, _ = basis_operators(geom.line, bp, normals)

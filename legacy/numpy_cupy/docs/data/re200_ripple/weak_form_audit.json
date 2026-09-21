@@ -1,0 +1,7 @@
+{
+  "advective_rotational_relative_dual_defect": 3.447735768457404e-08,
+  "advective_rotational_dual_defect": 8.628283119436946e-08,
+  "bulk_power": -0.0007182330403761421,
+  "boundary_power": -0.0007182331527640917,
+  "power_balance_defect": 1.1238794964119059e-10
+}

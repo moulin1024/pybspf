@@ -1,6 +1,6 @@
 # 保留 FLR 的静电 slab 回旋动理学原型
 
-实现：`jax/src/bspf_jax/gyrokinetic_slab.py`；可运行算例：
+实现：`packages/models/src/bspf_models/kinetic/gyrokinetic_slab.py`；可运行算例：
 `examples/pde/gyrokinetic_slab.py`。
 
 ## 模型与归一化
@@ -70,10 +70,10 @@ W=\tfrac12\langle g^2\rangle_{x,v,\mu}
 ## 运行
 
 ```bash
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python examples/pde/gyrokinetic_slab.py
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
-  PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest jax/tests/test_gyrokinetic_slab.py -q
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+  PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest packages/models/tests/test_gyrokinetic_slab.py -q
 ```
 
 使用 JAX float64（算例内启用）。输出在 `build/gyrokinetic_slab/`：

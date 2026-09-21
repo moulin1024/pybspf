@@ -7,18 +7,16 @@ from pathlib import Path
 import numpy as np
 import jax
 import jax.numpy as jnp
-from bspf_jax.stream_navier_stokes import (
-    plan_stream_navier_stokes2d,
-    with_stream_dynamic_boundary,
-    plan_stream_sponge,
-    stream_kh_initial,
-    stream_ns_rhs,
-    stream_ns_inertia_apply,
-    stream_ns_rk4_step,
-    stream_ns_velocity,
-    stream_ns_vorticity,
-    stream_ns_divergence,
-)
+from bspf_models.fluids.stream_navier_stokes import plan_stream_navier_stokes2d
+from bspf_models.fluids.stream_navier_stokes import with_stream_dynamic_boundary
+from bspf_models.fluids.stream_navier_stokes import plan_stream_sponge
+from bspf_models.fluids.stream_navier_stokes import stream_kh_initial
+from bspf_models.fluids.stream_navier_stokes import stream_ns_rhs
+from bspf_models.fluids.stream_navier_stokes import stream_ns_inertia_apply
+from bspf_models.fluids.stream_navier_stokes import stream_ns_rk4_step
+from bspf_models.fluids.stream_navier_stokes import stream_ns_velocity
+from bspf_models.fluids.stream_navier_stokes import stream_ns_vorticity
+from bspf_models.fluids.stream_navier_stokes import stream_ns_divergence
 
 jax.config.update("jax_enable_x64", True)
 pa = argparse.ArgumentParser()

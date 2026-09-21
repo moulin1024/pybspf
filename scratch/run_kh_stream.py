@@ -7,12 +7,10 @@ from pathlib import Path
 import numpy as np
 import jax
 import jax.numpy as jnp
-from bspf_jax.stream_navier_stokes import (
-    stream_ns_divergence,
-    plan_stream_sponge,
-    stream_ns_inertia_apply,
-    with_stream_dynamic_boundary,
-)
+from bspf_models.fluids.stream_navier_stokes import stream_ns_divergence
+from bspf_models.fluids.stream_navier_stokes import plan_stream_sponge
+from bspf_models.fluids.stream_navier_stokes import stream_ns_inertia_apply
+from bspf_models.fluids.stream_navier_stokes import with_stream_dynamic_boundary
 from bspf_stream_ns import plan, velocity, vorticity, load, rhs, rk4, kh_seed
 from validate_weak_ns_accuracy import fields
 

@@ -9,7 +9,8 @@ import jax
 import numpy as np
 from scipy.special import roots_legendre
 
-from bspf_jax.immersed_flow import ImmersedFlowPlan, channel_lift
+from bspf_models.fluids.immersed_flow import ImmersedFlowPlan
+from bspf_models.fluids.immersed_flow import channel_lift
 
 
 def independent_checks(plan, state):

@@ -1,110 +1,117 @@
-"""Derivative-closed BSPF trial spaces on the unit interval.
+"""Small 1D weak-form systems assembled from full BSPF derivative matrices.
 
-Host-side construction only. The scalar basis is endpoint-nodalized QR BSPF;
-clamped streamfunctions are integrals of its zero-mean tangential subspace.
-No pressure spaces, 3D solvers, or time integration are constructed here.
+These dense O(N^2) operators are intended for modest 1D PDE examples, not
+large tensor grids. Natural boundary conditions belong to the weak form;
+``constraints`` impose homogeneous essential conditions on the full field.
 """
-
+from dataclasses import dataclass
+from functools import partial
 from numbers import Integral
+
+import jax
+import jax.numpy as jnp
 import numpy as np
-import scipy.linalg as la
-from numpy.polynomial.legendre import leggauss
-from .solvers._pressure_bspf import qr_spline_fit
+
+from pybspf.operators import derivatives
+from pybspf.operators import decompose
+from pybspf.basis import basis_matrix
+from pybspf.plans import Plan1D
 
 
-class ClosedBSPFLine:
-    """Scalar (N), zero-trace (N-2), and clamped (N-3) BSPF spaces.
+@partial(jax.tree_util.register_dataclass,
+         data_fields=['mass', 'stiffness', 'extension', 'free', 'values', 'quadrature_weights', 'derivative_values'], meta_fields=[])
+@dataclass(frozen=True)
+class Galerkin1D:
+    """Mass/stiffness of BSPF trial functions; physical samples are E @ q."""
+    mass: jax.Array
+    stiffness: jax.Array
+    extension: jax.Array
+    free: jax.Array
+    values: jax.Array  # physical trial functions at quadrature points
+    quadrature_weights: jax.Array
+    derivative_values: jax.Array  # differentiated trial functions at quadrature points
 
-    Uses the slope benchmark's q=9, degree=13, at most 32 splines and
-    14-point Taylor endpoint jets. ``values`` returns clamped values and
-    derivatives; their first derivatives lie exactly in the tangent space.
-    Arrays are NumPy float64 and may be uploaded to any compute backend.
+
+def _quadrature_rule(plan, quadrature_order):
+    """Gauss nodes and weights split at all sample locations and spline knots."""
+    if isinstance(quadrature_order, bool) or not isinstance(quadrature_order, Integral) or quadrature_order < 1:
+        raise ValueError('quadrature_order must be a positive integer')
+    # Host-only geometry inspection; numerical quadrature assembly uses JAX.
+    edges = jnp.asarray(np.unique(np.concatenate((np.asarray(plan.x), np.asarray(plan.knots)))))
+    index = jnp.arange(1, quadrature_order, dtype=plan.x.dtype)
+    offdiag = index/jnp.sqrt(4*index**2-1)
+    nodes, vectors = jnp.linalg.eigh(jnp.diag(offdiag, 1)+jnp.diag(offdiag, -1))
+    widths = jnp.diff(edges)
+    points = (edges[:-1, None]+widths[:, None]*(nodes+1)/2).reshape(-1)
+    weights = (widths[:, None]*vectors[0]**2).reshape(-1)
+    return points, weights
+
+
+def _quadrature_trial(plan, extension, orders, quadrature_order):
+    """Evaluate full BSPF trial functions/derivatives on resolved Gauss nodes."""
+    points, weights = _quadrature_rule(plan, quadrature_order)
+    split = decompose(plan, extension)
+    spectrum = jnp.fft.fft(split.residual, axis=0)/plan.x.size
+    phase = jnp.exp(1j*(points[:, None]-plan.x[0])*plan.omega)
+    values = tuple(
+        basis_matrix(plan.knots, points, degree=plan.degree, derivative=k)@split.coefficients
+        +(phase@((1j*plan.omega[:, None])**k*spectrum)).real for k in orders)
+    return weights, values
+
+
+def galerkin_1d(plan, *, derivative_order=1, constraints=(), quadrature_order=None):
+    """Assemble a quadrature weak form outside jit.
+
+    ``constraints`` is a sequence of (side, derivative order), e.g.
+    ``((0, 0), (0, 1))`` for a left clamp; side is 0 (left) or 1 (right).
+    Boundary values are zero. Remaining end conditions are natural: with
+    derivative_order=1 these are zero flux; with order=2, zero moment/shear.
+    This is a quadrature approximation, not an exact spline Galerkin method.
+    ``quadrature_order=None`` retains nodal trapezoidal assembly. For accurate
+    PDE spectra, supply a positive Gauss order (at least degree+1 recommended):
+    integrate actual spline/Fourier trial functions, splitting at nodes and
+    knots. This avoids under-integrating oscillatory cardinal functions.
+    Positive-noise plans are nonlinear and cannot define these matrices.
     """
-
-    def __init__(self, n, *, quadrature_order=24):
-        if isinstance(n, bool) or not isinstance(n, Integral) or n < 24:
-            raise ValueError("Require an integer n >= 24.")
-        if not isinstance(quadrature_order, Integral) or quadrature_order < 2:
-            raise ValueError("Require quadrature_order >= 2.")
-        self.x, _, self.spline, projection = qr_spline_fit(
-            np.linspace(0.0, 1.0, n),
-            q=9,
-            n_basis=min(32, n - 1),
-            degree=13,
-            baseline_points=14,
-            derivative_splines=True,
-            lower=True,
-        )
-        self.n = n
-        b = self.spline(self.x)
-        nodal = np.eye(n)
-        nodal[-1] = np.eye(n)[0] + (b[-1] - b[0]) @ projection
-        inverse = la.solve(nodal, np.eye(n))
-        self.residual = (np.eye(n)[:-1] - b[:-1] @ projection) @ inverse
-        self.spline_coefficients = projection @ inverse
-        self.frequency = np.fft.fftfreq(n - 1, d=1 / (n - 1))
-        self.fourier = np.fft.fft(np.eye(n - 1), axis=0) / (n - 1)
-        gx, gw = leggauss(quadrature_order)
-        knots = np.unique(self.spline.t)
-        points = np.concatenate(
-            [(a + b) / 2 + (b - a) / 2 * gx for a, b in zip(knots[:-1], knots[1:])]
-        )
-        weights = np.concatenate(
-            [(b - a) / 2 * gw for a, b in zip(knots[:-1], knots[1:])]
-        )
-        r = self.scalar_values(points, 0)[0]
-        mass = r.T @ (weights[:, None] * r)
-        chol = la.cholesky(mass[1:-1, 1:-1], lower=True)
-        self.tangent_transform = np.eye(n)[:, 1:-1] @ la.solve_triangular(
-            chol.T, np.eye(n - 2), lower=False
-        )
-        self.primitive = self.spline.antiderivative()
-        self.fourier_tangent = self.fourier @ (self.residual @ self.tangent_transform)
-        self.spline_tangent = self.spline_coefficients @ self.tangent_transform
-        mean = self.integral_tangent(np.array([1.0]))[0]
-        zero_mean = la.null_space(mean[None, :])
-        primitive = self.integral_tangent(points) @ zero_mean
-        normal_mass = primitive.T @ (weights[:, None] * primitive)
-        chol = la.cholesky(normal_mass, lower=True)
-        self.derivative_map = zero_mean @ la.solve_triangular(
-            chol.T, np.eye(n - 3), lower=False
-        )
-
-    def scalar_values(self, points, order=1):
-        points = np.asarray(points)
-        e = np.exp(2j * np.pi * points[:, None] * self.frequency)
-        return [
-            np.real((e * (2j * np.pi * self.frequency) ** k) @ self.fourier)
-            @ self.residual
-            + self.spline.derivative(k)(points) @ self.spline_coefficients
-            for k in range(order + 1)
-        ]
-
-    def integral_tangent(self, points):
-        points = np.asarray(points)
-        freq = self.frequency
-        e = np.empty((len(points), len(freq)), complex)
-        nz = freq != 0
-        e[:, ~nz] = points[:, None]
-        e[:, nz] = np.expm1(2j * np.pi * points[:, None] * freq[nz]) / (
-            2j * np.pi * freq[nz]
-        )
-        return (
-            np.real(e @ self.fourier_tangent)
-            + (self.primitive(points) - self.primitive(0.0)) @ self.spline_tangent
-        )
-
-    def tangent_values(self, points, order=1):
-        points = np.asarray(points)
-        values = [r @ self.tangent_transform for r in self.scalar_values(points, order)]
-        values[0][(points == 0.0) | (points == 1.0)] = 0.0
-        return values
-
-    def values(self, points, order=2):
-        points = np.asarray(points)
-        normal = self.integral_tangent(points) @ self.derivative_map
-        normal[(points == 0.0) | (points == 1.0)] = 0.0
-        return [normal] + [
-            r @ self.derivative_map
-            for r in self.tangent_values(points, max(order - 1, 0))[:order]
-        ]
+    if not isinstance(plan, Plan1D) or plan.noise is not None:
+        raise ValueError('galerkin_1d requires a clean Plan1D')
+    if isinstance(derivative_order, bool) or not isinstance(derivative_order, Integral) or not 1 <= derivative_order <= plan.max_derivative:
+        raise ValueError('derivative_order must be a supported positive integer')
+    constraints = tuple(tuple(c) for c in constraints)
+    if any(len(c) != 2 or c[0] not in (0, 1) or isinstance(c[1], bool)
+           or not isinstance(c[1], Integral) or not 0 <= c[1] <= plan.max_derivative
+           for c in constraints) or len(set(constraints)) != len(constraints):
+        raise ValueError('constraints must be unique (side=0 or 1, supported order) pairs')
+    n = plan.x.size
+    if len(constraints) >= n:
+        raise ValueError('constraints must leave at least one free degree of freedom')
+    identity = jnp.eye(n, dtype=plan.x.dtype)
+    orders = tuple(sorted({derivative_order} | {k for _, k in constraints if k}))
+    matrices = derivatives(plan, identity, orders=orders)
+    matrices[0] = identity
+    left = sum(side == 0 for side, _ in constraints)
+    right = len(constraints)-left
+    pivots = list(range(left)) + list(range(n-right, n))
+    free = jnp.arange(left, n-right)
+    extension = identity[:, free]
+    if constraints:
+        rows = jnp.stack([matrices[k][0 if side == 0 else -1] for side, k in constraints])
+        # Row scaling avoids comparing value and high-derivative units in rank checks.
+        rows = rows / jnp.linalg.norm(rows, axis=1, keepdims=True)
+        boundary = rows[:, jnp.array(pivots)]
+        if np.linalg.matrix_rank(np.asarray(boundary)) != len(constraints):
+            raise ValueError('boundary elimination is singular for these constraints')
+        extension = extension.at[jnp.array(pivots)].set(
+            -jnp.linalg.solve(boundary, rows[:, free]))
+    if quadrature_order is not None:
+        if isinstance(quadrature_order, bool) or not isinstance(quadrature_order, Integral) or quadrature_order < 1:
+            raise ValueError('quadrature_order must be a positive integer or None')
+        weights, (values, gradient) = _quadrature_trial(
+            plan, extension, (0, derivative_order), quadrature_order)
+        mass = values.T@(weights[:, None]*values)
+        stiffness = gradient.T@(weights[:, None]*gradient)
+        return Galerkin1D(mass, stiffness, extension, free, values, weights, gradient)
+    gradient = matrices[derivative_order] @ extension
+    mass = extension.T @ (plan.weights[:, None]*extension)
+    stiffness = gradient.T @ (plan.weights[:, None]*gradient)
+    return Galerkin1D(mass, stiffness, extension, free, extension, plan.weights, gradient)

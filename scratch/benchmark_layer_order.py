@@ -6,12 +6,10 @@ import time
 import jax
 import jax.numpy as jnp
 import numpy as np
-from bspf_jax._compressed_transform import (
-    build_transforms,
-    _blocks,
-    LayeredBlocks,
-    LayerFactors,
-)
+from bspf_models._numerics._compressed_transform import build_transforms
+from bspf_models._numerics._compressed_transform import _blocks
+from bspf_models._numerics._compressed_transform import LayeredBlocks
+from bspf_models._numerics._compressed_transform import LayerFactors
 
 jax.config.update("jax_enable_x64", True)
 

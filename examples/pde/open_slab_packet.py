@@ -8,10 +8,14 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from bspf_jax.open_slab_packet import (plan_open_slab_packet,packet_initial,
-    packet_reference,packet_reference_moments,packet_fields,packet_diagnostics,
-    integrate_open_packet)
-from bspf_jax.fast_axis import axis_values
+from bspf_models.kinetic.open_slab_packet import plan_open_slab_packet
+from bspf_models.kinetic.open_slab_packet import packet_initial
+from bspf_models.kinetic.open_slab_packet import packet_reference
+from bspf_models.kinetic.open_slab_packet import packet_reference_moments
+from bspf_models.kinetic.open_slab_packet import packet_fields
+from bspf_models.kinetic.open_slab_packet import packet_diagnostics
+from bspf_models.kinetic.open_slab_packet import integrate_open_packet
+from pybspf.fast_axis import axis_values
 
 
 def run(n,*,steps=2400,degree=7,q=12,n_v=192,endpoint_blend=0.,

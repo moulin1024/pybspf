@@ -7,16 +7,14 @@ import time
 import numpy as np
 import jax
 import jax.numpy as jnp
-from bspf_jax.stream_navier_stokes import (
-    StreamLine,
-    StreamNavierStokes2DPlan,
-    plan_stream_sponge,
-    stream_ns_velocity,
-    stream_ns_vorticity,
-    stream_ns_rhs,
-    stream_ns_rk4_step,
-    stream_ns_divergence,
-)
+from bspf_models._numerics.trial_spaces import StreamLine
+from bspf_models.fluids.stream_navier_stokes import StreamNavierStokes2DPlan
+from bspf_models.fluids.stream_navier_stokes import plan_stream_sponge
+from bspf_models.fluids.stream_navier_stokes import stream_ns_velocity
+from bspf_models.fluids.stream_navier_stokes import stream_ns_vorticity
+from bspf_models.fluids.stream_navier_stokes import stream_ns_rhs
+from bspf_models.fluids.stream_navier_stokes import stream_ns_rk4_step
+from bspf_models.fluids.stream_navier_stokes import stream_ns_divergence
 
 jax.config.update("jax_enable_x64", True)
 pa = argparse.ArgumentParser()

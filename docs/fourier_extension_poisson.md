@@ -1,6 +1,6 @@
 # Fourier extension Algorithm 1 与快速 Poisson 求解器
 
-实现：`jax/src/bspf_jax/fourier_extension.py`、`fourier_poisson.py`。
+实现：`src/pybspf/fourier_extension.py`、`fourier_poisson.py`。
 这是 CPU NumPy/SciPy 实现，位于已有曲边 Poisson 实验包中；不提供 JAX JIT/GPU 路径。
 入口是 `FourierPoissonPlan` 和 `examples/pde/fourier_extension_poisson.py`。
 原 `compare_poisson_bases.py --family fourier` 仍用于共同稠密 PDE 框架的空间对照，
@@ -67,8 +67,8 @@ MFS 的精度依赖源点数、源距离和边界截断，需独立加密检查�
 
 ```python
 import numpy as np
-from bspf_jax import FourierPoissonPlan
-from bspf_jax.embedded_poisson import benchmark_domains
+from bspf_models.elliptic.fourier_poisson import FourierPoissonPlan
+from bspf_models.elliptic.embedded_poisson import benchmark_domains
 
 domain = benchmark_domains()[0]
 plan = FourierPoissonPlan(
@@ -120,11 +120,11 @@ H^(3/2) 残差。这些是离散诊断，不是严格连续误差上界。
 ## 复现与验证
 
 ```sh
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python \
-  -m pytest -q jax/tests/test_fourier_extension_poisson.py \
-  jax/tests/test_poisson_basis_comparison.py
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python \
+  -m pytest -q packages/models/tests/test_fourier_extension_poisson.py \
+  packages/models/tests/test_poisson_basis_comparison.py
 
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python \
   examples/pde/fourier_extension_poisson.py \
   --out build/fourier_extension_poisson_final
 ```

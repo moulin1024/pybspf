@@ -9,16 +9,14 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from bspf_jax import (
-    plan_pressure_poisson2d,
-    compress_pressure_plan,
-    pressure_schur,
-    pressure_gradient,
-    solve_pressure_poisson2d,
-    project_pressure2d,
-)
-from bspf_jax.pressure import _tensor_solve
-from bspf_jax._compressed_transform import transform_storage
+from bspf_models.elliptic.pressure import plan_pressure_poisson2d
+from bspf_models.elliptic.pressure import compress_pressure_plan
+from bspf_models.elliptic.pressure import pressure_schur
+from bspf_models.elliptic.pressure import pressure_gradient
+from bspf_models.elliptic.pressure import solve_pressure_poisson2d
+from bspf_models.elliptic.pressure import project_pressure2d
+from bspf_models.elliptic.pressure import _tensor_solve
+from bspf_models._numerics._compressed_transform import transform_storage
 
 jax.config.update("jax_enable_x64", True)
 

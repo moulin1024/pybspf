@@ -410,9 +410,9 @@ basis agreement, host/GPU hybrid manufactured solutions, and existing stream
 and immersed-flow cases. With the CUDA preload and environment below configured:
 
 ```bash
-python -m pytest -q jax/tests/test_immersed_flow_gpu.py \
-  jax/tests/test_parallel_basis.py jax/tests/test_hybrid_flow.py \
-  jax/tests/test_stream_navier_stokes.py jax/tests/test_immersed_flow.py
+python -m pytest -q packages/models/tests/test_immersed_flow_gpu.py \
+  packages/models/tests/test_parallel_basis.py packages/models/tests/test_hybrid_flow.py \
+  packages/models/tests/test_stream_navier_stokes.py packages/models/tests/test_immersed_flow.py
 ```
 
 The following sections retain the first-round measurements for comparison.
@@ -498,12 +498,12 @@ Install the `rational-flow` extra; for this session `gmpy2` was installed only i
 export LD_PRELOAD=/mpcdf/soft/SLE_15/packages/x86_64/cuda/13.0.1/lib64/libcublas.so.13
 export JAX_PLATFORM_NAME=gpu XLA_PYTHON_CLIENT_PREALLOCATE=false
 export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
-export PYTHONPATH=jax/src:/tmp/pybspf-gpu-deps
+export PYTHONPATH=/tmp/pybspf-gpu-deps
 python examples/pde/profile_immersed_flow.py --out build/immersed_flow/profile/repeat
 python examples/pde/immersed_channel_flow.py --backend gpu --wall-method rational \
   --out build/immersed_flow/profile/repeat_full
-python -m pytest -q jax/tests/test_immersed_flow_gpu.py jax/tests/test_hybrid_flow.py \
-  jax/tests/test_pressure.py jax/tests/test_stream_navier_stokes.py
+python -m pytest -q packages/models/tests/test_immersed_flow_gpu.py packages/models/tests/test_hybrid_flow.py \
+  packages/models/tests/test_pressure.py packages/models/tests/test_stream_navier_stokes.py
 MPLCONFIGDIR=/tmp/pybspf-mpl python examples/pde/render_immersed_flow.py \
   --out build/immersed_flow/profile/repeat_full
 ```

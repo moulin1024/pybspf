@@ -1,9 +1,12 @@
 """Reproducible 1z2v magnetic-mirror validation and convergence report.
 
-PYTHONPATH=jax/src python examples/pde/drift_kinetic_mirror.py
+python examples/pde/drift_kinetic_mirror.py
 The default evolves log(f), retaining its exponential continuous representation.
 Use --quick for one grid only or --linear to reproduce the old linear-f run.
 """
+
+import bspf_models.kinetic.drift_kinetic as bspf_drift_kinetic
+import pybspf.plans as bspf_plans
 import argparse
 import json
 from pathlib import Path
@@ -12,8 +15,9 @@ import jax
 jax.config.update('jax_enable_x64', True)
 import jax.numpy as jnp
 import numpy as np
-import bspf_jax as b
-from bspf_jax.fast_axis import axis_values, axis_adjoint, sample_aligned_knots
+from pybspf.fast_axis import axis_values
+from pybspf.fast_axis import axis_adjoint
+from pybspf.fast_axis import sample_aligned_knots
 
 
 def log_exact(t, z, v, mu):
@@ -42,9 +46,9 @@ def run(n, n_mu=12, substeps=40, quadrature_order=12, *, representation="log", p
     v = jnp.linspace(-3., 3., n)
     def knots(x):
         return sample_aligned_knots(x,degree=7,n_basis=min(21,max(12,n//3)))
-    zp = b.plan_1d(z, degree=7, knots=knots(z), boundary_points=9)
-    vp = b.plan_1d(v, degree=7, knots=knots(v), boundary_points=9)
-    p = b.plan_drift_kinetic(zp, vp, magnetic_field=lambda z: 1+z*z/2,
+    zp = bspf_plans.plan_1d(z, degree=7, knots=knots(z), boundary_points=9)
+    vp = bspf_plans.plan_1d(v, degree=7, knots=knots(v), boundary_points=9)
+    p = bspf_drift_kinetic.plan_drift_kinetic(zp, vp, magnetic_field=lambda z: 1+z*z/2,
         magnetic_gradient=lambda z: z, mu_max=2., n_mu=n_mu, quadrature_order=quadrature_order, backend=backend)
     def z_values(f):
         return axis_values(p.z_axis,f) if backend == 'matrix_free' else jnp.tensordot(p.z_values,f,axes=(1,0))
@@ -59,18 +63,18 @@ def run(n, n_mu=12, substeps=40, quadrature_order=12, *, representation="log", p
                                   v[None, None, :, None], p.mu[None, None, None, :])
     reference = jnp.exp(reference_log)
     if representation == 'log':
-        logs, transfers = b.integrate_log_drift_kinetic(p, initial_log, times,
+        logs, transfers = bspf_drift_kinetic.integrate_log_drift_kinetic(p, initial_log, times,
             log_inflow=log_reference, substeps=substeps)
         history = jnp.exp(logs)
-        moments, _, qminimum = b.log_drift_kinetic_diagnostics(p, logs)
-        ref_moments, _, _ = b.log_drift_kinetic_diagnostics(p, reference_log)
+        moments, _, qminimum = bspf_drift_kinetic.log_drift_kinetic_diagnostics(p, logs)
+        ref_moments, _, _ = bspf_drift_kinetic.log_drift_kinetic_diagnostics(p, reference_log)
         assert bool(jnp.all(jnp.isfinite(logs)))
         assert float(jnp.min(history)) >= 0 and float(jnp.min(qminimum)) >= 0
     else:
-        history, transfers = b.integrate_drift_kinetic(p, jnp.exp(initial_log), times,
+        history, transfers = bspf_drift_kinetic.integrate_drift_kinetic(p, jnp.exp(initial_log), times,
             inflow=lambda t,z,v,mu: jnp.exp(log_reference(t,z,v,mu)), substeps=substeps)
-        moments = b.drift_kinetic_moments(p, history)
-        ref_moments = b.drift_kinetic_moments(p, reference)
+        moments = bspf_drift_kinetic.drift_kinetic_moments(p, history)
+        ref_moments = bspf_drift_kinetic.drift_kinetic_moments(p, reference)
         qminimum = jax.lax.map(lambda f: jnp.min(evaluate_tensor(f)), history)
     nh = moments[:, jnp.array([0, 3])]
     balance = nh-nh[0]-transfers.sum(axis=-1)

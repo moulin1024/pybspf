@@ -108,9 +108,9 @@ is reduced.
 Reproduction (SciPy is used only for independent diagnostic eigendecomposition):
 
 ```sh
-OMP_NUM_THREADS=4 PYTHONPATH=jax/src \
+OMP_NUM_THREADS=4 \
   python docs/diagnostics/run_with_local_blas.py scratch/diagnose_pde_weak.py
-OMP_NUM_THREADS=4 PYTHONPATH=jax/src \
+OMP_NUM_THREADS=4 \
   python docs/diagnostics/run_with_local_blas.py scratch/diagnose_pde_phase.py
 ```
 

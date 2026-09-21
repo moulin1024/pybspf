@@ -9,9 +9,13 @@ import jax.numpy as jnp
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from bspf_jax.nonlinear_itg import nonlinear_itg_initial,nonlinear_itg_fields,nonlinear_itg_diagnostics
-from bspf_jax.collisional_itg import (plan_collisional_itg,collisional_itg_rates,
-    collisional_itg_transport,integrate_collisional_itg)
+from bspf_models.kinetic.nonlinear_itg import nonlinear_itg_initial
+from bspf_models.kinetic.nonlinear_itg import nonlinear_itg_fields
+from bspf_models.kinetic.nonlinear_itg import nonlinear_itg_diagnostics
+from bspf_models.kinetic.collisional_itg import plan_collisional_itg
+from bspf_models.kinetic.collisional_itg import collisional_itg_rates
+from bspf_models.kinetic.collisional_itg import collisional_itg_transport
+from bspf_models.kinetic.collisional_itg import integrate_collisional_itg
 
 
 def analyze(data,start,at):
@@ -130,7 +134,8 @@ def main():
     (out/'parameters.json').write_text(json.dumps(vars(a),indent=2)+'\n')
     p=plan_collisional_itg(nu=a.nu,model=a.model,n_x=a.nx,n_y=a.ny,n_z=a.nz,n_v=a.nv,n_mu=a.nmu,a_t=a.at);b=p.base
     if a.radial_kernel=='tensor':
-        from bspf_jax.itg_bracket_tensor import plan_itg_bracket_tensor,integrate_collisional_itg_tensor
+        from bspf_models.kinetic.itg_bracket_tensor import plan_itg_bracket_tensor
+        from bspf_models.kinetic.itg_bracket_tensor import integrate_collisional_itg_tensor
         tensor=plan_itg_bracket_tensor(b.radial)
         advance=lambda u:integrate_collisional_itg_tensor(p,tensor,u,a.dt,steps=steps,save_every=save)
     else:advance=lambda u:integrate_collisional_itg(p,u,a.dt,steps=steps,save_every=save)

@@ -4,9 +4,9 @@ import jax
 jax.config.update('jax_enable_x64',True)
 import jax.numpy as jnp
 from scipy.special import eval_hermitenorm,eval_laguerre,gammaln
-from bspf_jax.collisional_itg import *
-from bspf_jax.nonlinear_itg import nonlinear_itg_diagnostics
-from bspf_jax.itg_bracket_tensor import *
+from bspf_models.kinetic.collisional_itg import *
+from bspf_models.kinetic.nonlinear_itg import nonlinear_itg_diagnostics
+from bspf_models.kinetic.itg_bracket_tensor import *
 def basis(b):
  s=np.asarray(b.sqrt_weights);sv=np.sqrt((s*s).sum(axis=1));sm=np.sqrt((s*s).sum(axis=0))
  return np.stack([sv*eval_hermitenorm(k,np.asarray(b.velocity))*np.exp(-.5*gammaln(k+1)) for k in range(len(sv))],1),np.stack([sm*eval_laguerre(k,np.asarray(b.mu)) for k in range(len(sm))],1)

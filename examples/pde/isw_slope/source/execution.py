@@ -38,23 +38,13 @@ def mathematical_identity() -> str:
         ROOT / "source/evaluation.py",
         ROOT / "reference/shared_initial.npz",
     ]
-    import pybspf.galerkin
-    import pybspf.solvers._pressure_bspf
-
-    paths += [
-        Path(pybspf.galerkin.__file__),
-        Path(pybspf.solvers._pressure_bspf.__file__),
-    ]
-    backend_dir = Path(backend.__file__).parent
-    paths += [
-        backend_dir / name
-        for name in (
-            "mapped_boussinesq.py",
-            "isw_slope.py",
-            "_flow_kernels.py",
-            "_tensor_pcg.py",
-        )
-    ]
+    import importlib
+    for name in (
+        "pybspf.trial_spaces", "pybspf._qr_trial", "pybspf.tensor",
+        "pybspf.time_integration", "bspf_models.fluids.mapped_boussinesq",
+        "bspf_models.fluids.isw_slope", "bspf_models._numerics._tensor_pcg",
+    ):
+        paths.append(Path(importlib.import_module(name).__file__))
     text = "\n".join(
         f"{p.name} {sha_file(p) if p.is_file() else 'missing'}" for p in paths
     )

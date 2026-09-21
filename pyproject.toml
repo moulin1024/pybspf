@@ -4,40 +4,24 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pybspf"
-version = "0.1.0"
-description = "pybspf: B-spline plus Fourier operators for sampled data with NumPy and CuPy backends."
+version = "0.2.0"
+description = "Functional JAX B-spline plus Fourier numerical operators"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "Proprietary"}
-authors = [
-  {name = "pybspf contributors"},
-]
-dependencies = [
-  "numpy>=1.24",
-  "scipy>=1.10",
-]
+dependencies = ["jax>=0.4.35", "numpy>=1.24"]
 
 [project.optional-dependencies]
-gpu = [
-  "cupy-cuda12x",
-]
-fem = [
-  "ngsolve>=6.2",
-]
-dev = [
-  "pytest>=8.0",
-]
-
-[tool.setuptools]
-package-dir = {"" = "src"}
+host = ["scipy>=1.10"]
+test = ["pytest>=8", "scipy>=1.15", "build"]
+notebook = ["jupyterlab", "matplotlib"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["pybspf*"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-markers = [
-  "gpu: requires CuPy and a working CUDA device",
-  "performance: timing comparisons requiring a quiet machine",
-]
+testpaths = ["tests", "packages/models/tests", "packages/sim/tests"]
+addopts = "--import-mode=importlib"
+norecursedirs = ["legacy", "build", ".git", ".claude"]
+markers = ["gpu: requires a JAX GPU device", "performance: requires a quiet machine"]

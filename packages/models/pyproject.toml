@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bspf-models"
+version = "0.1.0"
+description = "PDE models built on the JAX pybspf core"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Proprietary"}
+dependencies = ["pybspf[host]>=0.2,<0.3", "numpy>=1.24", "scipy>=1.15"]
+
+[project.optional-dependencies]
+precision = ["gmpy2>=2.1"]
+test = ["pytest>=8", "gmpy2>=2.1", "matplotlib>=3.7"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["bspf_models*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--import-mode=importlib"
+
+[tool.setuptools.package-data]
+"bspf_models.air_sea" = ["surface_exchange_LICENSE.txt"]

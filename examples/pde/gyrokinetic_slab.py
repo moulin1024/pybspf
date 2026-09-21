@@ -8,8 +8,12 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from bspf_jax.gyrokinetic_slab import (plan_slab_gk,slab_gk_project,
-    integrate_slab_gk,slab_gk_diagnostics,slab_gk_fields,slab_gk_rhs)
+from bspf_models.kinetic.gyrokinetic_slab import plan_slab_gk
+from bspf_models.kinetic.gyrokinetic_slab import slab_gk_project
+from bspf_models.kinetic.gyrokinetic_slab import integrate_slab_gk
+from bspf_models.kinetic.gyrokinetic_slab import slab_gk_diagnostics
+from bspf_models.kinetic.gyrokinetic_slab import slab_gk_fields
+from bspf_models.kinetic.gyrokinetic_slab import slab_gk_rhs
 from dataclasses import replace
 
 

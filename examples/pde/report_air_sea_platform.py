@@ -11,8 +11,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from netCDF4 import Dataset
 
-from bspf_jax.air_sea_platform import report
-from bspf_jax.air_sea_audit import PROCESSES, QUANTITIES
+from bspf_sim.air_sea.platform import report
+from bspf_models.air_sea.air_sea_audit import PROCESSES
+from bspf_models.air_sea.air_sea_audit import QUANTITIES
 
 
 def create_report(run_directory, output):
@@ -177,7 +178,7 @@ def create_report(run_directory, output):
             plt.close(fig)
             figures.append("boundary_sections.png")
     if paths:
-        from bspf_jax.air_sea import saturation_specific_humidity
+        from bspf_models.air_sea.air_sea import saturation_specific_humidity
 
         configuration = json.loads((source / "config.json").read_text())
         pressure = configuration["physics"]["pressure"]
@@ -203,7 +204,8 @@ def create_report(run_directory, output):
     latest = source / "latest_checkpoint.json"
     if latest.exists():
         import jax
-        from bspf_jax.air_sea_platform import read_checkpoint, _plan
+        from bspf_sim.air_sea.platform import read_checkpoint
+        from bspf_sim.air_sea.platform import _plan
 
         jax.config.update("jax_enable_x64", True)
         checkpoint = read_checkpoint(

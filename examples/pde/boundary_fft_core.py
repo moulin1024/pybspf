@@ -14,8 +14,8 @@ from scipy.linalg import circulant
 from scipy.signal import resample
 from scipy.sparse.linalg import LinearOperator, gmres
 
-from bspf_jax.convex_poisson import ArcLengthBoundary
-from bspf_jax.embedded_poisson import benchmark_domains
+from bspf_models.elliptic.convex_poisson import ArcLengthBoundary
+from bspf_models.elliptic.embedded_poisson import benchmark_domains
 
 
 class Circle:

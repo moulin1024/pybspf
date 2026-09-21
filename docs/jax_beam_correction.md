@@ -95,9 +95,9 @@ weak free-end space and the final fully constrained space.
   cells and assertions rather than maintaining another beam solver.
 
 ```sh
-OMP_NUM_THREADS=4 PYTHONPATH=jax/src PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
+OMP_NUM_THREADS=4 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
   python docs/diagnostics/run_with_local_blas.py -m pytest \
-  -c jax/pyproject.toml jax/tests/test_elasticity.py jax/tests/test_galerkin.py
-OMP_NUM_THREADS=4 PYTHONPATH=jax/src MPLCONFIGDIR=/tmp/pde-mpl \
+  -c jax/pyproject.toml packages/models/tests/test_elasticity.py tests/test_galerkin.py
+OMP_NUM_THREADS=4 MPLCONFIGDIR=/tmp/pde-mpl \
   python docs/diagnostics/run_with_local_blas.py scratch/render_beam_mp4.py
 ```

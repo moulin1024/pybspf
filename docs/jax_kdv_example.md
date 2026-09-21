@@ -93,10 +93,10 @@ space/time, quadrature, and integral checks. Existing NLSE and linear
 Schrödinger notebooks are regression-tested after the shared quadrature refactor.
 
 ```sh
-OMP_NUM_THREADS=4 PYTHONPATH=jax/src PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
+OMP_NUM_THREADS=4 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
   python docs/diagnostics/run_with_local_blas.py -m pytest \
-  -c jax/pyproject.toml jax/tests/test_kdv.py
-OMP_NUM_THREADS=4 PYTHONPATH=jax/src PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
+  -c jax/pyproject.toml packages/models/tests/test_kdv.py
+OMP_NUM_THREADS=4 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
   python docs/diagnostics/run_with_local_blas.py -m pytest \
-  -c jax/pyproject.toml jax/tests/test_examples.py -k kdv
+  -c jax/pyproject.toml packages/models/tests/test_examples.py -k kdv
 ```

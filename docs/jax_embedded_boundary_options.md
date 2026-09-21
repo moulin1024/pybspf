@@ -35,7 +35,7 @@ interpolation/derivative test, not the curved Poisson solve. The screen and
 all endpoint variants are saved under `build/embedded_poisson_endpoint/`.
 Twenty-five existing endpoint and stream-NS regression tests pass.
 
-Reproduce (with `PYTHONPATH=jax/src`, float64 enabled by the entry points):
+Reproduce (with ``, float64 enabled by the entry points):
 
 ```sh
 python examples/pde/embedded_poisson_endpoint_screen.py

@@ -11,8 +11,8 @@ Stokes solver.
 ## Running
 
 ```sh
-python -m pip install -e 'jax[weak-ns]'
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
+python -m pip install -e '.[host,notebook,test]' -e './packages/models[precision,test]' -e './packages/sim[air-sea,test]'
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
  MPLCONFIGDIR=/tmp/pybspf-mpl python scratch/run_kh_weak.py \
  --nx 160 --ny 112 --T 6 --dt .002 --validate
 ```
@@ -21,7 +21,7 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
 an MP4 from saved computed frames. Rendering requires matplotlib and ffmpeg.
 The default output is `build/kh_weak/160x112/`.
 
-Use `bspf_jax.plan_weak_navier_stokes2d(x, y)` and
+Use `bspf_models.fluids.weak_navier_stokes.plan_weak_navier_stokes2d(x, y)` and
 `weak_ns_rk4_step(plan, velocity, dt, force_load)` for the new backend.
 Enable `jax_enable_x64` before setup. `force_load` is a **weak integrated load**,
 not a nodal acceleration; `weak_ns_load` integrates a physical force at the
@@ -141,7 +141,7 @@ does not establish pointwise incompressibility or spatial convergence.
 
 ## Validation
 
-`jax/tests/test_weak_navier_stokes.py` independently checks:
+`packages/models/tests/test_weak_navier_stokes.py` independently checks:
 
 - the tensor projection against an explicitly assembled small dense constraint
   null-space projection, including an odd grid size;

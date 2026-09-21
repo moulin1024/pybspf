@@ -4,10 +4,10 @@
 
 ## 对象与可复现方法
 
-直接调用 `jax/src/bspf_jax/pressure.py` 的 `_make_line`，读取实际 JAX float64 生成的特征向量 V、逆矩阵 Vi 和特征值。使用 CPU，均匀端点网格 [0,1]，N=64、128、256、512，内部维度 m=N-2，q=9、样条数32、degree=13。Taylor 使用14个端点拟合样本；Chebyshev 使用16个样本、12个模态、正则化1e-12，与当前 KH 设置一致。
+直接调用 `packages/models/src/bspf_models/elliptic/pressure.py` 的 `_make_line`，读取实际 JAX float64 生成的特征向量 V、逆矩阵 Vi 和特征值。使用 CPU，均匀端点网格 [0,1]，N=64、128、256、512，内部维度 m=N-2，q=9、样条数32、degree=13。Taylor 使用14个端点拟合样本；Chebyshev 使用16个样本、12个模态、正则化1e-12，与当前 KH 设置一致。
 
 ```bash
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
 MPLCONFIGDIR=/tmp/pybspf-mpl \
 python3 scratch/analyze_pressure_transforms.py
 ```

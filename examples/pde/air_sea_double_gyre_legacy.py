@@ -1,6 +1,6 @@
 """Run the horizontal 2D BSPF ocean / periodic-channel atmosphere example.
 
-PYTHONPATH=jax/src MPLCONFIGDIR=/tmp/bspf-mpl python examples/pde/air_sea_double_gyre.py
+MPLCONFIGDIR=/tmp/bspf-mpl python examples/pde/air_sea_double_gyre.py
 All times are seconds internally; --hours is the elapsed physical duration.
 """
 
@@ -13,19 +13,17 @@ import time
 import jax
 import numpy as np
 
-from bspf_jax.air_sea import (
-    air_sea_fields,
-    air_sea_step,
-    bulk_flux,
-    heat_content,
-    initial_air_sea_state,
-    plan_air_sea,
-    plan_air_sea_stepper,
-    saturation_specific_humidity,
-    scalar_mean,
-    scalar_values,
-)
-from bspf_jax.stream_navier_stokes import stream_ns_divergence
+from bspf_models.air_sea.air_sea import air_sea_fields
+from bspf_models.air_sea.air_sea import air_sea_step
+from bspf_models.air_sea.air_sea import bulk_flux
+from bspf_models.air_sea.air_sea import heat_content
+from bspf_models.air_sea.air_sea import initial_air_sea_state
+from bspf_models.air_sea.air_sea import plan_air_sea
+from bspf_models.air_sea.air_sea import plan_air_sea_stepper
+from bspf_models.air_sea.air_sea import saturation_specific_humidity
+from bspf_models.air_sea.air_sea import scalar_mean
+from bspf_models.air_sea.air_sea import scalar_values
+from bspf_models.fluids.stream_navier_stokes import stream_ns_divergence
 
 
 def render(path, x, field, flux, history, hours, latent_heat):

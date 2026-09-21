@@ -2,9 +2,11 @@
 import jax
 jax.config.update('jax_enable_x64',True)
 import jax.numpy as jnp,json
-from bspf_jax.plans import plan_1d
-from bspf_jax.fast_axis import plan_fast_axis,sample_aligned_knots
-from bspf_jax.operators import differentiate,decompose
+from pybspf.plans import plan_1d
+from pybspf.fast_axis import plan_fast_axis
+from pybspf.fast_axis import sample_aligned_knots
+from pybspf.operators import differentiate
+from pybspf.operators import decompose
 from pathlib import Path
 Path("build/open_slab_packet").mkdir(parents=True,exist_ok=True)
 z=jnp.linspace(-3.,3.,257)

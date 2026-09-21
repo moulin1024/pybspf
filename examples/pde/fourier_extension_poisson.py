@@ -1,8 +1,10 @@
 """Reproduce Algorithm 1 and benchmark its Fourier-particular/MFS Poisson use.
 
-Run with PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1.
+Run with OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1.
 The dense baseline is the SAME extension problem, not a different PDE method.
 """
+
+from importlib import import_module
 
 import argparse
 import hashlib
@@ -16,8 +18,8 @@ import numpy as np
 import scipy
 import scipy.linalg as la
 
-from bspf_jax.embedded_poisson import benchmark_domains
-from bspf_jax.fourier_poisson import FourierPoissonPlan
+from bspf_models.elliptic.embedded_poisson import benchmark_domains
+from bspf_models.elliptic.fourier_poisson import FourierPoissonPlan
 from compare_poisson_bases import ProfileMMS, RandomWaveMMS, exact_jets
 from embedded_poisson_approximation import interior
 
@@ -103,7 +105,7 @@ def run(args):
                          machine=platform.machine(), blas_threads=os.environ.get("OPENBLAS_NUM_THREADS"),
                          omp_threads=os.environ.get("OMP_NUM_THREADS")),
         source_sha256={str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path in
-                       [Path(__file__), Path("jax/src/bspf_jax/fourier_extension.py"), Path("jax/src/bspf_jax/fourier_poisson.py")]},
+                       [Path(__file__), Path(import_module("pybspf.fourier_extension").__file__), Path(import_module("bspf_models.elliptic.fourier_poisson").__file__)]},
         validation_points=len(check), runs=[],
     )
     for n in args.modes:

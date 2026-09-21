@@ -53,7 +53,7 @@ examples, not high-dimensional gyrokinetic simulations.
 
 ## BSPF integral diagnostics
 
-Velocity moments and spatial integrals use `bspf_jax.integrate`; accumulated
+Velocity moments and spatial integrals use `pybspf.calculus.integrate`; accumulated
 boundary transfer and electric work use `antiderivative` on output times.
 
     N' = int v(f_left-f_right) dv + a int(f_vmin-f_vmax) dz

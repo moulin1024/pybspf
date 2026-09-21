@@ -8,15 +8,13 @@ from pathlib import Path
 import jax
 import numpy as np
 
-from bspf_jax.embedded_poisson import (
-    benchmark_domains,
-    sample_domain,
-    solve_poisson,
-    error_metrics,
-    manufactured,
-    background_line,
-    basis_values,
-)
+from bspf_models.elliptic.embedded_poisson import benchmark_domains
+from bspf_models.elliptic.embedded_poisson import sample_domain
+from bspf_models.elliptic.embedded_poisson import solve_poisson
+from bspf_models.elliptic.embedded_poisson import error_metrics
+from bspf_models.elliptic.embedded_poisson import manufactured
+from bspf_models.elliptic.embedded_poisson import background_line
+from bspf_models.elliptic.embedded_poisson import basis_values
 
 jax.config.update("jax_enable_x64", True)
 

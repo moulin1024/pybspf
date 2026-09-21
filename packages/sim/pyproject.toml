@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bspf-sim"
+version = "0.1.0"
+description = "Simulation workflows for BSPF models"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Proprietary"}
+dependencies = ["bspf-models>=0.1,<0.2"]
+
+[project.optional-dependencies]
+air-sea = ["bspf-models[precision]>=0.1,<0.2", "netCDF4>=1.6", "matplotlib>=3.7"]
+test = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["bspf_sim*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--import-mode=importlib"
+
+[project.scripts]
+bspf-air-sea = "bspf_sim.air_sea.platform:main"
+
+[tool.setuptools.package-data]
+"bspf_sim.air_sea" = ["v1_sources.json"]

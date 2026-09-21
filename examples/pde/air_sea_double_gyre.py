@@ -11,8 +11,9 @@ import json
 import runpy
 import sys
 
-from bspf_jax.air_sea_platform import RunConfig, run
-from bspf_jax.surface_exchange import SurfaceExchangeConfig
+from bspf_sim.air_sea.platform import RunConfig
+from bspf_sim.air_sea.platform import run
+from bspf_models.air_sea.surface_exchange import SurfaceExchangeConfig
 
 
 def main():

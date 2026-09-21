@@ -5,7 +5,7 @@
 [全 BSPF 空间离散说明](jax_tokamak_all_bspf.md)。
 
 入口为 `examples/pde/tokamak_plasma_vacuum.py`，核心为
-`jax/src/bspf_jax/tokamak_vacuum.py`。这条路径替代原来的外部流体近似：
+`packages/models/src/bspf_models/plasma/tokamak_vacuum.py`。这条路径替代原来的外部流体近似：
 真空中没有速度、密度、黏性、电阻率或动量方程。原有 halo 示例保留作对照。
 
 ## 方程及界面
@@ -46,13 +46,13 @@ M q_ddot + K q = 0
 ## 运行与验证
 
 ```bash
-export PYTHONPATH=jax/src
+
 export OPENBLAS_NUM_THREADS=1
 export OMP_NUM_THREADS=1
 python examples/pde/tokamak_plasma_vacuum.py
 python examples/pde/render_tokamak_vacuum.py
 python examples/pde/tokamak_vacuum_convergence.py
-python -m pytest jax/tests/test_tokamak.py jax/tests/test_tokamak_vacuum.py -q
+python -m pytest packages/models/tests/test_tokamak.py packages/models/tests/test_tokamak_vacuum.py -q
 ```
 
 默认平衡 n=49，位移截断 modes=14，角向256点、径向64点积分，真空48层。

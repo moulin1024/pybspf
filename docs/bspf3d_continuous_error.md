@@ -44,7 +44,7 @@ p|boundary = p_exact|boundary
 7 个规模 × 2 个后端的边界误差均为 0，重算原始 `sum(D2_axis p)-analytic_laplacian` 的内部相对 L2 残差均小于 1e-10。独立七点差分模板、随机非零六面边界的小网格消元测试通过，最大恢复误差 1.44e-15。
 
 ```bash
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python3 scratch/benchmark_bspf3d_continuous.py
 MPLCONFIGDIR=/tmp/pybspf-mpl python3 scratch/plot_bspf3d_continuous.py
 ```

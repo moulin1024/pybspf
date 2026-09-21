@@ -9,8 +9,9 @@ import jax.numpy as jnp
 import numpy as np
 from scipy.integrate import quad_vec
 
-from bspf_jax.surface_exchange import coare35, SurfaceExchangeConfig
-from bspf_jax.multirate import mri_gark_erk45a_step
+from bspf_models.air_sea.surface_exchange import coare35
+from bspf_models.air_sea.surface_exchange import SurfaceExchangeConfig
+from pybspf.multirate import mri_gark_erk45a_step
 
 
 def validate(out):

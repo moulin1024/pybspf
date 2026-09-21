@@ -77,18 +77,18 @@ Cholesky；磁通扩散为对角直接解。
 
 ```bash
 # 独立运行：初始流体静止，顶盖随后平滑启动。
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python examples/pde/mhd_cavity_2d.py --n 49 --T 0.5
 
 # 接续前一轮已计算的稳态方腔，瞬时设置初始磁场。
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python examples/pde/mhd_cavity_2d.py --n 49 \
   --background build/cavity_n49/state.npz --out build/mhd_cavity
 
 MPLCONFIGDIR=/tmp/bspf-mpl python examples/pde/render_mhd_cavity.py build/mhd_cavity
 
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
-  python -m pytest jax/tests/test_mhd_cavity.py -q
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+  python -m pytest packages/models/tests/test_mhd_cavity.py -q
 ```
 
 默认 `Re=100, Rm=200, dt=0.0005`，所以 `nu=0.01, eta=0.005`。
@@ -144,10 +144,10 @@ Re、Rm 都以单位长度和参考速度 1 定义；Rm 不是基于初始磁场
 复现对比（相同背景 Re、同为原方腔 `t=30` 状态）：
 
 ```bash
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python examples/pde/mhd_cavity_2d.py --n 41 --background build/cavity_2d/state.npz \
   --out build/mhd_cavity_n41
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python examples/pde/mhd_cavity_2d.py --background build/cavity_n49/state.npz \
   --T 0.15 --dt 0.00025 --sample 0.0025 --out build/mhd_cavity_half_dt
 python examples/pde/mhd_cavity_compare.py build/mhd_cavity_n41 build/mhd_cavity \

@@ -6,7 +6,9 @@ from pathlib import Path
 from time import perf_counter
 import jax
 import numpy as np
-from bspf_jax import FixedBoundaryGSPlan, SolovevEquilibrium, SolovevFluxDomain
+from bspf_models.plasma.grad_shafranov import FixedBoundaryGSPlan
+from bspf_models.plasma.solovev import SolovevEquilibrium
+from bspf_models.plasma.solovev import SolovevFluxDomain
 jax.config.update('jax_enable_x64', True)
 
 

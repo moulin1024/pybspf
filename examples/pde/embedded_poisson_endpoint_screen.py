@@ -7,8 +7,8 @@ import jax
 import numpy as np
 import scipy.linalg as la
 
-from bspf_jax.embedded_poisson import background_line
-from bspf_jax.stream_navier_stokes import stream_evaluate_line
+from bspf_models.elliptic.embedded_poisson import background_line
+from bspf_models._numerics.trial_spaces import stream_evaluate_line
 
 jax.config.update("jax_enable_x64", True)
 

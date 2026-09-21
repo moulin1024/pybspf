@@ -6,7 +6,7 @@
 进一步的 `wall_method="rational"` 已将有理边界修正一致纳入完整 NS 算子，见
 [合成空间与非定常 MMS 验证](jax_hybrid_rational_flow.md)。
 
-实现：`jax/src/bspf_jax/immersed_flow.py`，运行：
+实现：`packages/models/src/bspf_models/fluids/immersed_flow.py`，运行：
 `examples/pde/immersed_channel_flow.py`。沿用之前的偏心解析椭圆孔洞，
 求解二维不可压 Navier–Stokes。这里只计算速度/涡量，未重构压力和阻力。
 这是宿主 NumPy/SciPy 稠密参考版，并非大规模生产求解器。
@@ -168,10 +168,10 @@ dt=0.02、t=20、Re=20、缓冲长度 2、最大阻尼 3。
 ## 复现
 
 ```sh
-export PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
 python examples/pde/immersed_channel_flow.py --nx 73 --ny 33 --quadrature-factor 2.5 --out build/immersed_flow/dense
 MPLCONFIGDIR=/tmp/bspf-mpl python examples/pde/render_immersed_flow.py --out build/immersed_flow/dense --movie
-python -m pytest -q jax/tests/test_immersed_flow.py jax/tests/test_cavity.py
+python -m pytest -q packages/models/tests/test_immersed_flow.py packages/models/tests/test_cavity.py
 ```
 
 可调整 `--buffer-length`、`--buffer-strength`。增加长度时应相应增加 nx，

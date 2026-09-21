@@ -11,7 +11,7 @@
 在仓库根目录运行（需安装 JAX 项目依赖）：
 
 ```bash
-export PYTHONPATH=jax/src
+
 export OPENBLAS_NUM_THREADS=1
 export OMP_NUM_THREADS=1
 python examples/pde/scan_bgk_velocity.py --jobs 4

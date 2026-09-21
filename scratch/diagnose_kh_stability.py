@@ -1,5 +1,8 @@
 """BSPF KH stability diagnostics; production solver and old movie untouched."""
 
+import bspf_models.elliptic.pressure as bspf_pressure
+import bspf_models.fluids.navier_stokes as bspf_navier_stokes
+
 import argparse
 import json
 from pathlib import Path
@@ -9,18 +12,15 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 from scipy.linalg import eig, eigvalsh
-import bspf_jax as b
-from bspf_jax.navier_stokes import (
-    plan_navier_stokes2d,
-    ns_raw_rhs,
-    ns_rhs,
-    ns_rk4_step,
-    kh_initial_velocity,
-)
+from bspf_models.fluids.navier_stokes import plan_navier_stokes2d
+from bspf_models.fluids.navier_stokes import ns_raw_rhs
+from bspf_models.fluids.navier_stokes import ns_rhs
+from bspf_models.fluids.navier_stokes import ns_rk4_step
+from bspf_models.fluids.navier_stokes import kh_initial_velocity
 
 
 def make(nx, ny, closure="bspf"):
-    p = b.plan_pressure_poisson2d(
+    p = bspf_pressure.plan_pressure_poisson2d(
         np.linspace(-3, 3, nx),
         np.linspace(-1, 1, ny),
         endpoint_method="chebyshev",
@@ -102,7 +102,7 @@ def evolution(plan, initial, base, args):
                     jnp.sum(p.weights * center * en) / jnp.sum(p.weights * center)
                 ),
                 jnp.sqrt(jnp.sum(p.weights * edge * en) / jnp.sum(p.weights * edge)),
-                jnp.max(abs(b.ns_divergence(plan, u))),
+                jnp.max(abs(bspf_navier_stokes.ns_divergence(plan, u))),
                 x.ravel()[maximum],
                 y.ravel()[maximum],
                 jnp.max(abs((1 - p.mask)[..., None] * w)),
@@ -191,7 +191,7 @@ def spectrum(plan, base, args):
         w = jnp.zeros_like(base).at[1:-1, 1:-1].set(v.reshape(shape))
         unprojected = w
         if plan.energy is not None:
-            w, _ = b.ns_project_velocity(plan, w)
+            w, _ = bspf_navier_stokes.ns_project_velocity(plan, w)
         z = jax.jvp(
             lambda u: ns_rhs(plan, u, force, reference=base, sponge=sigma)[0],
             (base,),

@@ -5,7 +5,7 @@
 ## 当前算例的启用方式
 
 ```bash
-PYTHONPATH=jax/src python -m bspf_jax.air_sea_platform run \
+python -m bspf_sim.air_sea.platform run \
   --config experiments/air_sea/shear_instability_coare35_48h.json \
   --out build/air_sea_shear_coare35_48h
 ```
@@ -31,15 +31,15 @@ NetCDF 同时保存 `exchange_drag/heat/moisture/stability/friction_velocity/gus
 
 ## 适用范围与验证
 
-以 NOAA 官方固定提交 `bd1cac80d2dae454e699f9ef46204dfd88086a71` 为参考；源码、MIT许可证与SHA256清单位于 `jax/tests/reference/coare35/`。保留官方十次迭代和分段弱风处理；关闭冷皮肤、暖层、降雨及外部波浪输入。混合层温度和大气层平均状态仍是有效表面代理，不是解析的垂直廓线。
+以 NOAA 官方固定提交 `bd1cac80d2dae454e699f9ef46204dfd88086a71` 为参考；源码、MIT许可证与SHA256清单位于 `packages/models/tests/reference/coare35/`。保留官方十次迭代和分段弱风处理；关闭冷皮肤、暖层、降雨及外部波浪输入。混合层温度和大气层平均状态仍是有效表面代理，不是解析的垂直廓线。
 
 专项测试覆盖官方通量对照、5/10/20m参考高度、零/弱风、稳定与不稳定状态、单位与符号、热水界面守恒，以及光滑分支的MRI四阶时间精度。新增测试分别改变海温、气温和比湿，确认 COARE 会改变动量倾向，而常系数方案在相同速度下不产生这条动力学反馈。
 
 ```bash
-PYTHONPATH=jax/src pytest -q jax/tests/test_surface_exchange.py \
-  jax/tests/test_air_sea_audit.py::test_coare_coupled_interface_is_conservative \
-  jax/tests/test_air_sea_audit.py::test_thermodynamic_feedback_changes_stress_only_with_coare \
-  jax/tests/test_air_sea_validation.py::test_smooth_coare_multirate_fourth_order
+pytest -q packages/models/tests/test_surface_exchange.py \
+  packages/models/tests/test_air_sea_audit.py::test_coare_coupled_interface_is_conservative \
+  packages/models/tests/test_air_sea_audit.py::test_thermodynamic_feedback_changes_stress_only_with_coare \
+  packages/sim/tests/test_air_sea_validation.py::test_smooth_coare_multirate_fourth_order
 ```
 
 本次只执行专项短测试和600s冒烟运行。48h配置已准备，不自动启动长运行；现有48h视频仍属于常系数方案。

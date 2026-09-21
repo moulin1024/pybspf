@@ -1,15 +1,17 @@
 """Separate PDE quadrature error from implicit-midpoint dispersion."""
+
+import pybspf.galerkin as bspf_galerkin
+import pybspf.plans as bspf_plans
 from diagnose_pde_weak import resolved
 import jax
 import jax.numpy as j
 import numpy as np
 from scipy.linalg import eigh
-import bspf_jax as b
 
 
 def schrodinger(n=257):
  x=j.linspace(0,20,n);t=np.linspace(0,2.5,51)
- p=b.plan_1d(x,degree=7,n_basis=24,boundary_points=9);weak=b.galerkin_1d(p)
+ p=bspf_plans.plan_1d(x,degree=7,n_basis=24,boundary_points=9);weak=bspf_galerkin.galerkin_1d(p)
  psi=np.array(j.exp(5j*x-(x-10)**2)/(j.pi/2)**.25)
  k=np.arange(128)*np.pi/20
  c=np.sqrt(np.pi)/20*(np.exp(-(5+k)**2/4+1j*(5+k)*10)+np.exp(-(5-k)**2/4+1j*(5-k)*10))/(np.pi/2)**.25
@@ -26,8 +28,8 @@ def schrodinger(n=257):
 
 def beam(n=33):
  x=j.linspace(0,1,n);t=np.linspace(0,3,101)
- p=b.plan_1d(x,degree=5,n_basis=16,boundary_points=7)
- weak=b.galerkin_1d(p,derivative_order=2,constraints=((0,0),(0,1)))
+ p=bspf_plans.plan_1d(x,degree=5,n_basis=16,boundary_points=7)
+ weak=bspf_galerkin.galerkin_1d(p,derivative_order=2,constraints=((0,0),(0,1)))
  roots=np.concatenate(([1.875104068711961,4.694091132974175,7.854757438237613,10.995540734875467,14.13716839104647,17.27875965739948],(np.arange(6,10)+.5)*np.pi))
  def modes(z):
   r=roots[:,None];s=(np.cosh(r)+np.cos(r))/(np.sinh(r)+np.sin(r))

@@ -67,10 +67,10 @@ E=\frac{1}{2N_yN_z}\sum D|\widehat\phi|^2,\qquad W=S+E.$$
 ## 复现与文件
 
 ```bash
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src python examples/pde/nonlinear_itg_conservation.py
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src python -m pytest -q jax/tests/test_nonlinear_itg.py
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python examples/pde/nonlinear_itg_conservation.py
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m pytest -q packages/models/tests/test_nonlinear_itg.py
 ```
 
-脚本启用 JAX 双精度。公共 API 位于 `bspf_jax.nonlinear_itg`，并从包顶层导出。输出在 `build/nonlinear_itg_conservation/`：`report.json`、`conservation.png/pdf`、`nonlinear.npz`、`full.npz`。NPZ 保存时间、五项诊断、Fourier 电势和最终状态。
+脚本启用 JAX 双精度。公共 API 位于 `bspf_models.kinetic.nonlinear_itg`，并从包顶层导出。输出在 `build/nonlinear_itg_conservation/`：`report.json`、`conservation.png/pdf`、`nonlinear.npz`、`full.npz`。NPZ 保存时间、五项诊断、Fourier 电势和最终状态。
 
 测试覆盖带状闭合、三线性完全反对称、Fourier 支持、独立解析括号、随机多模态瞬时守恒、退化回原无驱动线性模型及带状模态生成。下一步恢复梯度驱动时，应在同一 W 诊断上加入驱动功预算，再评估可控碰撞与长时饱和。

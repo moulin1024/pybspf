@@ -1,7 +1,7 @@
 # 接入原 BSPF 流函数 NS 框架的线性 MHD
 
 入口为 `examples/pde/tokamak_velocity_mhd.py`，主实现为
-`jax/src/bspf_jax/tokamak_velocity.py`。本次继续保留已约定的线性、轴对称、
+`packages/models/src/bspf_models/plasma/tokamak_velocity.py`。本次继续保留已约定的线性、轴对称、
 不可压物理范围，推进独立的速度和磁扰动；原位移模型作为独立对照保留。
 
 ## 实际复用的代码路径
@@ -52,12 +52,12 @@ S_v 是真空磁能反馈。每一个 RK4 阶段同时更新 q、v、b，磁力�
 ## 运行
 
 ```bash
-export PYTHONPATH=jax/src
+
 export OPENBLAS_NUM_THREADS=1
 export OMP_NUM_THREADS=1
 python examples/pde/tokamak_velocity_mhd.py
 python examples/pde/tokamak_velocity_mhd.py --far-wall --duration 30 --out build/tokamak_velocity_far
-python -m pytest jax/tests/test_tokamak_velocity.py jax/tests/test_stream_navier_stokes.py jax/tests/test_navier_stokes.py jax/tests/test_cavity.py -q
+python -m pytest packages/models/tests/test_tokamak_velocity.py packages/models/tests/test_stream_navier_stokes.py packages/models/tests/test_navier_stokes.py packages/models/tests/test_cavity.py -q
 ```
 
 输出包含 q、v、b 的真实时间序列、实际磁场与速度、不可压误差、磁通冻结误差、

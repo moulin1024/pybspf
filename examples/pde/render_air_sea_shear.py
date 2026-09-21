@@ -14,8 +14,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.animation import FFMpegWriter
 from netCDF4 import Dataset
-from bspf_jax.air_sea_platform import read_checkpoint, _plan
-from bspf_jax.stream_navier_stokes import stream_ns_velocity, stream_ns_vorticity
+from bspf_sim.air_sea.platform import read_checkpoint
+from bspf_sim.air_sea.platform import _plan
+from bspf_models.fluids.stream_navier_stokes import stream_ns_velocity
+from bspf_models.fluids.stream_navier_stokes import stream_ns_vorticity
 from render_air_sea_mp4 import working_binary
 
 

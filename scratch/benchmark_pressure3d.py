@@ -1,5 +1,7 @@
 """Isolated-process CPU comparison of 3D direct cores; exactly zero refinement."""
 
+import bspf_models.elliptic.pressure3d as bspf_pressure3d
+
 import argparse
 import json
 import os
@@ -16,33 +18,32 @@ def worker(args):
     import jax
     import jax.numpy as jnp
     import numpy as np
-    import bspf_jax as b
-    from bspf_jax.pressure3d import _tensor_solve3d
-    from bspf_jax._compressed_transform import transform_storage
+    from bspf_models.elliptic.pressure3d import _tensor_solve3d
+    from bspf_models._numerics._compressed_transform import transform_storage
 
     jax.config.update("jax_enable_x64", True)
     n = args.size
     start = time.perf_counter()
     x = np.linspace(0, 1, n)
-    plan = b.plan_pressure_poisson3d(x, x, x)
+    plan = bspf_pressure3d.plan_pressure_poisson3d(x, x, x)
     jax.block_until_ready(plan)
     setup = time.perf_counter() - start
     storage = dict(stored_bytes=2 * (n - 2) ** 2 * 16, factor_ratio=1.0)
     compression = 0.0
     if args.backend == "compressed":
         start = time.perf_counter()
-        plan = b.compress_pressure_plan3d(plan)
+        plan = bspf_pressure3d.compress_pressure_plan3d(plan)
         jax.block_until_ready(plan)
         compression = time.perf_counter() - start
         storage = transform_storage(plan.lines[0].compressed)
     core = jax.jit(partial(_tensor_solve3d, batch_size=args.batch_size))
-    action = jax.jit(b.pressure_action3d)
-    schur = jax.jit(b.pressure_schur3d)
+    action = jax.jit(bspf_pressure3d.pressure_action3d)
+    schur = jax.jit(bspf_pressure3d.pressure_schur3d)
 
     @jax.jit
     def metrics(plan, got, expected, rhs, lifted):
         residual = (
-            b.pressure_schur3d(plan, got) + lifted * b.pressure_lift3d(plan, got) - rhs
+            bspf_pressure3d.pressure_schur3d(plan, got) + lifted * bspf_pressure3d.pressure_lift3d(plan, got) - rhs
         )
         norm_b = jnp.linalg.norm(rhs)
         norm_r = jnp.linalg.norm(residual)

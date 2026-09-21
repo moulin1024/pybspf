@@ -1,7 +1,7 @@
 # JAX BSPF 非周期 Kelvin–Helmholtz 剪切层
 
-本算例使用 `bspf_jax.navier_stokes` 的二维不可压 NS 推进，以及
-`bspf_jax.pressure` 的 BSPF masked pressure projection。两个方向均为有限区间，
+本算例使用 `bspf_models.fluids.navier_stokes` 的二维不可压 NS 推进，以及
+`bspf_models.elliptic.pressure` 的 BSPF masked pressure projection。两个方向均为有限区间，
 不连接相对边界。FFT 只作为非周期 BSPF 导数中的计算分量，不代表周期边界条件。
 
 ## 模型与边界
@@ -57,7 +57,7 @@ u(0) = U0 + Project(∂y ψ, -∂x ψ).
 在仓库根目录运行：
 
 ```sh
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
  MPLCONFIGDIR=/tmp/pybspf-mpl python scratch/run_kh_nonperiodic.py
 ```
 
@@ -83,7 +83,7 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
 
 ```sh
 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
- python -m pytest -c jax/pyproject.toml jax/tests/test_navier_stokes.py
+ python -m pytest -c jax/pyproject.toml packages/models/tests/test_navier_stokes.py
 ```
 
 正式运行另做两个对照：同一初值以半步长积分至 T=1，比较相对扰动的加权 L2
@@ -110,7 +110,7 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
 及 `coarse_final_state.npz`；这是一对网格的敏感性检查。可重新计算粗网格：
 
 ```sh
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
  python scratch/run_kh_nonperiodic.py --nx 128 --ny 80 --no-video \
  --out examples/pde/results/kh_coarse
 python scratch/compare_kh_grids.py \

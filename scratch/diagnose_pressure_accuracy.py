@@ -7,13 +7,15 @@ import time
 import jax
 import jax.numpy as jnp
 import numpy as np
-from bspf_jax import (
-    plan_pressure_poisson2d,
-    pressure_gradient,
-    pressure_schur,
-    pressure_remove_mean,
-)
-from bspf_jax.pressure import _differentiate, _tensor_solve, _lift, _null_field, _wall
+from bspf_models.elliptic.pressure import plan_pressure_poisson2d
+from bspf_models.elliptic.pressure import pressure_gradient
+from bspf_models.elliptic.pressure import pressure_schur
+from bspf_models.elliptic.pressure import pressure_remove_mean
+from bspf_models.elliptic.pressure import _differentiate
+from bspf_models.elliptic.pressure import _tensor_solve
+from bspf_models.elliptic.pressure import _lift
+from bspf_models.elliptic.pressure import _null_field
+from bspf_models.elliptic.pressure import _wall
 
 jax.config.update("jax_enable_x64", True)
 

@@ -52,9 +52,9 @@ $$R_W=W(t)-W(0)-\int(P_n+P_T-D)dt.$$
 ## 运行与输出
 
 ```bash
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src python examples/pde/bgk_itg_saturation.py --nx 33 --model gyroaveraged --end 300 --average-start 150 --out build/bgk_itg_gyro_n33
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python examples/pde/bgk_itg_saturation.py --nx 33 --model gyroaveraged --end 300 --average-start 150 --out build/bgk_itg_gyro_n33
 # 保持所有模型、网格、步长参数相同后可从末态继续：
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src python examples/pde/bgk_itg_saturation.py --nx 33 --model gyroaveraged --resume --end 600 --average-start 400 --out build/bgk_itg_gyro_n33
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python examples/pde/bgk_itg_saturation.py --nx 33 --model gyroaveraged --resume --end 600 --average-start 400 --out build/bgk_itg_gyro_n33
 ```
 
 每10个时间单位写一次 `history.npz` 检查点，保留最终状态、热通量、功率、累计功及三个能谱。`report.json` 保存窗口分析及是否通过筛查；`saturation.png/pdf` 展示演化/热通量/功率/收支；`spectra.png` 展示平均能谱。ν=0 精确退回已有无碰撞模型。

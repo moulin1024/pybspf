@@ -11,12 +11,10 @@ import jax
 import numpy as np
 import scipy.linalg as la
 
-from bspf_jax.embedded_poisson import (
-    background_line,
-    basis_values,
-    benchmark_domains,
-    manufactured,
-)
+from bspf_models.elliptic.embedded_poisson import background_line
+from bspf_models.elliptic.embedded_poisson import basis_values
+from bspf_models.elliptic.embedded_poisson import benchmark_domains
+from bspf_models.elliptic.embedded_poisson import manufactured
 
 jax.config.update("jax_enable_x64", True)
 

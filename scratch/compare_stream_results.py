@@ -4,7 +4,8 @@ import argparse
 import json
 from pathlib import Path
 import numpy as np
-from bspf_jax.stream_navier_stokes import StreamLine, stream_evaluate_line
+from bspf_models._numerics.trial_spaces import StreamLine
+from bspf_models._numerics.trial_spaces import stream_evaluate_line
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--coarse", default="enriched64")

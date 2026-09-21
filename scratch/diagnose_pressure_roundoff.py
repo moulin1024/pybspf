@@ -5,8 +5,9 @@ from pathlib import Path
 import jax
 import jax.numpy as jnp
 import numpy as np
-from bspf_jax.basis import basis_matrix, open_knots
-from bspf_jax.pressure import _fourier
+from pybspf.basis import basis_matrix
+from pybspf.basis import open_knots
+from bspf_models._numerics.trial_spaces import _fourier
 
 jax.config.update("jax_enable_x64", True)
 rows = []

@@ -26,8 +26,8 @@
 达到 `0.02*a` 后停止，以免把线性模型外推到大位移。
 
 ```bash
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python examples/pde/tokamak_confined.py
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python examples/pde/render_tokamak_confined.py
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python examples/pde/tokamak_confined.py
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python examples/pde/render_tokamak_confined.py
 ```
 
 输出 `build/tokamak_confined/summary.json` 包含壁面扫描、稳定性谱、能量漂移、

@@ -43,13 +43,13 @@ assert bool(diagnostic.converged)
 ## 复现
 
 ```bash
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
 MPLCONFIGDIR=/tmp/pybspf-mpl \
 python3 scratch/benchmark_compressed_pressure.py
 
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
-python3 -m pytest -q jax/tests/test_compressed_pressure.py \
-  jax/tests/test_pressure.py jax/tests/test_navier_stokes.py
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+python3 -m pytest -q packages/models/tests/test_compressed_pressure.py \
+  packages/models/tests/test_pressure.py packages/models/tests/test_navier_stokes.py
 ```
 
 新基准同时比较稠密、旧分组、新按层布局，输出到 `build/layered_pressure_benchmark/`。上一轮未经此次优化的历史结果保留在 `build/compressed_pressure_benchmark/`。

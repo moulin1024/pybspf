@@ -15,7 +15,9 @@
 ```python
 import jax
 jax.config.update("jax_enable_x64", True)
-from bspf_jax import FixedBoundaryGSPlan, SolovevEquilibrium, SolovevFluxDomain
+from bspf_models.plasma.grad_shafranov import FixedBoundaryGSPlan
+from bspf_models.plasma.solovev import SolovevEquilibrium
+from bspf_models.plasma.solovev import SolovevFluxDomain
 
 eq = SolovevEquilibrium(logarithmic=0.08)
 plan = FixedBoundaryGSPlan(SolovevFluxDomain(eq), nodes=25,
@@ -35,10 +37,10 @@ solution = result.as_solution()
 ## 复现与比较范围
 
 ```sh
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python examples/pde/benchmark_gs_response.py
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
-  python -m pytest jax/tests/test_grad_shafranov.py -q
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+  python -m pytest packages/models/tests/test_grad_shafranov.py -q
 ```
 
 计时参考路径也缓存全部基函数，只计算磁通，不重复 MPFR、不计算多余导数。两条路径均包括源项/边界数据处理和训练残差。四组不同平滑源项及非零边界数据轮换，预热后交替计时，以中位数报告。结果保存至 `build/gs_response/results.json`。

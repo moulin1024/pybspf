@@ -19,7 +19,8 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FFMpegWriter
 import numpy as np
 
-from bspf_jax.air_sea import AirSeaConfig, bulk_flux
+from bspf_models.air_sea.air_sea import AirSeaConfig
+from bspf_models.air_sea.air_sea import bulk_flux
 
 
 def working_binary(name):

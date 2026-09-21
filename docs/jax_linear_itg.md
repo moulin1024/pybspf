@@ -110,24 +110,26 @@ $$1+\tau=\int J_0^2\frac{\omega-\omega_*^T}{\omega-\Omega}\,d\Lambda,
 ## 使用与复现
 
 ```python
+
+import bspf_models.kinetic.linear_itg as bspf_linear_itg
 import jax
 jax.config.update('jax_enable_x64', True)
-import bspf_jax as b
+import pybspf as b
 
-radial = b.plan_itg_radial(65)
-p = b.plan_linear_itg(radial, a_t=4.0, ky=0.3)
-x0 = b.linear_itg_initial(p)  # 普通密度初值，不使用参考根
-history, times, work = b.integrate_linear_itg(
+radial = bspf_linear_itg.plan_itg_radial(65)
+p = bspf_linear_itg.plan_linear_itg(radial, a_t=4.0, ky=0.3)
+x0 = bspf_linear_itg.linear_itg_initial(p)  # 普通密度初值，不使用参考根
+history, times, work = bspf_linear_itg.integrate_linear_itg(
     p, x0, 0.01, steps=1200, save_every=20)
-phi_modes, _ = b.linear_itg_fields(p, history[-1])
+phi_modes, _ = bspf_linear_itg.linear_itg_fields(p, history[-1])
 phi_at_nodes = p.radial.samples @ phi_modes
 ```
 
 ```bash
 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-itg-mpl \
-  PYTHONPATH=jax/src python examples/pde/linear_itg.py
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
-  python -m pytest jax/tests/test_linear_itg.py -q
+  python examples/pde/linear_itg.py
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+  python -m pytest packages/models/tests/test_linear_itg.py -q
 ```
 
 `build/linear_itg/` 保存 `report.json`、`reference_scans.json`、`solution_129.npz`、`generic_seed.npz`、`validation.png/pdf` 和 `onset_and_seed.png`。第一个时序文件保存电势、能量、驱动功及径向形状，不是完整五维分布快照。

@@ -11,8 +11,8 @@ from scipy.interpolate import BSpline
 from scipy.special import roots_legendre
 import jax
 import jax.numpy as jnp
-from bspf_jax.pressure import _make_line
-from bspf_jax._weak_basis import mp_trial_values
+from bspf_models._numerics.trial_spaces import _make_line
+from bspf_models._numerics._weak_basis import mp_trial_values
 
 
 class StreamLine(NamedTuple):

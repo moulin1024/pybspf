@@ -78,8 +78,8 @@ a=Wy+V_c\Sigma^{-1}U^T(b-BWy),\qquad c=Pa.
 ```python
 import jax
 import numpy as np
-from bspf_jax import ConvexPoissonGridPlan
-from bspf_jax.embedded_poisson import benchmark_domains
+from bspf_models.elliptic.convex_poisson_grid import ConvexPoissonGridPlan
+from bspf_models.elliptic.embedded_poisson import benchmark_domains
 
 jax.config.update("jax_enable_x64", True)
 x = np.linspace(-1.2, 1.2, 65)
@@ -123,12 +123,12 @@ O(N²)；不能把这里的全部内存成本笼统写成 O(N²)。
 ## 复现
 
 ```bash
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python examples/pde/convex_poisson_tensor.py \
   --nodes 33 --coarse 17 --volume-order 12 --boundary-count 256 --reference
 
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
-  python -m pytest -q jax/tests/test_convex_poisson_tensor.py
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+  python -m pytest -q packages/models/tests/test_convex_poisson_tensor.py
 ```
 
 基准分别记录冷构造、热缓存构造、迭代耗时、收敛状态，以及独立 MMS 的值、

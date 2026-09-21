@@ -80,9 +80,9 @@ K(theta,phi) ds_phi = -a*b/(4*pi*d) dphi.
 ## 复现
 
 ```
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python examples/pde/boundary_fft_random_mms.py
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python examples/pde/boundary_fft_random_mms.py
 MPLCONFIGDIR=/tmp/bspf-mpl python examples/pde/render_boundary_fft_random_mms.py
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m pytest -q jax/tests/test_boundary_fft_core.py jax/tests/test_boundary_fft_random_mms.py
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m pytest -q packages/models/tests/test_boundary_fft_core.py packages/models/tests/test_boundary_fft_random_mms.py
 ```
 
 结果位于 build/boundary_fft_random_mms，包括完整 JSON、随机波参数、场值 NPZ、收敛图

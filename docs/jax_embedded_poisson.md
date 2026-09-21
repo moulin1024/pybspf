@@ -73,10 +73,10 @@ floating-point numerical certificate, not an interval-arithmetic proof.
 From the repository root:
 
 ```sh
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-mpl \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-mpl \
   python examples/pde/embedded_poisson.py
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
-  python -m pytest -q jax/tests/test_embedded_poisson.py
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+  python -m pytest -q packages/models/tests/test_embedded_poisson.py
 ```
 
 The script enables JAX float64 before basis construction. Its optional

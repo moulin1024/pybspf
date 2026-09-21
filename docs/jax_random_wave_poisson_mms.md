@@ -95,13 +95,13 @@ sampling/conditioning sensitivity; it does not certify high-band accuracy.
 From the repository root, with JAX float64 enabled by the scripts:
 
 ```sh
-export PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
 export MPLCONFIGDIR=/tmp/bspf-mpl
 python examples/pde/embedded_poisson_random_mms.py
 python examples/pde/embedded_poisson_random_mms.py --nodes 49 --sample-factor 3 \
   --out build/embedded_poisson_random_mms_sampling
 python examples/pde/render_embedded_poisson_random_mms.py
-python -m pytest -q jax/tests/test_random_wave_mms.py
+python -m pytest -q packages/models/tests/test_random_wave_mms.py
 ```
 
 `build/embedded_poisson_random_mms/summary.json` contains all 18 baseline

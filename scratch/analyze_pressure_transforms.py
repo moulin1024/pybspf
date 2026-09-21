@@ -1,6 +1,6 @@
 """Analyze actual JAX pressure eigenvectors; no production solver changes.
 
-Run with OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src
+Run with OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
 MPLCONFIGDIR=/tmp/pybspf-mpl python3 scratch/analyze_pressure_transforms.py
 """
 
@@ -15,7 +15,7 @@ import scipy.linalg as la
 from scipy.fft import dct, dst
 from scipy.optimize import linear_sum_assignment
 
-from bspf_jax.pressure import _make_line
+from bspf_models._numerics.trial_spaces import _make_line
 
 jax.config.update("jax_enable_x64", True)
 TOLS = (1e-6, 1e-10, 1e-12)

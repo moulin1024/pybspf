@@ -1,6 +1,6 @@
 """BSPF axisymmetric tokamak equilibrium and deformable linear vertical mode.
 
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 python examples/pde/tokamak_axisymmetric.py
+OPENBLAS_NUM_THREADS=1 python examples/pde/tokamak_axisymmetric.py
 All quantities are dimensionless. No device-specific growth rate is claimed.
 """
 
@@ -12,17 +12,13 @@ import pickle
 import jax
 import numpy as np
 import scipy.linalg as la
-from bspf_jax.tokamak_equilibrium import (
-    plan_axisymmetric_bspf,
-    fit_fixed_coils,
-    solve_equilibrium,
-    external_field,
-)
-from bspf_jax.tokamak_linear import (
-    assemble_linear_tokamak,
-    growing_modes,
-    with_exterior,
-)
+from bspf_models.plasma.tokamak_equilibrium import plan_axisymmetric_bspf
+from bspf_models.plasma.tokamak_equilibrium import fit_fixed_coils
+from bspf_models.plasma.tokamak_equilibrium import solve_equilibrium
+from bspf_models.plasma.tokamak_equilibrium import external_field
+from bspf_models.plasma.tokamak_linear import assemble_linear_tokamak
+from bspf_models.plasma.tokamak_linear import growing_modes
+from bspf_models.plasma.tokamak_linear import with_exterior
 
 
 def run(

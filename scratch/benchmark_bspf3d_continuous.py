@@ -16,9 +16,12 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from bspf_jax.pressure import _make_line, _differentiate
-from bspf_jax.pressure3d import _axmul, _axis_transform, _faces
-from bspf_jax._compressed_transform import build_transforms
+from bspf_models._numerics.trial_spaces import _make_line
+from bspf_models.elliptic.pressure import _differentiate
+from bspf_models.elliptic.pressure3d import _axmul
+from bspf_models.elliptic.pressure3d import _axis_transform
+from bspf_models.elliptic.pressure3d import _faces
+from bspf_models._numerics._compressed_transform import build_transforms
 
 
 class Axis(NamedTuple):

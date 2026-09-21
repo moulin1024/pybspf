@@ -15,8 +15,9 @@ import jax.numpy as jnp
 import numpy as np
 import scipy.linalg as la
 
-from bspf_jax.immersed_flow import ImmersedFlowPlan, channel_lift
-from bspf_jax.rational_stokes import RationalStokesExtension
+from bspf_models.fluids.immersed_flow import ImmersedFlowPlan
+from bspf_models.fluids.immersed_flow import channel_lift
+from bspf_models.fluids.rational_stokes import RationalStokesExtension
 
 
 class ContinuousHybridMMS:

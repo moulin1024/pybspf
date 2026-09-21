@@ -9,7 +9,8 @@ import numpy as np
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from bspf_jax._energy_stable import sbp84_derivative, sbp84_diffusion
+from bspf_models._numerics._energy_stable import sbp84_derivative
+from bspf_models._numerics._energy_stable import sbp84_diffusion
 
 
 def main():

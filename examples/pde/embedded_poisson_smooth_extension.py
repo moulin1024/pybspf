@@ -9,16 +9,14 @@ import jax
 import numpy as np
 import scipy.linalg as la
 
-from bspf_jax.embedded_poisson import benchmark_domains
-from bspf_jax.random_wave_mms import RandomWaveMMS
-from bspf_jax.smooth_extension import (
-    assemble_geometry,
-    plan_smooth_extension,
-    basis_operators,
-    factors,
-    evaluate_factors,
-    replace_boundary_rule,
-)
+from bspf_models.elliptic.embedded_poisson import benchmark_domains
+from bspf_models.elliptic.random_wave_mms import RandomWaveMMS
+from bspf_models.elliptic.smooth_extension import assemble_geometry
+from bspf_models.elliptic.smooth_extension import plan_smooth_extension
+from bspf_models.elliptic.smooth_extension import basis_operators
+from bspf_models.elliptic.smooth_extension import factors
+from bspf_models.elliptic.smooth_extension import evaluate_factors
+from bspf_models.elliptic.smooth_extension import replace_boundary_rule
 from embedded_poisson_approximation import interior
 
 jax.config.update("jax_enable_x64", True)

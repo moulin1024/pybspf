@@ -8,14 +8,14 @@
 ## 运行与 API
 
 ```sh
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-mpl \
+OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-mpl \
   python examples/pde/air_sea_double_gyre.py --method mri-gark4 \
   --hours 24 --dt-ocean 300 --dt-air 60 --window 600 --output-hours 0.5
 
-PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 \
-  python -m pytest -q jax/tests/test_multirate.py jax/tests/test_air_sea.py
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 OPENBLAS_NUM_THREADS=1 \
+  python -m pytest -q tests/test_multirate.py packages/models/tests/test_air_sea.py
 
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-mpl \
+OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-mpl \
   python examples/pde/validate_air_sea_mri4.py
 ```
 
@@ -27,7 +27,7 @@ PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-mpl \
 
 ```python
 import jax
-from bspf_jax.air_sea import (
+from bspf_models.air_sea.air_sea import (
     plan_air_sea, plan_air_sea_stepper, initial_air_sea_state, air_sea_step,
 )
 jax.config.update("jax_enable_x64", True)
@@ -88,7 +88,7 @@ v'=F_f(t,v)+5\sum_{j=0}^{i}
 修正快方程用经典 RK4 积分，在每个子步的 0、1/2、1/2、1 时刻使用对应的阶段状态
 和线性多项式强迫。
 
-有理系数保存在 `jax/src/bspf_jax/multirate.py`，出处为 Sandu 的
+有理系数保存在 `src/pybspf/multirate.py`，出处为 Sandu 的
 MRI-GARK-ERK45a；已与 SUNDIALS v7.2.1 主方法系数逐项核对。
 未使用该表的三阶嵌入公式，也未添加自适应步长。
 

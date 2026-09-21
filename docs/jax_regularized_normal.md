@@ -1,6 +1,6 @@
 # 正则化法向延拓、接缝控制及 Poisson 接入
 
-实现 `jax/src/bspf_jax/regularized_normal.py`，驱动
+实现 `packages/models/src/bspf_models/elliptic/regularized_normal.py`，驱动
 `examples/pde/regularized_normal_poisson.py`。这是已有局部多项式基线的后续实验，
 不是完整 Fourier continuation / FC-Gram 实现，也没有平滑归零到背景盒边界。
 
@@ -95,10 +95,10 @@ MMS情况下也等于 Laplacian 相对误差。
 先按 `docs/jax_bspf_smooth_extension.md` 生成可信本地 N=49几何缓存，再运行：
 
 ```sh
-export PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
 python examples/pde/regularized_normal_poisson.py
 MPLCONFIGDIR=/tmp/bspf-mpl python examples/pde/render_regularized_normal.py
-python -m pytest -q jax/tests/test_regularized_normal.py jax/tests/test_normal_continuation.py
+python -m pytest -q packages/models/tests/test_regularized_normal.py packages/models/tests/test_normal_continuation.py
 ```
 
 输出 `build/regularized_normal/results.json`、各beta系数/独立点NPZ、图。

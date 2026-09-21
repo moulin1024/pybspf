@@ -3,7 +3,7 @@
 本阶段求解轴对称、静态、各向同性压力的固定边界问题，物理区域严格位于 `R>0`。
 场使用已有 BSPF 空间；验证域直接使用解析闭合磁通面，不把边界拟合误差混入场误差。
 
-实现入口：`bspf_jax.FixedBoundaryGSPlan`。与原矩形计算壁面上的
+实现入口：`bspf_models.plasma.grad_shafranov.FixedBoundaryGSPlan`。与原矩形计算壁面上的
 `tokamak_equilibrium.solve_equilibrium` 不同，这里直接在给定曲边等离子体域上
 施加磁通 Dirichlet 条件。该版本提供给定源项的线性 GS 求解及 Solov'ev 常数剖面接口；
 没有加入一般非线性剖面迭代、自由边界更新或 X 点。
@@ -112,9 +112,9 @@ min_{psi_N}
 ```python
 import jax
 import numpy as np
-from bspf_jax import (
-    SolovevEquilibrium, SolovevFluxDomain, FixedBoundaryGSPlan,
-)
+from bspf_models.plasma.solovev import SolovevEquilibrium
+from bspf_models.plasma.solovev import SolovevFluxDomain
+from bspf_models.plasma.grad_shafranov import FixedBoundaryGSPlan
 
 jax.config.update("jax_enable_x64", True)
 exact = SolovevEquilibrium(logarithmic=0.08)
@@ -141,10 +141,10 @@ diagnostics = solution.validate(exact.source)
 ## 验证量和复现
 
 ```sh
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python \
-  -m pytest -q jax/tests/test_grad_shafranov.py
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python \
+  -m pytest -q packages/models/tests/test_grad_shafranov.py
 
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python \
   examples/pde/solovev_bspf_validation.py
 
 MPLCONFIGDIR=/tmp/pybspf-gs-mpl python examples/pde/render_solovev_bspf.py

@@ -20,7 +20,7 @@ uses its default alpha 1e-12.
 
 ## Regression checks
 
-The [new integration tests](../jax/tests/test_integration.py) passed in all three
+The [new integration tests](../tests/test_integration.py) passed in all three
 dimensions on unequal grids (33, 41, 49 points, truncated by dimension):
 
 - Eager and JIT full-domain integration, including real input.
@@ -37,10 +37,10 @@ fundamental theorem for the represented interpolant.
 ```sh
 OMP_NUM_THREADS=4 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
   python docs/diagnostics/run_with_local_blas.py -m pytest \
-  -c jax/pyproject.toml jax/tests/test_integration.py -q
+  -c jax/pyproject.toml tests/test_integration.py -q
 OMP_NUM_THREADS=4 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
   python docs/diagnostics/run_with_local_blas.py -m pytest \
-  -c jax/pyproject.toml jax/tests/test_bspf.py -k 'integral or primitive' -q
+  -c jax/pyproject.toml tests/test_bspf.py -k 'integral or primitive' -q
 ```
 
 ## Convergence

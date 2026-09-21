@@ -1,7 +1,7 @@
 # BSPF 二维不可压 NS 顶盖驱动方腔
 
 入口：[`examples/pde/cavity_2d.py`](../examples/pde/cavity_2d.py)。
-求解器：[`jax/src/bspf_jax/cavity.py`](../jax/src/bspf_jax/cavity.py)。
+求解器：[`packages/models/src/bspf_models/fluids/cavity.py`](../packages/models/src/bspf_models/fluids/cavity.py)。
 
 ## 物理问题
 
@@ -56,10 +56,10 @@ Crank–Nicolson 黏性校正，对流和边界提升项在预测中点计算。
 ## 运行
 
 依赖当前 Python 环境中的 JAX、NumPy、SciPy、gmpy2、Matplotlib；也可安装
-项目依赖组：`pip install -e './jax[weak-ns,notebook,test]'`。仓库根目录运行：
+项目依赖组：`pip install -e '.[host,notebook,test]' -e './packages/models[precision,test]' -e './packages/sim[air-sea,test]'`。仓库根目录运行：
 
 ```bash
-PYTHONPATH=jax/src MPLCONFIGDIR=/tmp/bspf-mpl OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+MPLCONFIGDIR=/tmp/bspf-mpl OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
   python examples/pde/cavity_2d.py --n 41 --re 100 --dt 0.01 --T 30
 ```
 
@@ -81,8 +81,8 @@ PYTHONPATH=jax/src MPLCONFIGDIR=/tmp/bspf-mpl OPENBLAS_NUM_THREADS=1 OMP_NUM_THR
 ## 验证
 
 ```bash
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
-  python -m pytest jax/tests/test_cavity.py jax/tests/test_stream_navier_stokes.py -q
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+  python -m pytest packages/models/tests/test_cavity.py packages/models/tests/test_stream_navier_stokes.py -q
 ```
 
 包含连续多项式制造解：`psi=s(t)*(psi_L+0.2*f(x)*g(y))`，

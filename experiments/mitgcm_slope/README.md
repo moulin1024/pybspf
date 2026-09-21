@@ -46,8 +46,8 @@ excluded; BSPF's per-process JIT is included in the earlier total-process time.
 
 ## Reproduce
 
-Install the repository packages first (`python -m pip install -e . -e './jax[slope]'`),
-or prefix the commands below with `PYTHONPATH=src:jax/src` from the repository root.
+Install the repository packages first (`python -m pip install -e . -e '.[host,notebook,test]' -e './packages/models[precision,test]'`),
+or prefix the commands below with 安装后的三个包 from the repository root.
 The canonical BSPF case is now [examples/pde/isw_slope](../../examples/pde/isw_slope/README.md).
 
 From the repository root, obtain the source if needed:

@@ -5,6 +5,8 @@ common overintegrated quadrature, analytic basis gradients, and raw bulk fluxes.
 No interpolated images, fitted curves, or altered physical coefficients.
 """
 
+from importlib import import_module
+
 import argparse
 from dataclasses import asdict
 import hashlib
@@ -15,10 +17,15 @@ import time
 import jax
 import numpy as np
 
-from bspf_jax.air_sea import (
-    AirSeaState, air_sea_fields, air_sea_step, bulk_flux, heat_content,
-    initial_air_sea_state, plan_air_sea, plan_air_sea_stepper, scalar_mean,
-)
+from bspf_models.air_sea.air_sea import AirSeaState
+from bspf_models.air_sea.air_sea import air_sea_fields
+from bspf_models.air_sea.air_sea import air_sea_step
+from bspf_models.air_sea.air_sea import bulk_flux
+from bspf_models.air_sea.air_sea import heat_content
+from bspf_models.air_sea.air_sea import initial_air_sea_state
+from bspf_models.air_sea.air_sea import plan_air_sea
+from bspf_models.air_sea.air_sea import plan_air_sea_stepper
+from bspf_models.air_sea.air_sea import scalar_mean
 
 
 def run(plan, n, h, out, fingerprint):
@@ -128,9 +135,10 @@ def main():
     p = plans[81]
     for other in plans.values():
         np.testing.assert_array_equal(other.scalar.points, p.scalar.points)
-    source = Path(__file__).resolve().parents[2] / "jax/src/bspf_jax"
+    import bspf_models.air_sea.air_sea as air_sea_module
+    source = Path(air_sea_module.__file__).parent
     digest = hashlib.sha256()
-    for file in (Path(__file__), source / "air_sea.py", source / "multirate.py"):
+    for file in (Path(__file__), source / "air_sea.py", Path(import_module("pybspf.multirate").__file__)):
         digest.update(file.read_bytes())
     fingerprint = digest.hexdigest()
     # H=150 is the common spatial-comparison step. Both bounding grids receive

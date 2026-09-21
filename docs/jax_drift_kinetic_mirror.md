@@ -3,7 +3,7 @@
 当前默认算例使用下文的对数分布表示来消除负值；原线性 f 方法保留作对照。
 默认算子现已升级为[轴级 FFT / 低秩实现](jax_fast_drift_kinetic.md)。下文的旧实测表保留为历史对照；新后端的比较结果见链接文档。
 
-实现：[drift_kinetic.py](../jax/src/bspf_jax/drift_kinetic.py)。
+实现：[drift_kinetic.py](../packages/models/src/bspf_models/kinetic/drift_kinetic.py)。
 可复现算例：[drift_kinetic_mirror.py](../examples/pde/drift_kinetic_mirror.py)。
 
 ## 方程和物理测度
@@ -88,11 +88,11 @@ R_H=H(t)-H(0)-\sum_{\rm faces}T_H(t).
    Gauss 阶数 8→10，并将误差、负值和各面传输量写入 JSON。
 
 ```bash
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 \
+OPENBLAS_NUM_THREADS=1 \
   python examples/pde/drift_kinetic_mirror.py
-PYTHONPATH=jax/src PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 OPENBLAS_NUM_THREADS=1 \
-  python -m pytest jax/tests/test_drift_kinetic.py \
-  jax/tests/test_parallel_kinetic.py jax/tests/test_vlasov_poisson.py -q
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 OPENBLAS_NUM_THREADS=1 \
+  python -m pytest packages/models/tests/test_drift_kinetic.py \
+  packages/models/tests/test_parallel_kinetic.py packages/models/tests/test_vlasov_poisson.py -q
 ```
 
 输出目录默认为 `build/drift_kinetic_mirror`，包含 `report.json`、

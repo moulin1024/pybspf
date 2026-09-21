@@ -1,6 +1,6 @@
 # 精确三次 B-spline 上的分片高阶 Poisson 边界求解器
 
-实现：`jax/src/bspf_jax/panel_poisson.py`。
+实现：`packages/models/src/bspf_models/elliptic/panel_poisson.py`。
 实验：`examples/pde/panel_poisson_convergence.py`。
 
 ## 几何与密度分离
@@ -87,9 +87,9 @@ LU 构造 O(N^3)，每个新右端项回代 O(N^2)。面板求积阶数和细分
 ## 复现
 
 ```
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python examples/pde/panel_poisson_convergence.py
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python examples/pde/panel_poisson_convergence.py
 MPLCONFIGDIR=/tmp/bspf-mpl python examples/pde/render_panel_poisson.py
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m pytest -q jax/tests/test_panel_poisson.py
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m pytest -q packages/models/tests/test_panel_poisson.py
 ```
 
 图和完整数据保存在 `build/panel_poisson/`。

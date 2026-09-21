@@ -17,9 +17,9 @@ COARE配置另存为`experiments/air_sea/shear_instability_24h.json`。COARE探�
 新增的`wind_jet_count`默认1、`initial_air_perturbation`默认0，因此历史默认初值不变。新版本修改了源码指纹，旧实验若需精确续跑，仍需使用原冻结软件版本。
 
 ```bash
-PYTHONPATH=jax/src python -m bspf_jax.air_sea_platform run \
+python -m bspf_sim.air_sea.platform run \
   --config experiments/air_sea/shear_instability_constant_24h.json --out build/air_sea_shear_constant_24h
-PYTHONPATH=jax/src python examples/pde/render_air_sea_shear.py \
+python examples/pde/render_air_sea_shear.py \
   build/air_sea_shear_constant_24h --out build/air_sea_shear_movie
 ```
 
@@ -28,7 +28,7 @@ PYTHONPATH=jax/src python examples/pde/render_air_sea_shear.py \
 24h观察到射流弯曲，扰动能由202增加至754 J/m²，但不足以称为湍流。随后保持同一配置和初值历史，从完整检查点续推到72h，命令如下：
 
 ```bash
-PYTHONPATH=jax/src python -m bspf_jax.air_sea_platform resume \
+python -m bspf_sim.air_sea.platform resume \
   build/air_sea_shear_constant_24h/checkpoints/step000000144.json --until 259200
 ```
 
@@ -40,7 +40,7 @@ PYTHONPATH=jax/src python -m bspf_jax.air_sea_platform resume \
 按用户选择，采用两周期射流的弯曲演化，停止继续寻找更强湍流。已停止四周期探索。两周期原始运行安全暂停于53小时20分；动画严格截取前48小时，共96个半小时正时刻帧，8fps，时长12秒。
 
 ```bash
-PYTHONPATH=jax/src python examples/pde/render_air_sea_shear.py \
+python examples/pde/render_air_sea_shear.py \
   build/air_sea_shear_constant_24h --until-hours 48 --out build/air_sea_shear_movie_48h
 ```
 

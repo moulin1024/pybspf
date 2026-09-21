@@ -13,7 +13,8 @@ from pathlib import Path
 import jax
 import numpy as np
 
-from bspf_jax.air_sea import plan_air_sea, plan_air_sea_stepper
+from bspf_models.air_sea.air_sea import plan_air_sea
+from bspf_models.air_sea.air_sea import plan_air_sea_stepper
 from validate_air_sea_double_gyre import integrate
 
 

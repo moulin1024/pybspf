@@ -1,0 +1,69 @@
+{
+  "bspf_nodes": [
+    73,
+    65
+  ],
+  "baseline_rational_order": {
+    "degree": 96,
+    "laurent": 64,
+    "samples": 800
+  },
+  "refined_rational_order": {
+    "degree": 128,
+    "laurent": 96,
+    "samples": 1200
+  },
+  "relative_change_initial_ripple_measure": 4.4750638639179385e-07,
+  "baseline": {
+    "t": 0.0,
+    "omega_rms": 1.0562641198758207,
+    "bspf_fourth_difference_rms": 5.242650730873556e-10,
+    "rational_fourth_difference_rms": 4.727092969300337e-06,
+    "total_fourth_difference_rms": 4.727101604603354e-06,
+    "rational_to_bspf_fourth_difference": 9016.60860499987,
+    "discrete_rate_rms": 2.4095180631728286,
+    "discrete_rate_fourth_difference_rms": 0.20541252614507854,
+    "local_vorticity_equation": [
+      {
+        "h": 0.002,
+        "rhs_rms": 2.156420106829931,
+        "residual_rms": 0.9748788897465333,
+        "rhs_fourth_difference_rms": 3.485018788980463e-05,
+        "residual_fourth_difference_rms": 0.20541254299688264
+      },
+      {
+        "h": 0.001,
+        "rhs_rms": 2.1564201070365807,
+        "residual_rms": 0.974878889835968,
+        "rhs_fourth_difference_rms": 3.485018870235316e-05,
+        "residual_fourth_difference_rms": 0.20541254299685122
+      }
+    ]
+  },
+  "refined": {
+    "t": 0.0,
+    "omega_rms": 1.056264119875818,
+    "bspf_fourth_difference_rms": 5.242379874611855e-10,
+    "rational_fourth_difference_rms": 4.72709296937006e-06,
+    "total_fourth_difference_rms": 4.727101604689416e-06,
+    "rational_to_bspf_fourth_difference": 9017.074463189398,
+    "discrete_rate_rms": 2.4095179664492066,
+    "discrete_rate_fourth_difference_rms": 0.20541261806849584,
+    "local_vorticity_equation": [
+      {
+        "h": 0.002,
+        "rhs_rms": 2.1564201068297946,
+        "residual_rms": 0.9748787371013168,
+        "rhs_fourth_difference_rms": 3.485018788858827e-05,
+        "residual_fourth_difference_rms": 0.20541263491504658
+      },
+      {
+        "h": 0.001,
+        "rhs_rms": 2.156420107036427,
+        "residual_rms": 0.9748787371906802,
+        "rhs_fourth_difference_rms": 3.485018868675723e-05,
+        "residual_fourth_difference_rms": 0.20541263491500614
+      }
+    ]
+  }
+}

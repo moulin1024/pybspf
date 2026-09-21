@@ -13,8 +13,8 @@ from matplotlib.colors import LogNorm, Normalize
 from matplotlib.patches import PathPatch
 from matplotlib.path import Path as PlotPath
 
-from bspf_jax.embedded_poisson import benchmark_domains
-from bspf_jax.random_wave_mms import RandomWaveMMS
+from bspf_models.elliptic.embedded_poisson import benchmark_domains
+from bspf_models.elliptic.random_wave_mms import RandomWaveMMS
 
 
 def main():

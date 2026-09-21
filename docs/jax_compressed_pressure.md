@@ -7,13 +7,15 @@
 ## 使用
 
 ```python
+
+import bspf_models.elliptic.pressure as bspf_pressure
 import jax
 jax.config.update("jax_enable_x64", True)
 import jax.numpy as jnp
-import bspf_jax as b
+import pybspf as b
 
 x = jnp.linspace(0, 1, 256)
-plan = b.plan_pressure_poisson2d(
+plan = bspf_pressure.plan_pressure_poisson2d(
     x, x,
     endpoint_method="chebyshev", baseline_points=16, chebyshev_modes=12,
     transform_backend="dct_hodlr",
@@ -22,14 +24,14 @@ plan = b.plan_pressure_poisson2d(
     protected_modes=8,
     compression_layout="grouped",  # 本页历史布局
 )
-project = jax.jit(lambda model, raw: b.project_pressure2d(
+project = jax.jit(lambda model, raw: bspf_pressure.project_pressure2d(
     model, raw, completion=False, refinement_steps=0,
 ))
 # velocity, diagnostic = project(plan, raw)
 # assert bool(diagnostic.converged)
 ```
 
-也可以 `compressed = b.compress_pressure_plan(dense_plan)`，复用已有稠密计划的几何和特征分解。安装预处理依赖：`pip install -e 'jax[compression]'`。
+也可以 `compressed = b.compress_pressure_plan(dense_plan)`，复用已有稠密计划的几何和特征分解。安装预处理依赖：`pip install -e '.[host,notebook,test]' -e './packages/models[precision,test]' -e './packages/sim[air-sea,test]'`。
 
 压缩后端默认0次精修；稠密后端保留原有2次精修默认值。为公平比较，本报告双方都显式使用0次。没有外层迭代、没有自动回退、没有放宽收敛容差。压缩具有指定截断误差，因此属于近似直接法。
 
@@ -86,13 +88,13 @@ N=512 的稠密版平滑/随机压力误差分别为3.44e-10、5.42e-10，说明
 ## 复现
 
 ```bash
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
 MPLCONFIGDIR=/tmp/pybspf-mpl \
 python3 scratch/benchmark_compressed_pressure.py
 
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
-python3 -m pytest -q jax/tests/test_compressed_pressure.py \
-  jax/tests/test_pressure.py jax/tests/test_navier_stokes.py
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+python3 -m pytest -q packages/models/tests/test_compressed_pressure.py \
+  packages/models/tests/test_pressure.py packages/models/tests/test_navier_stokes.py
 ```
 
 原始数据：`build/compressed_pressure_benchmark/results.json`。图：`build/compressed_pressure_benchmark/timings.png`。

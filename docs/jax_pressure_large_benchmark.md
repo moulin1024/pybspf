@@ -13,7 +13,7 @@
 复现：
 
 ```bash
-OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=jax/src \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
 MPLCONFIGDIR=/tmp/pybspf-mpl \
 python3 scratch/benchmark_compressed_pressure.py \
   --sizes 1024 2048 --out build/layered_pressure_benchmark_large

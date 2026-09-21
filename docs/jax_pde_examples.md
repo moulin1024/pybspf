@@ -6,7 +6,7 @@ See the [historical diagnosis](jax_pde_accuracy_diagnosis.md) and the
 [complete beam correction](jax_beam_correction.md). Initial midpoint results
 at the end of this document are retained as a historical record.
 
-All notebooks in `examples/pde/` now use `bspf_jax` for spatial operators and
+All notebooks in `examples/pde/` now use `pybspf` for spatial operators and
 JAX for numerical assembly and time evolution. Matplotlib handles visualization;
 there are no source-path modifications, SciPy evolution routines, external
 `py-pde` dependencies, or duplicated solvers in these notebooks. Stored outputs
@@ -86,16 +86,16 @@ second-order convergence, JIT/PyTree use, and rejection of noisy plans.
 The updated Schrödinger result and implementation are recorded in the linked
 accuracy diagnosis above; the midpoint numbers in this table are historical.
 
-The four PDE notebooks are registered in `jax/tests/test_examples.py`; their
+The four PDE notebooks are registered in `packages/models/tests/test_examples.py`; their
 numerical assertions run verbatim in fresh headless processes.
 
 ```sh
-OMP_NUM_THREADS=4 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=jax/src \
+OMP_NUM_THREADS=4 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
   python docs/diagnostics/run_with_local_blas.py -m pytest \
-  -c jax/pyproject.toml jax/tests/test_galerkin.py jax/tests/test_time_integration.py
-OMP_NUM_THREADS=4 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=jax/src \
+  -c jax/pyproject.toml tests/test_galerkin.py tests/test_time_integration.py
+OMP_NUM_THREADS=4 PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
   python docs/diagnostics/run_with_local_blas.py -m pytest \
-  -c jax/pyproject.toml jax/tests/test_examples.py -k pde
+  -c jax/pyproject.toml packages/models/tests/test_examples.py -k pde
 ```
 
 The notebook runner sets one OpenMP thread before starting each fresh process;

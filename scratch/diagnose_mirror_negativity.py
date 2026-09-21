@@ -1,4 +1,7 @@
 """Locate BSPF mirror negativity and isolate reconstruction/transport errors."""
+
+import bspf_models.kinetic.drift_kinetic as bspf_drift_kinetic
+import pybspf.plans as bspf_plans
 import argparse
 import json
 import runpy
@@ -7,7 +10,6 @@ import jax
 jax.config.update('jax_enable_x64', True)
 import jax.numpy as jnp
 import numpy as np
-import bspf_jax as b
 
 exact=runpy.run_path('examples/pde/drift_kinetic_mirror.py')['exact']
 parser=argparse.ArgumentParser()
@@ -21,12 +23,12 @@ args=parser.parse_args()
 n=args.n
 z=jnp.linspace(-4.,4.,n); v=jnp.linspace(-3.,3.,n)
 kw=dict(degree=args.degree,n_basis=args.basis,constraint_order=args.q,boundary_points=args.points)
-zp=b.plan_1d(z,**kw); vp=b.plan_1d(v,**kw)
-p=b.plan_drift_kinetic(zp,vp,magnetic_field=lambda z:1+z*z/2,magnetic_gradient=lambda z:z,mu_max=2.,n_mu=12,backend="dense")
+zp=bspf_plans.plan_1d(z,**kw); vp=bspf_plans.plan_1d(v,**kw)
+p=bspf_drift_kinetic.plan_drift_kinetic(zp,vp,magnetic_field=lambda z:1+z*z/2,magnetic_gradient=lambda z:z,mu_max=2.,n_mu=12,backend="dense")
 f=exact(0,z[:,None,None],v[None,:,None],p.mu[None,None,:])
 fq=jnp.einsum('ai,ijm,bj->abm',p.z_values,f,p.v_values)
 refq=exact(0,p.transport.z_points[:,None,None],p.transport.v_points[None,:,None],p.mu[None,None,:])
-rhs,_=b.drift_kinetic_rhs(p,0.,f,inflow=exact)
+rhs,_=bspf_drift_kinetic.drift_kinetic_rhs(p,0.,f,inflow=exact)
 # Analytic differential equation derivative at the initial time.
 z3=z[:,None,None]; v3=v[None,:,None]; mu3=p.mu[None,None,:]
 ref_rhs=(8*z3*v3-12*mu3*z3*(v3-.8))*f
@@ -34,9 +36,9 @@ pre=dict(initial_reconstruction_error=float(jnp.max(jnp.abs(fq-refq))),
  initial_reconstruction_min=float(jnp.min(fq)),initial_rhs_error=float(jnp.max(jnp.abs(rhs-ref_rhs))))
 print(json.dumps(dict(config=vars(args),**pre)),flush=True)
 t=jnp.linspace(0.,4.,81)
-h,tr=b.integrate_drift_kinetic(p,f,t,inflow=exact,substeps=40)
+h,tr=bspf_drift_kinetic.integrate_drift_kinetic(p,f,t,inflow=exact,substeps=40)
 ref=exact(t[:,None,None,None],z[None,:,None,None],v[None,None,:,None],p.mu[None,None,None,:])
-mom=b.drift_kinetic_moments(p,h); nh=mom[:,jnp.array([0,3])]
+mom=bspf_drift_kinetic.drift_kinetic_moments(p,h); nh=mom[:,jnp.array([0,3])]
 res=nh-nh[0]-tr.sum(axis=-1)
 mins=[]
 # Independent off-grid check at quadrature points; stream time slices.

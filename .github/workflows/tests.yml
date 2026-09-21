@@ -1,18 +1,55 @@
 name: Tests
 on: [push, pull_request]
-
 jobs:
-  cpu:
+  numerical:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python: ['3.10', '3.13']
+        include:
+          - {suite: core, python: '3.10'}
+          - {suite: core, python: '3.13'}
+          - {suite: models, python: '3.13'}
+          - {suite: sim, python: '3.13'}
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'
+      MPLBACKEND: Agg
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-      - run: python -m pip install -e '.[dev]'
-      # Known solver failures remain visible until their contracts are resolved.
-      - run: python -m pytest -m 'not performance'
-      - run: python -m pip wheel . --no-deps --wheel-dir dist
+      - run: python -m pip install -e '.[host,test]' -e './packages/models[precision,test]' -e './packages/sim[air-sea,test]'
+      - if: matrix.suite == 'core'
+        run: python -m pytest tests -q
+      - if: matrix.suite == 'models'
+        run: python -m pytest packages/models/tests -q
+      - if: matrix.suite == 'sim'
+        run: python -m pytest packages/sim/tests -q
+  packaging:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install build setuptools wheel
+      - run: python -m build --no-isolation
+      - run: python -m build --no-isolation packages/models
+      - run: python -m build --no-isolation packages/sim
+      - run: python tools/check_distributions.py
+      - run: python -m venv /tmp/bspf-wheel-check
+      - run: /tmp/bspf-wheel-check/bin/python -m pip install dist/*.whl
+      - name: Core-only installed import outside checkout
+        working-directory: /tmp
+        run: /tmp/bspf-wheel-check/bin/python -c "import sys, pybspf; assert not any(n.startswith(('bspf_models', 'bspf_sim', 'legacy')) for n in sys.modules)"
+      - run: /tmp/bspf-wheel-check/bin/python -m pip install packages/models/dist/*.whl
+      - name: Installed model import
+        working-directory: /tmp
+        run: /tmp/bspf-wheel-check/bin/python -c "from bspf_models.elliptic.pressure import plan_pressure_poisson2d"
+      - run: /tmp/bspf-wheel-check/bin/python -m pip install packages/sim/dist/*.whl 'bspf-sim[air-sea]'
+      - name: Installed command
+        working-directory: /tmp
+        run: /tmp/bspf-wheel-check/bin/bspf-air-sea --help

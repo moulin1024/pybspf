@@ -1,0 +1,7 @@
+{
+  "source_commit": "361a39593de3ee6656b00f52cdd0b778a58280c5",
+  "files": {
+    "pressure.npz": "e95a950313ed35776485cf436ad0bb0c6338340ff6dced63e91f31a047e25db7"
+  },
+  "generation": "legacy/numpy_cupy/generate_reference.py; seed 5, original test_pressure grids/options; atol=1e-9"
+}

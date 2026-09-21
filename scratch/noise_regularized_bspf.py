@@ -11,6 +11,9 @@ The demo compares the existing JAX operators using identical noisy samples.
 
 from __future__ import annotations
 
+import pybspf.operators as bspf_operators
+import pybspf.plans as bspf_plans
+
 import argparse
 from dataclasses import dataclass
 import json
@@ -215,7 +218,6 @@ def main():
     import jax
 
     jax.config.update("jax_enable_x64", True)
-    import bspf_jax as bspf
     import matplotlib
 
     matplotlib.use("Agg")
@@ -234,13 +236,13 @@ def main():
     plans = [plan(g, a) for a in alphas]
     fitted, derivative, selected, ratios = discrepancy_select(plans, y, sigma)
     options = dict(degree=9, n_basis=18, constraint_order=8, lam=1e-6)
-    fd = bspf.plan_1d(x, **options, boundary_points=9)
-    ldc = bspf.plan_1d(
+    fd = bspf_plans.plan_1d(x, **options, boundary_points=9)
+    ldc = bspf_plans.plan_1d(
         x, **options, endpoint_method="chebyshev", chebyshev_modes=8, boundary_points=40
     )
     methods = {
-        "FD9": np.asarray(jax.jit(bspf.differentiate)(fd, y)),
-        "LDC M8/P40": np.asarray(jax.jit(bspf.differentiate)(ldc, y)),
+        "FD9": np.asarray(jax.jit(bspf_operators.differentiate)(fd, y)),
+        "LDC M8/P40": np.asarray(jax.jit(bspf_operators.differentiate)(ldc, y)),
         "Joint regularization": derivative,
     }
     boundary = np.r_[np.arange(40), np.arange(x.size - 40, x.size)]

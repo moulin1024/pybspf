@@ -10,9 +10,15 @@ import jax.numpy as jnp
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from bspf_jax.linear_itg import (plan_itg_radial,plan_linear_itg,linear_itg_initial,
-    linear_itg_fields,linear_itg_diagnostics,integrate_linear_itg)
-from bspf_jax.linear_itg_reference import growing_root,continuum_growing_root,continuum_dispersion
+from bspf_models.kinetic.linear_itg import plan_itg_radial
+from bspf_models.kinetic.linear_itg import plan_linear_itg
+from bspf_models.kinetic.linear_itg import linear_itg_initial
+from bspf_models.kinetic.linear_itg import linear_itg_fields
+from bspf_models.kinetic.linear_itg import linear_itg_diagnostics
+from bspf_models.kinetic.linear_itg import integrate_linear_itg
+from bspf_models.kinetic.linear_itg_reference import growing_root
+from bspf_models.kinetic.linear_itg_reference import continuum_growing_root
+from bspf_models.kinetic.linear_itg_reference import continuum_dispersion
 
 
 def fit_omega(t,phi):

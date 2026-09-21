@@ -113,7 +113,7 @@ u(x,y) = exp(3x) cos(3y) + 0.1 Re((x+i*y)^7),
 运行：
 
 ```sh
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python \
   examples/pde/boundary_fft_core.py
 ```
 

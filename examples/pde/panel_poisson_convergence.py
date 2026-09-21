@@ -7,9 +7,10 @@ import numpy as np
 
 from boundary_fft_core import BoundaryFFTPlan, harmonic
 from boundary_fft_random_mms import boundary_values
-from bspf_jax.convex_poisson import ArcLengthBoundary
-from bspf_jax.embedded_poisson import benchmark_domains
-from bspf_jax.panel_poisson import PanelPoissonPlan, adaptive_solve
+from bspf_models.elliptic.convex_poisson import ArcLengthBoundary
+from bspf_models.elliptic.embedded_poisson import benchmark_domains
+from bspf_models.elliptic.panel_poisson import PanelPoissonPlan
+from bspf_models.elliptic.panel_poisson import adaptive_solve
 
 
 def particular(points):

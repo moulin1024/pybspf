@@ -14,10 +14,10 @@
 ## 运行
 
 从仓库根目录执行；现有 Python 环境需要 JAX、NumPy、SciPy、gmpy2、matplotlib。
-如需安装，使用 `python -m pip install -e 'jax[weak-ns]' matplotlib`。
+如需安装，使用 `python -m pip install -e '.[host,notebook,test]' -e './packages/models[precision,test]' -e './packages/sim[air-sea,test]' matplotlib`。
 
 ```sh
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-mpl \
+OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-mpl \
   python examples/pde/air_sea_double_gyre.py \
   --n 33 --hours 24 --dt-air 60 --dt-ocean 300 --window 600 \
   --method lagged --out build/air_sea_double_gyre
@@ -42,11 +42,11 @@ PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-mpl \
 ### 24 小时、48 帧 MP4
 
 ```sh
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-mpl \
+OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-mpl \
   python examples/pde/air_sea_double_gyre.py --method lagged --hours 24 --output-hours 0.5 \
   --no-plot --out build/air_sea_double_gyre_48frames
 
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-mpl \
+OPENBLAS_NUM_THREADS=1 MPLCONFIGDIR=/tmp/bspf-mpl \
   python examples/pde/render_air_sea_mp4.py
 ```
 
@@ -177,10 +177,10 @@ E=\rho_a C_E|\boldsymbol U_r|[0.98q_{sat}(T_s)-q_a].
 ## 验证
 
 ```sh
-PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 \
-  python -m pytest -q jax/tests/test_air_sea.py
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 OPENBLAS_NUM_THREADS=1 \
+  python -m pytest -q packages/models/tests/test_air_sea.py
 
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 \
+OPENBLAS_NUM_THREADS=1 \
   python examples/pde/validate_air_sea_double_gyre.py
 ```
 
@@ -221,7 +221,7 @@ RMS 差分别除以 `0.1 m/s, 8 m/s, 1 K, 1 K, 0.01 kg/kg` 后取欧氏范数。
 
 ```python
 import jax
-from bspf_jax.air_sea import (
+from bspf_models.air_sea.air_sea import (
     AirSeaConfig, plan_air_sea, plan_air_sea_stepper,
     initial_air_sea_state, air_sea_step,
 )
@@ -236,7 +236,7 @@ state, budget = advance(state)
 
 `budget.exchange` 是窗口累计冲量/热量/水分，而不是瞬时通量。
 物理配置通过 `AirSeaConfig` 修改；需重新建 plan 以同步初始场和目标场。
-公开入口在 `bspf_jax.air_sea`，不修改现有包顶层 API。
+公开入口在 `bspf_models.air_sea.air_sea`，不修改现有包顶层 API。
 
 首版还没有温湿度浮力驱动、稳定度相关阻力、云凝结、分层海洋或垂向混合闭合。
 温湿度会反馈到显热/蒸发，但不会通过浮力改变水平风；海流通过相对风反馈应力。

@@ -19,9 +19,10 @@ import jax
 jax.config.update('jax_enable_x64',True)
 import jax.numpy as jnp
 import numpy as np
-from bspf_jax.gyrokinetic_slab import (plan_slab_gk,slab_gk_solve_charge,
-    slab_gk_rhs_with_field_hat)
-from bspf_jax.gyrokinetic_mms import plan_slab_mms
+from bspf_models.kinetic.gyrokinetic_slab import plan_slab_gk
+from bspf_models.kinetic.gyrokinetic_slab import slab_gk_solve_charge
+from bspf_models.kinetic.gyrokinetic_slab import slab_gk_rhs_with_field_hat
+from bspf_models.kinetic.gyrokinetic_mms import plan_slab_mms
 
 
 def fft(a): return jnp.fft.fftn(a,axes=(0,1,2))

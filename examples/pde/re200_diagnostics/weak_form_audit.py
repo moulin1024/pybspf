@@ -4,7 +4,7 @@ from pathlib import Path
 import jax
 import jax.numpy as jnp
 import numpy as np
-from bspf_jax.immersed_flow import ImmersedFlowPlan
+from bspf_models.fluids.immersed_flow import ImmersedFlowPlan
 jax.config.update('jax_enable_x64',True)
 p=ImmersedFlowPlan(assembly_device=jax.devices('gpu')[0],basis_precision='float64',nx=73,ny=33,reynolds=200,wall_method='rational',quadrature_factor=4)
 step=p.stepper(.01,device=jax.devices('gpu')[0]);d=step.data

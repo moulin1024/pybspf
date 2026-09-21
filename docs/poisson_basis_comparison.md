@@ -156,14 +156,14 @@ J_ij = integral phi_i'' phi_j''.
 
 ```sh
 for family in fourier bspline bspf; do
-  PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python \
+  OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python \
     examples/pde/compare_poisson_bases.py --family "$family" --resume
 done
 MPLCONFIGDIR=/tmp/bspf-mpl python examples/pde/render_poisson_basis_comparison.py
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python \
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python \
   examples/pde/validate_poisson_basis_comparison.py --order 24
-PYTHONPATH=jax/src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m pytest \
-  -q jax/tests/test_poisson_basis_comparison.py
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m pytest \
+  -q packages/models/tests/test_poisson_basis_comparison.py
 ```
 
 `--resume` 只复用设置一致且 PDE、H2 诊断均完整的结果。不复用早前采用其他边界采样数、约束空间或求积规则的运行。
