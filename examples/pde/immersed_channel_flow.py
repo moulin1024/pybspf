@@ -108,8 +108,15 @@ def main():
         "--wall-method", choices=("svd", "factor", "rational"), default="svd"
     )
     ap.add_argument("--wall-width", type=float, default=2.0)
+    ap.add_argument("--initial-state", choices=("stokes", "compatible"), default="stokes",
+                    help="Geometric compatible lift skips the Stokes solve and requires CPU factor space")
+    ap.add_argument("--save-every", type=float, default=.5)
     ap.add_argument("--out", type=Path, default=Path("build/immersed_flow"))
     args = ap.parse_args()
+    if args.initial_state == "compatible" and (args.wall_method != "factor" or args.backend != "cpu"):
+        ap.error("--initial-state compatible requires --wall-method factor --backend cpu")
+    if not np.isfinite(args.save_every) or args.save_every <= 0:
+        ap.error("--save-every must be positive and finite")
     if args.basis_precision == "float64" and args.backend != "gpu":
         ap.error("--basis-precision float64 requires --backend gpu")
     if args.rational_basis_construction == "gpu" and (args.backend != "gpu" or args.wall_method != "rational"):
@@ -146,14 +153,21 @@ def main():
         flush=True,
     )
     step = plan.stepper(args.dt, device=device)
-    state = step.initial_state if device is not None else plan.stokes_state.copy()
+    if args.initial_state == "compatible":
+        state = plan.compatible_state()
+        assert plan.rational is None and "stokes_state" not in plan.__dict__
+    else:
+        state = step.initial_state if device is not None else plan.stokes_state.copy()
+    initial_state=np.asarray(jax.device_get(state)).copy()
+    initial_checks=independent_checks(plan,initial_state)
+    print("INITIAL",args.initial_state,json.dumps(initial_checks),flush=True)
     x, y = (
         np.linspace(plan.bounds[0], plan.bounds[1], 401),
         np.linspace(-plan.bounds[2], plan.bounds[2], 161),
     )
     snapshots, times, history = [], [], []
     total = round(args.time / args.dt)
-    every = max(1, round(0.5 / args.dt))
+    every = max(1, round(args.save_every / args.dt))
     start = perf_counter()
     for k in range(total + 1):
         t = k * args.dt
@@ -210,6 +224,8 @@ def main():
     checks = independent_checks(plan, state)
     summary = dict(
         backend=args.backend,
+        initial_state=args.initial_state,
+        initial_checks=initial_checks,
         basis_workers=args.basis_workers if args.basis_precision == "mpfr" else 0,
         basis_precision=args.basis_precision,
         device=None if device is None else str(device),
@@ -256,6 +272,7 @@ def main():
         buffer_start=plan.buffer_start,
         sigma=plan.sponge_profile(x),
         state=state,
+        initial_state=initial_state,
         coefficients=plan.coefficients(state),
         nx=plan.nx,
         ny=plan.ny,

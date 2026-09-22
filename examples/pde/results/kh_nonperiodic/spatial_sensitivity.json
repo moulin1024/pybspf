@@ -1,0 +1,14 @@
+{
+  "coarse_grid": [
+    128,
+    80
+  ],
+  "fine_grid": [
+    160,
+    112
+  ],
+  "time": 6.0,
+  "comparison": "Final central fields, |x|<2 and |y|<0.5; fine field cubically interpolated to coarse grid.",
+  "vorticity_central_relative_l2": 0.0001300192430360801,
+  "transverse_velocity_central_relative_l2": 7.628562163121939e-05
+}

@@ -123,6 +123,22 @@ def test_continuous_ns_residual_and_second_order(channel):
     assert errors[-1] < 1e-5, errors
 
 
+def test_custom_quadrature_preserves_continuous_ns_residual():
+    calls=[]
+
+    def rule(bounds,hole,nx,ny,factor,x_breaks):
+        calls.append((nx,ny))
+        return channel_quadrature(bounds,hole,nx,ny,3.0,x_breaks)
+
+    p=ImmersedFlowPlan(nx=33,ny=25,hole=None,quadrature_rule=rule)
+    assert calls==[(33,25)]
+    coefficient,load=manufactured(p)
+    at=.31
+    residual=(p.explicit(np.sin(at)*coefficient)+load(at)
+              -p.linear@(np.sin(at)*coefficient)-p.mass@(np.cos(at)*coefficient))
+    assert np.linalg.norm(residual)<1e-7
+
+
 @pytest.fixture(scope="module")
 def factored_hole():
     return ImmersedFlowPlan(nx=33, ny=25, wall_method="factor", quadrature_factor=4)
@@ -148,6 +164,36 @@ def test_hole_constraints_and_physical_flux(method, factored_hole):
         p.out_weights @ (p.out_ops[0] @ a + p.out_lift[0]), 4 / 3, atol=2e-9
     )
     assert np.all(p.hole.level(p.points) > 1)
+
+
+def test_geometric_initialization_without_rational_or_stokes(monkeypatch):
+    from bspf_models.fluids import rational_stokes
+    from bspf_models.fluids.immersed_flow import channel_lift
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Geometric initialization must not construct LARS")
+
+    monkeypatch.setattr(rational_stokes, "RationalStokesExtension", forbidden)
+    p = ImmersedFlowPlan(nx=33, ny=25, wall_method="factor", quadrature_factor=3,
+                        buffer_strength=0)
+    assert p.rational is None and "stokes_state" not in p.__dict__
+    state = p.compatible_state()
+    assert "stokes_state" not in p.__dict__
+    points = np.array([[-.7,-.3],[-.5,.6],[.8,.2],[1.7,-.4],[4.3,.7]])
+    q,qx,qy,*_ = p.wall_factor(points)
+    lift = channel_lift(points)
+    constant = channel_lift(np.array([p.hole.center]))[0][0]
+    target = np.array([q*lift[1]+qy*(lift[0]-constant), -qx*(lift[0]-constant)])
+    np.testing.assert_allclose(p.evaluate(state, points)[1:3], target, rtol=1e-8, atol=1e-8)
+    boundary,_ = p.arc.sample(138,offset=.371)
+    _,u,v,*_ = p.evaluate(state,boundary)
+    assert np.max(np.hypot(u,v)) < 1e-10
+    y = np.linspace(-1,1,51)
+    inlet = p.evaluate(state,np.column_stack((np.full_like(y,-1),y)))
+    np.testing.assert_allclose(inlet[1],1-y*y,atol=1e-10)
+    np.testing.assert_allclose(inlet[2],0,atol=1e-10)
+    np.testing.assert_allclose(p.out_weights@(p.out_ops[0]@state+p.out_lift[0]),4/3,atol=1e-9)
+    assert np.linalg.norm(p.linear@state+p.linear_lift) > 1e-5
 
 
 def test_wall_factor_derivatives():

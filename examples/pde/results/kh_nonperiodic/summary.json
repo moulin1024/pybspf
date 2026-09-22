@@ -1,0 +1,30 @@
+{
+  "nx": 160,
+  "ny": 112,
+  "T": 6.0,
+  "dt": 0.002,
+  "viscosity": 0.002,
+  "thickness": 0.12,
+  "perturbation": 0.03,
+  "wavelength": 1.5,
+  "frame_count": 301,
+  "endpoint_method": "chebyshev",
+  "chebyshev_modes": 12,
+  "baseline_points": 16,
+  "boundary": "Fixed tanh shear velocity on all four boundaries; nonperiodic",
+  "forcing": "Fixed -NS_raw(base), maintaining the discrete base shear",
+  "sponge": "80*((x/3)^16+y^16), damping toward base",
+  "central_v_rms_growth": 78.30953068764046,
+  "max_divergence": 3.782201982160949e-12,
+  "max_boundary_error": 0.0,
+  "max_stage_schur": 4.556899302343709e-11,
+  "max_cfl": 0.10842100520548917,
+  "validation": {
+    "half_dt_T1_valid": true,
+    "half_dt_T1_relative_perturbation_l2": 1.4328355391798276e-11,
+    "unperturbed_control_valid": true,
+    "unperturbed_control_linf": 6.985757371221171e-14
+  },
+  "wall_gradient_fit_linf": 8.511884694232304,
+  "elapsed_s": 299.671671041986
+}

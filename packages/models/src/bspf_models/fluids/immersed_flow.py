@@ -7,7 +7,7 @@ in the explicitly added buffer.
 """
 
 from dataclasses import dataclass
-from functools import lru_cache
+from functools import cached_property, lru_cache
 from time import perf_counter
 
 import jax
@@ -170,6 +170,8 @@ class ImmersedFlowPlan:
     basis_precision="float64" opts into GPU double-precision basis evaluation,
     bypassing MPFR and its worker pool. The default "mpfr" preserves the
     cancellation-sensitive 113-bit evaluation. FP64 accuracy is case-dependent.
+    quadrature_rule optionally supplies positive physical-domain integration
+    points and weights with the same signature as channel_quadrature.
     """
 
     @with_basis_workers
@@ -184,6 +186,7 @@ class ImmersedFlowPlan:
         reynolds=20.0,
         peak=1.0,
         quadrature_factor=2.5,
+        quadrature_rule=None,
         boundary_count=None,
         wall_rcond=1e-10,
         volume_rcond=1e-11,
@@ -373,9 +376,17 @@ class ImmersedFlowPlan:
             z = self.scale[:, None] * z
             self.wall_lift_error = 0.0
         self.lift_coefficients = lift
-        self.points, self.weights = channel_quadrature(
+        rule=channel_quadrature if quadrature_rule is None else quadrature_rule
+        self.points, self.weights = rule(
             self.bounds, hole, nx, ny, quadrature_factor, (self.buffer_start,)
         )
+        self.points=np.asarray(self.points,dtype=float)
+        self.weights=np.asarray(self.weights,dtype=float)
+        if (self.points.ndim!=2 or self.points.shape[1]!=2
+            or self.weights.shape!=(len(self.points),) or not len(self.weights)
+            or not np.all(np.isfinite(self.points))
+            or not np.all(np.isfinite(self.weights)&(self.weights>0))):
+            raise ValueError('Quadrature requires finite (n,2) points and positive (n,) weights')
         device_volume = assembly_device is not None and not self.factored_wall
         op, base = self.operators(self.points, with_base=True, device_output=device_volume)
         diagonal_constraints = hole is None or self.factored_wall or self.rational_wall
@@ -455,8 +466,34 @@ class ImmersedFlowPlan:
             o @ lift + b
             for o, b in zip(oo[1:3], out_base[1:3])
         )
-        self.stokes_state = la.solve(self.linear, -self.linear_lift, assume_a="pos")
         self.setup_seconds = perf_counter() - start
+
+    @cached_property
+    def stokes_state(self):
+        """Compute the steady viscous initialization only when explicitly used."""
+        return la.solve(self.linear, -self.linear_lift, assume_a="pos")
+
+    def compatible_state(self, *, hole_streamfunction=None):
+        """Geometric, divergence-free velocity lift, without a Stokes solve.
+
+        For the factored space, psi=q*psi_channel+C*(1-q). Its velocity obeys
+        all prescribed Dirichlet data exactly. C defaults to the undisturbed
+        channel streamfunction at the obstacle center. The outlet condition
+        remains the natural weak condition of the evolution problem.
+
+        The mass solve expresses the analytic circulation mode in the existing
+        normalized space; it is not a steady momentum/pressure solve.
+        """
+        if not self.factored_wall:
+            raise ValueError("Geometric initialization requires wall_method='factor'")
+        constant = (float(channel_lift(np.asarray([self.hole.center]),
+                                      self.bounds[2], self.peak)[0][0])
+                    if hole_streamfunction is None else float(hole_streamfunction))
+        if not np.isfinite(constant):
+            raise ValueError("hole_streamfunction must be finite")
+        _, qx, qy, *_ = self.wall_factor(self.points)
+        correction = np.column_stack((-constant*qy, constant*qx))
+        return la.cho_solve(self.mass_factor, self.force_load(correction))
 
     def sponge_profile(self, x):
         if self.buffer_length == 0:

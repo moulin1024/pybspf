@@ -22,6 +22,9 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: python -m pip install -e '.[host,test]' -e './packages/models[precision,test]' -e './packages/sim[air-sea,test]'
+      - if: matrix.suite == 'models'
+        name: Install FFT extension backend for numerical coverage
+        run: python -m pip install -e './packages/models[fast]'
       - if: matrix.suite == 'core'
         run: python -m pytest tests -q
       - if: matrix.suite == 'models'
