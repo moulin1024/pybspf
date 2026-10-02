@@ -25,4 +25,5 @@ testpaths = ["tests"]
 addopts = "--import-mode=importlib"
 
 [tool.setuptools.package-data]
+"bspf_models.fluids._embedded" = ["*.cpp"]
 "bspf_models.air_sea" = ["surface_exchange_LICENSE.txt"]
